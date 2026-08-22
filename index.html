@@ -102,9 +102,25 @@
   <!-- MAIN HEADER (Clean White Modern E-Commerce Aesthetic) -->
   <header class="ref-main-header">
     <div class="container header-flex">
-      <!-- SsellerStoreeBay Official Logo -->
-      <a href="#" class="ref-logo" onclick="app.setPersona('customer'); return false;">
-        <span style="color:#0f172a;">Sseller</span><span style="color:#2563eb;">Store</span><span style="color:#e11d48;">eBay</span>
+      <!-- SsellerStoreeBay Official Logo with Interlocking SE Shield Mark -->
+      <a href="#" class="ref-logo" onclick="app.setPersona('customer'); return false;" style="display:flex; align-items:center; gap:10px;">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <rect width="36" height="36" rx="10" fill="url(#logoGrad)"/>
+          <path d="M11 12C11 10.3431 12.3431 9 14 9H22C23.6569 9 25 10.3431 25 12V13H11V12Z" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M9 13H27L25.4 25.2C25.3 26.2 24.4 27 23.4 27H12.6C11.6 27 10.7 26.2 10.6 25.2L9 13Z" fill="white" fill-opacity="0.18" stroke="#ffffff" stroke-width="1.8"/>
+          <!-- Stylized Interlocking S & E Shield Vector Mark -->
+          <path d="M22 16.5H15.5C14.4 16.5 13.5 17.4 13.5 18.5C13.5 19.6 14.4 20.5 15.5 20.5H20.5C21.6 20.5 22.5 21.4 22.5 22.5C22.5 23.6 21.6 24.5 20.5 24.5H14" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M18 16.5V24.5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.35"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#1A73E8"/>
+              <stop offset="1" stop-color="#1557B0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span style="font-family:'Outfit','Inter',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px;">
+          <span style="color:#0F172A;">Sseller</span><span style="color:#1A73E8;">Store</span><span style="color:#0F172A;">eBay</span>
+        </span>
       </a>
 
       <!-- Search Bar -->
@@ -121,11 +137,11 @@
       <div class="ref-user-auth">
         <div class="ref-user-avatar" onclick="app.openModal('sellerLoginModalOverlay');" style="cursor:pointer;" title="My Account / Sign In">👤</div>
         <div class="ref-user-links">
-          <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="font-weight:700; font-size:13.5px; color:#0f172a;">My Account / Sign In</a><br>
+          <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="font-weight:700; font-size:13.5px; color:#0F172A;">My Account / Sign In</a><br>
           <div style="font-size:11px; display:flex; gap:6px; align-items:center;">
-            <a href="#" onclick="app.openModal('sellerRegModalOverlay'); return false;" style="color:#64748b;">Join / Register</a>
-            <span style="color:#cbd5e1;">•</span>
-            <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;" style="color:#2563eb; font-weight:600;">⚙️ Admin Login</a>
+            <a href="#" onclick="app.openModal('sellerRegModalOverlay'); return false;" style="color:#64748B;">Join / Register</a>
+            <span style="color:#CBD5E1;">•</span>
+            <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;" style="color:#1A73E8; font-weight:600;">⚙️ Admin Login</a>
           </div>
         </div>
       </div>
@@ -172,7 +188,7 @@
         </div>
         <div>
           <button class="highlight-apply-now-btn" onclick="app.openModal('sellerRegModalOverlay')">
-            🔥 Apply Now &mdash; Become a Seller &rsaquo;
+            Apply Now &mdash; Become a Seller &rsaquo;
           </button>
         </div>
       </div>
@@ -184,8 +200,8 @@
         <div class="ref-main-banner" id="heroMainBannerBox">
           <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&auto=format&fit=crop&q=80" alt="SsellerStoreeBay Banner">
           <div class="banner-overlay-content">
-            <span class="hot-badge" style="background:#0f172a; margin-bottom:6px; display:inline-block;">OFFICIAL COLLECTION</span>
-            <h2>SsellerStoreeBay Mega Deals</h2>
+            <span class="hot-badge" style="background:#0F172A; margin-bottom:6px; display:inline-block;">OFFICIAL COLLECTION</span>
+            <h2>SsellerStoreeBay Mega Summer Promo</h2>
             <p>Shop up to 50% OFF on Dell, Nike, Apple iPhone, HP, Watches & Accessories.</p>
             <button class="btn-primary" onclick="app.directBuyNow('p1')">Shop Deal Now &rsaquo;</button>
           </div>
