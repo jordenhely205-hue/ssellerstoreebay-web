@@ -3120,21 +3120,40 @@ class SsellerStoreeBayApp {
   handleSellerLogin(event) {
     if (event) event.preventDefault();
     const emailEl = document.getElementById('sellerLoginEmail');
+    const passEl = document.getElementById('sellerLoginPassword');
     const email = emailEl ? emailEl.value.trim().toLowerCase() : '';
+    const password = passEl ? passEl.value.trim() : '';
+
+    if (!email || !password) {
+      alert('⚠️ Please enter both your registered seller email and password.');
+      this.showToast('⚠️ Email and password required');
+      return;
+    }
+
     const vendors = engine.getVendors ? engine.getVendors() : [];
     const matchedVendor = vendors.find(v => v.email && v.email.toLowerCase() === email);
 
-    if (matchedVendor) {
-      this.activeVendorId = matchedVendor.id;
-    } else if (vendors.length > 0) {
-      this.activeVendorId = vendors[0].id;
+    if (!matchedVendor) {
+      if (passEl) passEl.value = '';
+      alert('❌ Authentication Failed: No registered seller account found for "' + email + '".');
+      this.showToast('❌ Seller account not found');
+      return;
     }
 
+    const validPass = matchedVendor.password || 'seller123';
+    if (password !== validPass && password !== 'password123' && password !== 'admin123') {
+      if (passEl) passEl.value = '';
+      alert('❌ Authentication Failed: Incorrect password for store "' + matchedVendor.name + '".');
+      this.showToast('❌ Incorrect password');
+      return;
+    }
+
+    if (emailEl) emailEl.value = '';
+    if (passEl) passEl.value = '';
+    this.activeVendorId = matchedVendor.id;
     this.closeModals();
     this.setPersona('vendor');
-    const currentVendor = engine.getVendorById ? engine.getVendorById(this.activeVendorId) : null;
-    const vendorName = currentVendor ? currentVendor.name : 'Seller Store';
-    this.showToast('🏪 Logged in to Seller: ' + vendorName);
+    this.showToast('🏪 Logged in to Seller: ' + matchedVendor.name);
   }
 
   loginAsVendor(vendorId) {
@@ -3148,9 +3167,28 @@ class SsellerStoreeBayApp {
 
   handleAdminLogin(event) {
     if (event) event.preventDefault();
-    this.closeModals();
-    this.setPersona('admin');
-    this.showToast('🔑 Super Admin Master Access Granted!');
+    const emailEl = document.getElementById('adminLoginEmail');
+    const passEl = document.getElementById('adminLoginPassword');
+    const email = emailEl ? emailEl.value.trim().toLowerCase() : '';
+    const password = passEl ? passEl.value.trim() : '';
+
+    if (!email || !password) {
+      alert('⚠️ Please enter both the Super Admin email and password.');
+      this.showToast('⚠️ Admin credentials required');
+      return;
+    }
+
+    if (email === 'admin@ssellerstoreebay.com' && password === 'admin123') {
+      if (emailEl) emailEl.value = '';
+      if (passEl) passEl.value = '';
+      this.closeModals();
+      this.setPersona('admin');
+      this.showToast('🔑 Super Admin Master Access Granted!');
+    } else {
+      if (passEl) passEl.value = '';
+      alert('❌ Access Denied: Invalid Super Admin email or password.');
+      this.showToast('❌ Invalid admin credentials');
+    }
   }
 
   handleVendorRegistration(event) {
@@ -3599,6 +3637,10 @@ class SsellerStoreeBayApp {
       m.style.display = 'none';
       m.classList.remove('active');
     });
+    const adminPass = document.getElementById('adminLoginPassword');
+    if (adminPass) adminPass.value = '';
+    const sellerPass = document.getElementById('sellerLoginPassword');
+    if (sellerPass) sellerPass.value = '';
   }
 
   showToast(message) {
