@@ -1,5 +1,5 @@
 /**
- * SsellerStoreeBay - Dokan Multi-Vendor & Headless Engine
+ * E Seller Store - Dokan Multi-Vendor & Headless Engine
  * Manages Onboarding with CNIC, Profit Calculation (18%-30%), Real-Time Activity Tracking,
  * Ad Campaigns Management Engine, Manual Live Chat Stream & Web Audio Notifications.
  */
@@ -8,17 +8,17 @@ import { INITIAL_PRODUCTS, INITIAL_VENDORS, INITIAL_BRANDS, INITIAL_ADS, PLATFOR
 
 class DokanEngine {
   constructor() {
-    this.storageKeyProducts = 'ssellerstoreebay_products';
-    this.storageKeyVendors = 'ssellerstoreebay_vendors';
-    this.storageKeyMetrics = 'ssellerstoreebay_metrics';
-    this.storageKeyCart = 'ssellerstoreebay_cart';
-    this.storageKeyWishlist = 'ssellerstoreebay_wishlist';
-    this.storageKeyCompare = 'ssellerstoreebay_compare';
-    this.storageKeyWalletLogs = 'ssellerstoreebay_wallet_logs';
-    this.storageKeyOrders = 'ssellerstoreebay_orders';
-    this.storageKeyActivityLogs = 'ssellerstoreebay_activity_logs';
-    this.storageKeyAds = 'ssellerstoreebay_ads';
-    this.storageKeyChat = 'ssellerstoreebay_chat_messages';
+    this.storageKeyProducts = 'esellerstore_products';
+    this.storageKeyVendors = 'esellerstore_vendors';
+    this.storageKeyMetrics = 'esellerstore_metrics';
+    this.storageKeyCart = 'esellerstore_cart';
+    this.storageKeyWishlist = 'esellerstore_wishlist';
+    this.storageKeyCompare = 'esellerstore_compare';
+    this.storageKeyWalletLogs = 'esellerstore_wallet_logs';
+    this.storageKeyOrders = 'esellerstore_orders';
+    this.storageKeyActivityLogs = 'esellerstore_activity_logs';
+    this.storageKeyAds = 'esellerstore_ads';
+    this.storageKeyChat = 'esellerstore_chat_messages';
 
     this.init();
   }
@@ -47,7 +47,7 @@ class DokanEngine {
     if (!localStorage.getItem(this.storageKeyChat)) {
       localStorage.setItem(this.storageKeyChat, JSON.stringify([
         { id: 'c1', sender: 'client', clientName: 'Demo Client', message: 'Hello! I need assistance with vendor registration.', timestamp: '12:05 PM', unread: true },
-        { id: 'c2', sender: 'admin', clientName: 'Demo Client', message: 'Welcome to SsellerStoreeBay! How can I assist your business today?', timestamp: '12:06 PM', unread: false }
+        { id: 'c2', sender: 'admin', clientName: 'Demo Client', message: 'Welcome to E Seller Store! How can I assist your business today?', timestamp: '12:06 PM', unread: false }
       ]));
     }
     if (!localStorage.getItem(this.storageKeyWalletLogs)) {
@@ -57,7 +57,7 @@ class DokanEngine {
     }
     if (!localStorage.getItem(this.storageKeyActivityLogs)) {
       localStorage.setItem(this.storageKeyActivityLogs, JSON.stringify([
-        { id: 'act_1', title: 'Visitor Session Started', detail: 'New client landed on SsellerStoreeBay storefront', time: 'Just now', type: 'info' }
+        { id: 'act_1', title: 'Visitor Session Started', detail: 'New client landed on E Seller Store storefront', time: 'Just now', type: 'info' }
       ]));
     }
   }
@@ -214,7 +214,7 @@ class DokanEngine {
 
     const existing = vendors.find(v => v.email.toLowerCase() === email.toLowerCase());
     if (existing) {
-      throw new Error('A seller account with this email address already exists on SsellerStoreeBay.');
+      throw new Error('A seller account with this email address already exists on E Seller Store.');
     }
 
     const newVendor = {
@@ -225,7 +225,7 @@ class DokanEngine {
       email,
       mobile,
       password,
-      description: description || 'Verified Seller on SsellerStoreeBay marketplace.',
+      description: description || 'Verified Seller on E Seller Store marketplace.',
       status: 'pending_verification',
       balance: 0.00,
       profitEarned: 0.00,
@@ -364,10 +364,10 @@ class DokanEngine {
 
     const orders = JSON.parse(localStorage.getItem(this.storageKeyOrders)) || [];
     const newOrder = {
-      id: 'SSE-' + Math.floor(100000 + Math.random() * 900000),
+      id: 'ESS-' + Math.floor(100000 + Math.random() * 900000),
       date: new Date().toISOString(),
       customerName: customerInfo.name || 'Guest Buyer',
-      customerEmail: customerInfo.email || 'customer@ssellerstoreebay.com',
+      customerEmail: customerInfo.email || 'customer@esellerstore.com',
       total: orderTotal.toFixed(2),
       commissionDeducted: totalAdminCommission.toFixed(2),
       status: 'Processing',
@@ -383,7 +383,7 @@ class DokanEngine {
 
   generateCSVTemplate() {
     const headers = ['Name', 'Category', 'Brand', 'Price', 'OriginalPrice', 'Stock', 'Badge', 'ImageUrl', 'Description'];
-    const sampleRow1 = ['SsellerStoreeBay Pro Gaming Mouse', 'computers', 'Logitech', '129.99', '159.99', '25', 'Pro Pick', 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80', 'RGB tactile switches.'];
+    const sampleRow1 = ['E Seller Store Pro Gaming Mouse', 'computers', 'Logitech', '129.99', '159.99', '25', 'Pro Pick', 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80', 'RGB tactile switches.'];
     return [headers.join(','), sampleRow1.map(f => `"${f}"`).join(',')].join('\n');
   }
 

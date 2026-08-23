@@ -1,5 +1,5 @@
 /**
- * SsellerStoreeBay - Main Application Controller
+ * E Seller Store - Main Application Controller
  * Handles Onboarding with CNIC, Vendor Profit Calculations (18%-30%), Visible Brands Showcase,
  * Interactive AI Chatbot Assistant, Real-Time Admin Activity Tracking Stream.
  */
@@ -7,15 +7,15 @@
 import { engine } from './dokan-engine.js';
 import { INITIAL_BRANDS, INITIAL_CATEGORIES } from './data.js';
 
-class SsellerStoreeBayApp {
+class E Seller StoreApp {
   constructor() {
     this.currentView = 'home';
     this.currentPersona = 'customer';
     this.activeVendorId = 'v101';
 
-    this.cart = JSON.parse(localStorage.getItem('ssellerstoreebay_cart')) || [];
-    this.wishlist = JSON.parse(localStorage.getItem('ssellerstoreebay_wishlist')) || [];
-    this.compare = JSON.parse(localStorage.getItem('ssellerstoreebay_compare')) || [];
+    this.cart = JSON.parse(localStorage.getItem('esellerstore_cart')) || [];
+    this.wishlist = JSON.parse(localStorage.getItem('esellerstore_wishlist')) || [];
+    this.compare = JSON.parse(localStorage.getItem('esellerstore_compare')) || [];
 
     this.init();
   }
@@ -156,7 +156,7 @@ class SsellerStoreeBayApp {
       this.wishlist.push(productId);
       this.showToast('❤️ Added to Wishlist!');
     }
-    localStorage.setItem('ssellerstoreebay_wishlist', JSON.stringify(this.wishlist));
+    localStorage.setItem('esellerstore_wishlist', JSON.stringify(this.wishlist));
     this.updateCounters();
     this.renderHomepageSections();
   }
@@ -170,7 +170,7 @@ class SsellerStoreeBayApp {
         return;
       }
       this.compare.push(productId);
-      localStorage.setItem('ssellerstoreebay_compare', JSON.stringify(this.compare));
+      localStorage.setItem('esellerstore_compare', JSON.stringify(this.compare));
       this.showToast('⚖️ Added to Compare!');
       this.openCompareDrawer();
     }
@@ -264,11 +264,11 @@ class SsellerStoreeBayApp {
       });
     }
 
-    localStorage.setItem('ssellerstoreebay_cart', JSON.stringify(this.cart));
+    localStorage.setItem('esellerstore_cart', JSON.stringify(this.cart));
     this.updateCounters();
     this.renderCartDrawer();
     this.openCartDrawer();
-    this.showToast('🛒 Added to Cart on SsellerStoreeBay!');
+    this.showToast('🛒 Added to Cart on E Seller Store!');
 
     // Real-Time Admin Log
     engine.logActivity('Cart Item Added', `Product '${product.name}' added to cart`, 'info');
@@ -283,7 +283,7 @@ class SsellerStoreeBayApp {
       this.cart = this.cart.filter(i => i.id !== productId);
     }
 
-    localStorage.setItem('ssellerstoreebay_cart', JSON.stringify(this.cart));
+    localStorage.setItem('esellerstore_cart', JSON.stringify(this.cart));
     this.updateCounters();
     this.renderCartDrawer();
   }
@@ -349,7 +349,7 @@ class SsellerStoreeBayApp {
     try {
       const order = engine.processCheckoutOrder(this.cart, {
         name: 'Demo Customer',
-        email: 'customer@ssellerstoreebay.com'
+        email: 'customer@esellerstore.com'
       });
 
       this.cart = [];
@@ -359,7 +359,7 @@ class SsellerStoreeBayApp {
       this.renderAdminDashboard();
       this.renderVendorDashboard();
 
-      alert(`🎉 SsellerStoreeBay ORDER CONFIRMED!\n\nOrder ID: ${order.id}\nTotal Paid: $${order.total}\n\nDokan Calculation:\nAdmin Commission Deducted: $${order.commissionDeducted}\nVendor Balance Credited!`);
+      alert(`🎉 E Seller Store ORDER CONFIRMED!\n\nOrder ID: ${order.id}\nTotal Paid: $${order.total}\n\nDokan Calculation:\nAdmin Commission Deducted: $${order.commissionDeducted}\nVendor Balance Credited!`);
     } catch (err) {
       alert('Error during checkout: ' + err.message);
     }
@@ -382,7 +382,7 @@ class SsellerStoreeBayApp {
     try {
       const vendor = engine.registerVendor({ ownerName, cnic, email, password, storeName, mobile, description });
       this.closeModals();
-      alert(`✅ SsellerStoreeBay ADVANCED ONBOARDING SUCCESSFUL!\n\nStore Name: ${vendor.name}\nCNIC Verified: ${vendor.cnic}\nEmail: ${vendor.email}\nStatus: PENDING ADMIN VERIFICATION\n\nAdmin notification sent for manual approval.`);
+      alert(`✅ E Seller Store ADVANCED ONBOARDING SUCCESSFUL!\n\nStore Name: ${vendor.name}\nCNIC Verified: ${vendor.cnic}\nEmail: ${vendor.email}\nStatus: PENDING ADMIN VERIFICATION\n\nAdmin notification sent for manual approval.`);
       this.setPersona('admin');
     } catch (err) {
       alert('Registration Error: ' + err.message);
@@ -423,7 +423,7 @@ class SsellerStoreeBayApp {
    */
   renderAdminDashboard() {
     const vendors = engine.getVendors();
-    const metrics = JSON.parse(localStorage.getItem('ssellerstoreebay_metrics')) || {};
+    const metrics = JSON.parse(localStorage.getItem('esellerstore_metrics')) || {};
 
     const totalVendorsEl = document.getElementById('adminMetricVendors');
     const platformWalletEl = document.getElementById('adminMetricWallet');
@@ -535,7 +535,7 @@ class SsellerStoreeBayApp {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'SsellerStoreeBay_Product_Upload_Template.csv');
+    link.setAttribute('download', 'E Seller Store_Product_Upload_Template.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -551,7 +551,7 @@ class SsellerStoreeBayApp {
         const count = engine.processCSVUpload(e.target.result, this.activeVendorId);
         this.renderHomepageSections();
         this.renderVendorDashboard();
-        alert(`📦 CSV BULK UPLOAD SUCCESSFUL!\n\nImported ${count} new products into SsellerStoreeBay catalog.`);
+        alert(`📦 CSV BULK UPLOAD SUCCESSFUL!\n\nImported ${count} new products into E Seller Store catalog.`);
       } catch (err) {
         alert('CSV Parsing Error: ' + err.message);
       }
@@ -582,20 +582,20 @@ class SsellerStoreeBayApp {
 
     // Simulated Smart AI Processing
     setTimeout(() => {
-      let reply = 'Welcome to SsellerStoreeBay! How can I assist you today with products or vendor onboarding?';
+      let reply = 'Welcome to E Seller Store! How can I assist you today with products or vendor onboarding?';
       const q = query.toLowerCase();
 
       if (q.includes('register') || q.includes('seller') || q.includes('cnic')) {
-        reply = '🏪 To register as a verified seller on SsellerStoreeBay, click "Become a Seller" at the top. Be sure to provide your CNIC (e.g. 42101-9876543-1), Store Name, and Profile Description for instant Admin verification!';
+        reply = '🏪 To register as a verified seller on E Seller Store, click "Become a Seller" at the top. Be sure to provide your CNIC (e.g. 42101-9876543-1), Store Name, and Profile Description for instant Admin verification!';
       } else if (q.includes('profit') || q.includes('margin') || q.includes('commission')) {
-        reply = '💰 SsellerStoreeBay vendors enjoy a high profit margin between 18% and 30% per product sale! Net profit breakdown is displayed automatically on your Seller Dashboard.';
+        reply = '💰 E Seller Store vendors enjoy a high profit margin between 18% and 30% per product sale! Net profit breakdown is displayed automatically on your Seller Dashboard.';
       } else if (q.includes('iphone') || q.includes('dell') || q.includes('nike') || q.includes('hp')) {
         reply = '🏷️ We have official flagship items from Apple iPhone, Dell, Nike, HP, Sony, and Rolex in stock. Check out our Upfront Brands section on the homepage!';
       } else if (q.includes('track') || q.includes('order') || q.includes('status')) {
         reply = '📦 All orders are tracked in real-time. Admin and Vendors receive immediate notification alerts upon customer checkout!';
       }
 
-      body.innerHTML += `<div class="ai-msg bot">⚡ <strong>SsellerStoreeBay AI:</strong> ${reply}</div>`;
+      body.innerHTML += `<div class="ai-msg bot">⚡ <strong>E Seller Store AI:</strong> ${reply}</div>`;
       body.scrollTop = body.scrollHeight;
     }, 400);
   }
@@ -617,7 +617,7 @@ class SsellerStoreeBayApp {
     ).slice(0, 6);
 
     if (products.length === 0) {
-      dropdown.innerHTML = `<div style="padding:10px; font-size:12px; color:#666;">No products found on SsellerStoreeBay for "${query}"</div>`;
+      dropdown.innerHTML = `<div style="padding:10px; font-size:12px; color:#666;">No products found on E Seller Store for "${query}"</div>`;
     } else {
       dropdown.innerHTML = products.map(p => `
         <div class="search-result-item" onclick="app.openQuickView('${p.id}'); document.getElementById('ajaxSearchDropdown').classList.remove('active');">
@@ -720,4 +720,4 @@ class SsellerStoreeBayApp {
   }
 }
 
-window.app = new SsellerStoreeBayApp();
+window.app = new E Seller StoreApp();

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "ssellerstoreebay-production",
+  "name": "esellerstore-production",
   "cleanUrls": true,
   "headers": [
     {

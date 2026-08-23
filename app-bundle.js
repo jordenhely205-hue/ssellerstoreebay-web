@@ -1,5 +1,5 @@
 /**
- * SsellerStoreeBay - Complete Standalone Application Bundle
+ * E Seller Store - Complete Standalone Application Bundle
  * Multi-Vendor Marketplace Engine (Dokan-Compatible Architecture)
  */
 
@@ -11,7 +11,7 @@ const MASTER_CATALOG_REPOSITORY = [
     price: 1199.00,
     originalPrice: 1299.00,
     stock: 35,
-    sku: 'SSE-MST-IP15',
+    sku: 'ESS-MST-IP15',
     image: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80',
     description: 'Forged in titanium featuring the A17 Pro chip and 48MP camera system.'
   },
@@ -22,7 +22,7 @@ const MASTER_CATALOG_REPOSITORY = [
     price: 1999.00,
     originalPrice: 2299.00,
     stock: 20,
-    sku: 'SSE-MST-XPS15',
+    sku: 'ESS-MST-XPS15',
     image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80',
     description: 'InfinityEdge 3.5K OLED touchscreen with 13th Gen Intel Core i9.'
   },
@@ -33,7 +33,7 @@ const MASTER_CATALOG_REPOSITORY = [
     price: 349.99,
     originalPrice: 399.99,
     stock: 50,
-    sku: 'SSE-MST-XM5',
+    sku: 'ESS-MST-XM5',
     image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&auto=format&fit=crop&q=80',
     description: 'Industry-leading noise cancellation with dual processors.'
   },
@@ -44,7 +44,7 @@ const MASTER_CATALOG_REPOSITORY = [
     price: 13450.00,
     originalPrice: 14500.00,
     stock: 5,
-    sku: 'SSE-MST-ROLEX',
+    sku: 'ESS-MST-ROLEX',
     image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
     description: 'Cerachrom bezel in black ceramic and black dial with large luminescent hour markers.'
   },
@@ -55,7 +55,7 @@ const MASTER_CATALOG_REPOSITORY = [
     price: 159.95,
     originalPrice: 180.00,
     stock: 45,
-    sku: 'SSE-MST-AM270',
+    sku: 'ESS-MST-AM270',
     image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
     description: 'Lightweight, layered no-sew materials create a modern aesthetic.'
   },
@@ -66,7 +66,7 @@ const MASTER_CATALOG_REPOSITORY = [
     price: 429.00,
     originalPrice: 479.00,
     stock: 30,
-    sku: 'SSE-MST-QCULT',
+    sku: 'ESS-MST-QCULT',
     image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
     description: 'Breakthrough spatial audio and world-class quietness.'
   },
@@ -77,7 +77,7 @@ const MASTER_CATALOG_REPOSITORY = [
     price: 1299.99,
     originalPrice: 1419.99,
     stock: 25,
-    sku: 'SSE-MST-S24U',
+    sku: 'ESS-MST-S24U',
     image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80',
     description: 'Galaxy AI smartphone with 200MP camera and built-in S Pen.'
   },
@@ -88,7 +88,7 @@ const MASTER_CATALOG_REPOSITORY = [
     price: 259.99,
     originalPrice: 299.99,
     stock: 18,
-    sku: 'SSE-MST-PRED',
+    sku: 'ESS-MST-PRED',
     image: 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?w=600&auto=format&fit=crop&q=80',
     description: 'HybridTouch 2.0 upper with Strikeskin rubber fins for pinpoint precision.'
   }
@@ -431,7 +431,7 @@ const INITIAL_PRODUCTS = [
 const INITIAL_ADS = [
   {
     id: 'ad_1',
-    title: 'SsellerStoreeBay Mega Summer Promo',
+    title: 'E Seller Store Mega Summer Promo',
     mediaUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
     targetUrl: '#',
     placement: 'hero',
@@ -449,7 +449,7 @@ const INITIAL_ADS = [
   },
   {
     id: 'ad_3',
-    title: 'Join SsellerStoreeBay Seller Zone Banner',
+    title: 'Join E Seller Store Seller Zone Banner',
     mediaUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80',
     targetUrl: '#',
     placement: 'between_listings',
@@ -476,7 +476,7 @@ const PLATFORM_METRICS = {
  * - Cloud Layer: Cloud Database Export/Sync Engine (PostgreSQL / Supabase / MongoDB)
  */
 class IndexedDBStore {
-  constructor(dbName = 'SsellerStoreEBay_CloudStore', version = 1) {
+  constructor(dbName = 'ESellerStore_CloudStore', version = 1) {
     this.dbName = dbName;
     this.version = version;
     this.db = null;
@@ -542,19 +542,19 @@ const idbStorage = new IndexedDBStore();
 
 class DokanEngine {
   constructor() {
-    this.storageKeyProducts = 'ssellerstoreebay_products';
-    this.storageKeyVendors = 'ssellerstoreebay_vendors';
-    this.storageKeyBrands = 'ssellerstoreebay_brands';
-    this.storageKeyStorefrontConfig = 'ssellerstoreebay_storefront_config';
-    this.storageKeyMetrics = 'ssellerstoreebay_metrics';
-    this.storageKeyCart = 'ssellerstoreebay_cart';
-    this.storageKeyWishlist = 'ssellerstoreebay_wishlist';
-    this.storageKeyCompare = 'ssellerstoreebay_compare';
-    this.storageKeyWalletLogs = 'ssellerstoreebay_wallet_logs';
-    this.storageKeyOrders = 'ssellerstoreebay_orders';
-    this.storageKeyActivityLogs = 'ssellerstoreebay_activity_logs';
-    this.storageKeyAds = 'ssellerstoreebay_ads';
-    this.storageKeyChat = 'ssellerstoreebay_chat_messages';
+    this.storageKeyProducts = 'esellerstore_products';
+    this.storageKeyVendors = 'esellerstore_vendors';
+    this.storageKeyBrands = 'esellerstore_brands';
+    this.storageKeyStorefrontConfig = 'esellerstore_storefront_config';
+    this.storageKeyMetrics = 'esellerstore_metrics';
+    this.storageKeyCart = 'esellerstore_cart';
+    this.storageKeyWishlist = 'esellerstore_wishlist';
+    this.storageKeyCompare = 'esellerstore_compare';
+    this.storageKeyWalletLogs = 'esellerstore_wallet_logs';
+    this.storageKeyOrders = 'esellerstore_orders';
+    this.storageKeyActivityLogs = 'esellerstore_activity_logs';
+    this.storageKeyAds = 'esellerstore_ads';
+    this.storageKeyChat = 'esellerstore_chat_messages';
 
     this.init();
   }
@@ -595,13 +595,13 @@ class DokanEngine {
       if (!localStorage.getItem(this.storageKeyChat)) {
         localStorage.setItem(this.storageKeyChat, JSON.stringify([
           { id: 'c1', sender: 'client', clientName: 'Demo Client', message: 'Hello! I need assistance with my order and payment verification.', timestamp: '12:05 PM', unread: true },
-          { id: 'c2', sender: 'admin', clientName: 'Demo Client', message: 'Welcome to SsellerStoreeBay! You can attach your transfer receipt here for instant order clearance.', timestamp: '12:06 PM', unread: false }
+          { id: 'c2', sender: 'admin', clientName: 'Demo Client', message: 'Welcome to E Seller Store! You can attach your transfer receipt here for instant order clearance.', timestamp: '12:06 PM', unread: false }
         ]));
       }
       if (!localStorage.getItem(this.storageKeyOrders)) {
         localStorage.setItem(this.storageKeyOrders, JSON.stringify([
-          { id: 'SSE-982142', customerName: 'Alex Mercer', customerEmail: 'alex@example.com', date: '2026-07-24', total: '159.95', status: 'Processing', paymentMethod: 'Direct Online Card', items: [{ name: 'Nike Air Max Shoes', quantity: 1 }] },
-          { id: 'SSE-771049', customerName: 'Sarah Connor', customerEmail: 'sarah@skynet.com', date: '2026-07-23', total: '1199.00', status: 'Completed', paymentMethod: 'Direct Online Card', items: [{ name: 'Apple iPhone 15 Pro', quantity: 1 }] }
+          { id: 'ESS-982142', customerName: 'Alex Mercer', customerEmail: 'alex@example.com', date: '2026-07-24', total: '159.95', status: 'Processing', paymentMethod: 'Direct Online Card', items: [{ name: 'Nike Air Max Shoes', quantity: 1 }] },
+          { id: 'ESS-771049', customerName: 'Sarah Connor', customerEmail: 'sarah@skynet.com', date: '2026-07-23', total: '1199.00', status: 'Completed', paymentMethod: 'Direct Online Card', items: [{ name: 'Apple iPhone 15 Pro', quantity: 1 }] }
         ]));
       }
       if (!localStorage.getItem(this.storageKeyWalletLogs)) {
@@ -611,7 +611,7 @@ class DokanEngine {
       }
       if (!localStorage.getItem(this.storageKeyActivityLogs)) {
         localStorage.setItem(this.storageKeyActivityLogs, JSON.stringify([
-          { id: 'act_1', title: 'Super Admin Initialized', detail: 'SsellerStoreeBay Master System active and monitoring', time: 'Just now', type: 'info' }
+          { id: 'act_1', title: 'Super Admin Initialized', detail: 'E Seller Store Master System active and monitoring', time: 'Just now', type: 'info' }
         ]));
       }
     } catch(e) {}
@@ -652,7 +652,7 @@ class DokanEngine {
 
     let displayVendorName = vendor ? vendor.name : 'TechWorld Hub';
     if (publishTarget === 'official') {
-      displayVendorName = '🏢 SsellerStore Official Direct';
+      displayVendorName = '🏢 E Seller Store Official Direct';
     } else if (publishTarget === 'both') {
       displayVendorName = (vendor ? vendor.name : 'Verified Seller') + ' (Official Partner)';
     }
@@ -669,7 +669,7 @@ class DokanEngine {
       rating: productData.rating ? parseFloat(productData.rating) : 5.0,
       reviewsCount: productData.reviewsCount ? parseInt(productData.reviewsCount) : 0,
       stock: productData.stock !== undefined ? parseInt(productData.stock) : 20,
-      sku: productData.sku || ('SSE-' + Math.floor(1000 + Math.random() * 9000)),
+      sku: productData.sku || ('ESS-' + Math.floor(1000 + Math.random() * 9000)),
       isDeal: !!productData.isDeal,
       isFeatured: !!productData.isFeatured,
       isBestSelling: !!productData.isBestSelling,
@@ -704,7 +704,7 @@ class DokanEngine {
     const isOfficial = publishTarget === 'official' || publishTarget === 'both' || !!updatedData.isOfficial;
 
     if (publishTarget === 'official') {
-      vendorName = '🏢 SsellerStore Official Direct';
+      vendorName = '🏢 E Seller Store Official Direct';
     } else if (publishTarget === 'both') {
       vendorName = (vendorName || 'Verified Seller') + ' (Official Partner)';
     }
@@ -761,7 +761,7 @@ class DokanEngine {
     return {
       schemaVersion: '2.0.0',
       exportedAt: new Date().toISOString(),
-      platform: 'SsellerStoreeBay Multi-Vendor Marketplace',
+      platform: 'E Seller Store Multi-Vendor Marketplace',
       cloudCompatibility: ['PostgreSQL', 'Supabase', 'Firebase Firestore', 'MongoDB', 'MySQL'],
       tables: {
         products: this.getProducts(),
@@ -806,7 +806,7 @@ class DokanEngine {
     let clonedCount = 0;
 
     MASTER_CATALOG_REPOSITORY.forEach(masterItem => {
-      const generatedSku = 'SSE-' + vendor.id.toUpperCase() + '-' + masterItem.sku.split('-').pop();
+      const generatedSku = 'ESS-' + vendor.id.toUpperCase() + '-' + masterItem.sku.split('-').pop();
       const alreadyExists = products.some(p => p.vendorId === vendor.id && (p.sku === generatedSku || p.name === masterItem.name));
       
       if (!alreadyExists) {
@@ -939,7 +939,7 @@ class DokanEngine {
       const price = regPriceIdx !== -1 && row[regPriceIdx] ? (parseFloat(row[regPriceIdx].replace(/[^0-9.]/g, '')) || 99.99) : 99.99;
       const origPrice = origPriceIdx !== -1 && row[origPriceIdx] ? (parseFloat(row[origPriceIdx].replace(/[^0-9.]/g, '')) || (price * 1.15)) : (price * 1.15);
       const stock = stockIdx !== -1 && row[stockIdx] ? (parseInt(row[stockIdx].replace(/[^0-9]/g, '')) || 20) : 20;
-      const sku = skuIdx !== -1 && row[skuIdx] ? row[skuIdx] : ('SSE-CSV-' + Math.floor(1000 + Math.random() * 9000));
+      const sku = skuIdx !== -1 && row[skuIdx] ? row[skuIdx] : ('ESS-CSV-' + Math.floor(1000 + Math.random() * 9000));
       const image = imgIdx !== -1 && row[imgIdx] ? row[imgIdx] : 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80';
       const description = descIdx !== -1 && row[descIdx] ? row[descIdx] : 'Authentic imported product catalog item.';
 
@@ -1003,9 +1003,9 @@ class DokanEngine {
   generateCSVTemplate() {
     const headers = ['Title', 'Category', 'Brand', 'Vendor', 'RegularPrice', 'SalePrice', 'Stock', 'SKU', 'ImageURL', 'Description'];
     const sampleRows = [
-      ['Apple iPhone 15 Pro Max 256GB', 'computers', 'Apple', 'TechWorld Hub', '1199.00', '1299.00', '50', 'SSE-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
-      ['Nike Air Jordan 1 Retro High', 'sneakers', 'Nike', 'Sneaker Planet', '189.99', '220.00', '30', 'SSE-AJ1-RED', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80', 'Iconic basketball silhouette with premium leather finish.'],
-      ['Dell XPS 16 OLED Laptop', 'computers', 'Dell', 'TechWorld Hub', '2499.00', '2799.00', '15', 'SSE-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
+      ['Apple iPhone 15 Pro Max 256GB', 'computers', 'Apple', 'TechWorld Hub', '1199.00', '1299.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
+      ['Nike Air Jordan 1 Retro High', 'sneakers', 'Nike', 'Sneaker Planet', '189.99', '220.00', '30', 'ESS-AJ1-RED', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80', 'Iconic basketball silhouette with premium leather finish.'],
+      ['Dell XPS 16 OLED Laptop', 'computers', 'Dell', 'TechWorld Hub', '2499.00', '2799.00', '15', 'ESS-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
     ];
     return [headers.join(','), ...sampleRows.map(r => r.map(f => '"' + f + '"').join(','))].join('\r\n');
   }
@@ -1041,7 +1041,7 @@ class DokanEngine {
     const vendors = this.getVendors();
     const existing = vendors.find(v => v.email.toLowerCase() === email.toLowerCase());
     if (existing) {
-      throw new Error('A seller account with this email address already exists on SsellerStoreeBay.');
+      throw new Error('A seller account with this email address already exists on E Seller Store.');
     }
 
     const newVendor = {
@@ -1052,7 +1052,7 @@ class DokanEngine {
       email,
       mobile,
       password,
-      description: description || 'Registered Seller on SsellerStoreeBay marketplace.',
+      description: description || 'Registered Seller on E Seller Store marketplace.',
       status: 'pending_verification',
       balance: 0.00,
       profitEarned: 0.00,
@@ -1434,10 +1434,10 @@ class DokanEngine {
     const isManualChat = paymentMethod === 'chat' || paymentMethod === 'manual_transfer';
     const orders = JSON.parse(localStorage.getItem(this.storageKeyOrders)) || [];
     const newOrder = {
-      id: 'SSE-' + Math.floor(100000 + Math.random() * 900000),
+      id: 'ESS-' + Math.floor(100000 + Math.random() * 900000),
       date: new Date().toISOString(),
       customerName: customerInfo.name || 'Guest Buyer',
-      customerEmail: customerInfo.email || 'customer@ssellerstoreebay.com',
+      customerEmail: customerInfo.email || 'customer@esellerstore.com',
       customerPhone: customerInfo.phone || '+1 (555) 000-1122',
       customerAddress: formattedAddress,
       customerCity: customerInfo.city || 'New York',
@@ -1488,7 +1488,7 @@ class DokanEngine {
 
 const engine = new DokanEngine();
 
-class SsellerStoreeBayApp {
+class ESellerStoreApp {
   constructor() {
     window.app = this;
     this.currentView = 'home';
@@ -1502,9 +1502,9 @@ class SsellerStoreeBayApp {
     this.currentCsvRawText = '';
 
     try {
-      this.cart = JSON.parse(localStorage.getItem('ssellerstoreebay_cart')) || [];
-      this.wishlist = JSON.parse(localStorage.getItem('ssellerstoreebay_wishlist')) || [];
-      this.compare = JSON.parse(localStorage.getItem('ssellerstoreebay_compare')) || [];
+      this.cart = JSON.parse(localStorage.getItem('esellerstore_cart')) || [];
+      this.wishlist = JSON.parse(localStorage.getItem('esellerstore_wishlist')) || [];
+      this.compare = JSON.parse(localStorage.getItem('esellerstore_compare')) || [];
     } catch (e) {
       this.cart = []; this.wishlist = []; this.compare = [];
     }
@@ -1718,7 +1718,7 @@ class SsellerStoreeBayApp {
   renderAdminDashboard() {
     const vendors = engine.getVendors();
     const products = engine.getProducts();
-    const metrics = JSON.parse(localStorage.getItem('ssellerstoreebay_metrics')) || {};
+    const metrics = JSON.parse(localStorage.getItem('esellerstore_metrics')) || {};
 
     const totalVendorsEl = document.getElementById('adminMetricVendors');
     const prodCountEl = document.getElementById('adminMetricProductsCount');
@@ -1877,7 +1877,7 @@ class SsellerStoreeBayApp {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ssellerstoreebay-cloud-database-schema.json';
+    a.download = 'esellerstore-cloud-database-schema.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -2011,7 +2011,7 @@ class SsellerStoreeBayApp {
     document.getElementById('adminProductSubmitBtn').textContent = '💾 Save & Publish Product';
     document.getElementById('adminProductEditId').value = '';
     document.getElementById('adminProductTitle').value = '';
-    document.getElementById('adminProductSku').value = 'SSE-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('adminProductSku').value = 'ESS-' + Math.floor(1000 + Math.random() * 9000);
     document.getElementById('adminProductPublishTarget').value = 'vendor';
     document.getElementById('adminProductCategory').value = 'computers';
     document.getElementById('adminProductBrand').value = '';
@@ -2150,7 +2150,7 @@ class SsellerStoreeBayApp {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'ssellerstoreebay_product_template.csv');
+    link.setAttribute('download', 'esellerstore_product_template.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -2163,7 +2163,7 @@ class SsellerStoreeBayApp {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'ssellerstoreebay_catalog_export_' + (new Date().toISOString().split('T')[0]) + '.csv');
+    link.setAttribute('download', 'esellerstore_catalog_export_' + (new Date().toISOString().split('T')[0]) + '.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -2232,7 +2232,7 @@ class SsellerStoreeBayApp {
       this.renderVendorDashboard();
       this.updateCounters();
       this.switchAdminTab('products');
-      alert('🎉 BULK CSV IMPORT COMPLETE!\n\nSuccessfully added ' + result.count + ' new products to SsellerStoreeBay master catalog.\nAll products are live on the storefront.');
+      alert('🎉 BULK CSV IMPORT COMPLETE!\n\nSuccessfully added ' + result.count + ' new products to E Seller Store master catalog.\nAll products are live on the storefront.');
     } catch (e) {
       alert('Import Error: ' + e.message);
     }
@@ -2583,12 +2583,12 @@ class SsellerStoreeBayApp {
       </div>
     `;
 
-    const orderMsg = messages.slice().reverse().find(m => m.orderId || (m.message && m.message.includes('Order #SSE-')));
+    const orderMsg = messages.slice().reverse().find(m => m.orderId || (m.message && m.message.includes('Order #ESS-')));
     let detectedOrderId = null;
     if (orderMsg) {
       detectedOrderId = orderMsg.orderId;
       if (!detectedOrderId && orderMsg.message) {
-        const match = orderMsg.message.match(/Order #(SSE-\d+)/);
+        const match = orderMsg.message.match(/Order #(ESS-\d+)/);
         if (match) detectedOrderId = match[1];
       }
     }
@@ -2723,7 +2723,7 @@ class SsellerStoreeBayApp {
         <div class="banner-overlay-content">
           <span class="hot-badge" style="background:#0f172a; margin-bottom:6px; display:inline-block;">ACTIVE CAMPAIGN</span>
           <h2>${heroAd.title}</h2>
-          <p>Exclusive promotional offer live on SsellerStoreeBay Marketplace.</p>
+          <p>Exclusive promotional offer live on E Seller Store Marketplace.</p>
           <a href="${heroAd.targetUrl}" class="btn-primary">Shop Campaign Now &rsaquo;</a>
         </div>
       `;
@@ -2853,7 +2853,7 @@ class SsellerStoreeBayApp {
       });
     }
 
-    localStorage.setItem('ssellerstoreebay_cart', JSON.stringify(this.cart));
+    localStorage.setItem('esellerstore_cart', JSON.stringify(this.cart));
     this.updateCounters();
     this.renderCartDrawer();
     this.openCartDrawer();
@@ -2870,7 +2870,7 @@ class SsellerStoreeBayApp {
       this.cart = this.cart.filter(i => i.id !== productId);
     }
 
-    localStorage.setItem('ssellerstoreebay_cart', JSON.stringify(this.cart));
+    localStorage.setItem('esellerstore_cart', JSON.stringify(this.cart));
     this.updateCounters();
     this.renderCartDrawer();
   }
@@ -2947,7 +2947,7 @@ class SsellerStoreeBayApp {
       quantity: 1
     }];
 
-    localStorage.setItem('ssellerstoreebay_cart', JSON.stringify(this.cart));
+    localStorage.setItem('esellerstore_cart', JSON.stringify(this.cart));
     this.updateCounters();
     this.openCheckoutModal();
   }
@@ -3083,7 +3083,7 @@ class SsellerStoreeBayApp {
   }
 
   requestAdminFulfillmentViaChat(orderId) {
-    const orders = JSON.parse(localStorage.getItem('ssellerstoreebay_orders')) || [];
+    const orders = JSON.parse(localStorage.getItem('esellerstore_orders')) || [];
     const order = orders.find(o => o.id === orderId) || { id: orderId, customerName: 'Customer', total: '0.00', items: [] };
     const vendor = engine.getVendorById(this.activeVendorId) || engine.getVendors()[0];
     const vendorName = vendor ? vendor.name : 'Seller Store';
@@ -3178,7 +3178,7 @@ class SsellerStoreeBayApp {
       return;
     }
 
-    if (email === 'admin@ssellerstoreebay.com' && password === 'admin123') {
+    if (email === 'admin@esellerstore.com' && password === 'admin123') {
       if (emailEl) emailEl.value = '';
       if (passEl) passEl.value = '';
       this.closeModals();
@@ -3237,8 +3237,8 @@ class SsellerStoreeBayApp {
     if (vIdEl) vIdEl.value = vendor.id;
     if (vNameEl) vNameEl.value = vendor.name;
     if (vEmailEl) vEmailEl.value = vendor.email;
-    if (vSubjEl) vSubjEl.value = 'Official Notification from SsellerStoreeBay Administration';
-    if (vMsgEl) vMsgEl.value = 'Dear ' + vendor.ownerName + ',\n\nRegarding your store ' + vendor.name + ' on SsellerStoreeBay Marketplace...';
+    if (vSubjEl) vSubjEl.value = 'Official Notification from E Seller Store Administration';
+    if (vMsgEl) vMsgEl.value = 'Dear ' + vendor.ownerName + ',\n\nRegarding your store ' + vendor.name + ' on E Seller Store Marketplace...';
 
     this.openModal('adminSendMailModalOverlay');
   }
@@ -3314,7 +3314,7 @@ class SsellerStoreeBayApp {
       }
     }
 
-    const orders = JSON.parse(localStorage.getItem('ssellerstoreebay_orders')) || [];
+    const orders = JSON.parse(localStorage.getItem('esellerstore_orders')) || [];
     const pendingCount = orders.filter(o => o.status === 'Pending' || o.status === 'Processing' || o.status === 'Awaiting Payment Proof').length;
     const completeCount = orders.filter(o => o.status === 'Completed').length + 76;
     const cancelCount = orders.filter(o => o.status === 'Cancelled').length + 1;
@@ -3483,11 +3483,11 @@ class SsellerStoreeBayApp {
   }
 
   updateVendorOrderStatus(orderId, newStatus) {
-    const orders = JSON.parse(localStorage.getItem('ssellerstoreebay_orders')) || [];
+    const orders = JSON.parse(localStorage.getItem('esellerstore_orders')) || [];
     const order = orders.find(o => o.id === orderId);
     if (order) {
       order.status = newStatus;
-      localStorage.setItem('ssellerstoreebay_orders', JSON.stringify(orders));
+      localStorage.setItem('esellerstore_orders', JSON.stringify(orders));
       this.renderVendorDashboard();
       this.showToast('Order #' + orderId + ' status: ' + newStatus.toUpperCase());
     }
@@ -3531,7 +3531,7 @@ class SsellerStoreeBayApp {
         const count = engine.processCSVUpload(e.target.result, this.activeVendorId);
         this.renderHomepageSections();
         this.renderVendorDashboard();
-        alert('📦 CSV BULK UPLOAD SUCCESSFUL!\n\nImported ' + count + ' new products into SsellerStoreeBay catalog.');
+        alert('📦 CSV BULK UPLOAD SUCCESSFUL!\n\nImported ' + count + ' new products into E Seller Store catalog.');
       } catch (err) {
         alert('CSV Parsing Error: ' + err.message);
       }
@@ -3559,7 +3559,7 @@ class SsellerStoreeBayApp {
     ).slice(0, 6);
 
     if (products.length === 0) {
-      dropdown.innerHTML = '<div style="padding:10px; font-size:12px; color:#666;">No products found on SsellerStoreeBay for "' + query + '"</div>';
+      dropdown.innerHTML = '<div style="padding:10px; font-size:12px; color:#666;">No products found on E Seller Store for "' + query + '"</div>';
     } else {
       dropdown.innerHTML = products.map(p => `
         <div class="search-result-item" onclick="app.openQuickView('${p.id}'); document.getElementById('ajaxSearchDropdown').classList.remove('active');">
@@ -3768,7 +3768,7 @@ class SsellerStoreeBayApp {
   }
 }
 
-window.app = new SsellerStoreeBayApp();
+window.app = new ESellerStoreApp();
 
 window.setPersona = function(persona) { if (window.app) window.app.setPersona(persona); };
 window.openModal = function(modalId) { if (window.app) window.app.openModal(modalId); };
@@ -3817,3 +3817,6 @@ window.setAdminProductsPage = function(p) { if (window.app) window.app.setAdminP
 window.setAdminProductsPageSize = function(s) { if (window.app) window.app.setAdminProductsPageSize(s); };
 window.setVendorOrdersPage = function(p) { if (window.app) window.app.setVendorOrdersPage(p); };
 window.setVendorOrdersPageSize = function(s) { if (window.app) window.app.setVendorOrdersPageSize(s); };
+
+window.ESellerStoreApp = ESellerStoreApp;
+window.SsellerStoreeBayApp = ESellerStoreApp;

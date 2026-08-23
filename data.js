@@ -1,6 +1,6 @@
 /**
- * SsellerStoreeBay - Core Data Store
- * Brand Name: SsellerStoreeBay
+ * E Seller Store - Core Data Store
+ * Brand Name: E Seller Store
  * Contains 40 Top Brands, Category Profiles, Vendors, Products, and Initial Ad Campaigns
  */
 
@@ -312,7 +312,7 @@ export const INITIAL_PRODUCTS = [
 export const INITIAL_ADS = [
   {
     id: 'ad_1',
-    title: 'SsellerStoreeBay Mega Summer Promo',
+    title: 'E Seller Store Mega Summer Promo',
     mediaUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
     targetUrl: '#',
     placement: 'hero', // hero, sidebar, between_listings, popup
@@ -330,7 +330,7 @@ export const INITIAL_ADS = [
   },
   {
     id: 'ad_3',
-    title: 'Join SsellerStoreeBay Seller Zone Banner',
+    title: 'Join E Seller Store Seller Zone Banner',
     mediaUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80',
     targetUrl: '#',
     placement: 'between_listings',
