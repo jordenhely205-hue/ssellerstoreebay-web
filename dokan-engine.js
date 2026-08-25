@@ -210,22 +210,28 @@ class DokanEngine {
   }
 
   registerVendor({ ownerName, cnic, email, password, storeName, mobile, description }) {
+    if (!ownerName || !email || !password || !storeName || !mobile) {
+      throw new Error('Please fill in all mandatory fields (Full Name, Store Name, Mobile, Email, and Password).');
+    }
     const vendors = this.getVendors();
 
-    const existing = vendors.find(v => v.email.toLowerCase() === email.toLowerCase());
+    const existing = vendors.find(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase());
     if (existing) {
       throw new Error('A seller account with this email address already exists on E Seller Store.');
     }
 
+    const cleanCnic = (cnic && typeof cnic === 'string' && cnic.trim()) ? cnic.trim() : 'N/A';
+    const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller on E Seller Store marketplace.';
+
     const newVendor = {
       id: 'v_' + Date.now(),
-      name: storeName,
-      ownerName,
-      cnic: cnic || '42101-0000000-0',
-      email,
-      mobile,
-      password,
-      description: description || 'Verified Seller on E Seller Store marketplace.',
+      name: storeName.trim(),
+      ownerName: ownerName.trim(),
+      cnic: cleanCnic,
+      email: email.trim(),
+      mobile: mobile.trim(),
+      password: password.trim(),
+      description: cleanDesc,
       status: 'pending_verification',
       balance: 0.00,
       profitEarned: 0.00,

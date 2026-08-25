@@ -1038,21 +1038,27 @@ class DokanEngine {
   }
 
   registerVendor({ ownerName, cnic, email, password, storeName, mobile, description }) {
+    if (!ownerName || !email || !password || !storeName || !mobile) {
+      throw new Error('Please fill in all mandatory fields (Full Name, Store Name, Mobile, Email, and Password).');
+    }
     const vendors = this.getVendors();
-    const existing = vendors.find(v => v.email.toLowerCase() === email.toLowerCase());
+    const existing = vendors.find(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase());
     if (existing) {
       throw new Error('A seller account with this email address already exists on E Seller Store.');
     }
 
+    const cleanCnic = (cnic && typeof cnic === 'string' && cnic.trim()) ? cnic.trim() : 'N/A';
+    const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller on E Seller Store marketplace.';
+
     const newVendor = {
       id: 'v_' + Date.now(),
-      name: storeName,
-      ownerName,
-      cnic: cnic || '42101-0000000-0',
-      email,
-      mobile,
-      password,
-      description: description || 'Registered Seller on E Seller Store marketplace.',
+      name: storeName.trim(),
+      ownerName: ownerName.trim(),
+      cnic: cleanCnic,
+      email: email.trim(),
+      mobile: mobile.trim(),
+      password: password.trim(),
+      description: cleanDesc,
       status: 'pending_verification',
       balance: 0.00,
       profitEarned: 0.00,
@@ -1067,7 +1073,7 @@ class DokanEngine {
 
     vendors.push(newVendor);
     this.saveVendors(vendors);
-    this.logActivity('New Vendor Registration (Locked)', 'Store ' + storeName + ' (CNIC: ' + cnic + ') submitted application [PENDING VERIFICATION]', 'warning');
+    this.logActivity('New Vendor Registration (Locked)', 'Store ' + newVendor.name + ' submitted application [PENDING VERIFICATION]', 'warning');
     return newVendor;
   }
 
@@ -3192,20 +3198,29 @@ class ESellerStoreApp {
   }
 
   handleVendorRegistration(event) {
-    event.preventDefault();
-    const form = event.target;
-    const ownerName = form.ownerName.value;
-    const cnic = form.cnic.value;
-    const email = form.email.value;
-    const password = form.password.value;
-    const storeName = form.storeName.value;
-    const mobile = form.mobile.value;
-    const description = form.description.value;
+    if (event && event.preventDefault) event.preventDefault();
+    const form = event && event.target ? event.target : document.querySelector('#sellerRegModalOverlay form');
+    if (!form) return;
+
+    const ownerName = form.ownerName ? form.ownerName.value.trim() : '';
+    const cnic = form.cnic ? form.cnic.value.trim() : '';
+    const email = form.email ? form.email.value.trim() : '';
+    const password = form.password ? form.password.value.trim() : '';
+    const storeName = form.storeName ? form.storeName.value.trim() : '';
+    const mobile = form.mobile ? form.mobile.value.trim() : '';
+    const description = form.description ? form.description.value.trim() : '';
+
+    if (!ownerName || !email || !password || !storeName || !mobile) {
+      alert('Please fill in all mandatory fields: Full Owner Name, Store Name, Mobile, Email, and Password.');
+      return;
+    }
 
     try {
       const vendor = engine.registerVendor({ ownerName, cnic, email, password, storeName, mobile, description });
       this.closeModals();
-      alert('✅ ONBOARDING APPLICATION SUBMITTED!\n\nStore Name: ' + vendor.name + '\nOwner: ' + vendor.ownerName + '\nCNIC: ' + vendor.cnic + '\nEmail: ' + vendor.email + '\nStatus: PENDING ADMIN VERIFICATION\n\nYour account is locked until credentials are reviewed and approved by Super Admin.');
+      form.reset();
+      const cnicDisplay = (vendor.cnic && vendor.cnic !== 'N/A') ? '\nCNIC: ' + vendor.cnic : '';
+      alert('✅ ONBOARDING APPLICATION SUBMITTED!\n\nStore Name: ' + vendor.name + '\nOwner: ' + vendor.ownerName + cnicDisplay + '\nEmail: ' + vendor.email + '\nStatus: PENDING ADMIN VERIFICATION\n\nYour account is locked until credentials are reviewed and approved by Super Admin.');
       this.activeVendorId = vendor.id;
       this.setPersona('vendor');
     } catch (err) {
@@ -3625,10 +3640,17 @@ class ESellerStoreApp {
   }
 
   openModal(modalId) {
+    this.closeModals();
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.style.display = 'flex';
       modal.classList.add('active');
+      const card = modal.querySelector('.modal-card') || modal;
+      if (card) card.scrollTop = 0;
+      const firstInput = modal.querySelector('input:not([type="hidden"]), select, textarea');
+      if (firstInput) {
+        setTimeout(() => firstInput.focus(), 120);
+      }
     }
   }
 
@@ -3731,8 +3753,10 @@ class ESellerStoreApp {
         return;
       }
 
-      const applyBtn = e.target.closest('.highlight-apply-now-btn') || (e.target.tagName === 'A' && e.target.textContent.includes('Become a Seller'));
+      const applyBtn = e.target.closest('.highlight-apply-now-btn') || e.target.closest('#sellerZoneApplyNowBtn') || (e.target.tagName === 'A' && e.target.textContent && e.target.textContent.includes('Become a Seller'));
       if (applyBtn && !e.target.closest('form')) {
+        e.preventDefault();
+        e.stopPropagation();
         this.openModal('sellerRegModalOverlay');
         return;
       }
