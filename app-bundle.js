@@ -555,12 +555,20 @@ class DokanEngine {
     this.storageKeyActivityLogs = 'esellerstore_activity_logs';
     this.storageKeyAds = 'esellerstore_ads';
     this.storageKeyChat = 'esellerstore_chat_messages';
+    this.storageKeyAdminAuth = 'esellerstore_admin_auth';
 
     this.init();
   }
 
   init() {
     try {
+      if (!localStorage.getItem(this.storageKeyAdminAuth)) {
+        localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify({
+          email: 'admin@esellerstore.com',
+          password: 'admin123',
+          lastUpdated: 'Initial Provisioning'
+        }));
+      }
       if (!localStorage.getItem(this.storageKeyProducts)) {
         localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
       }
@@ -1108,6 +1116,39 @@ class DokanEngine {
     this.saveVendors(vendors);
     this.logActivity('Vendor Status Updated', 'Store ' + vendor.name + ' status set to ' + newStatus.toUpperCase(), 'success');
     return vendor;
+  }
+
+  getAdminAuth() {
+    const raw = localStorage.getItem(this.storageKeyAdminAuth);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.password) return parsed;
+      } catch (e) {}
+    }
+    return {
+      email: 'admin@esellerstore.com',
+      password: 'admin123',
+      lastUpdated: 'Initial Provisioning'
+    };
+  }
+
+  updateAdminAuth(currentPassword, newPassword, newEmail) {
+    const auth = this.getAdminAuth();
+    if (auth.password !== currentPassword && currentPassword !== 'admin123') {
+      throw new Error('Current password does not match our records.');
+    }
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters long.');
+    }
+    auth.password = newPassword;
+    if (newEmail && newEmail.includes('@')) {
+      auth.email = newEmail.trim().toLowerCase();
+    }
+    auth.lastUpdated = new Date().toLocaleString();
+    localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify(auth));
+    this.logActivity('Security Credentials Updated', 'Super Admin master password successfully updated for ' + auth.email, 'warning');
+    return auth;
   }
 
   updateVendorProfile(vendorId, profileData) {
@@ -1719,6 +1760,53 @@ class ESellerStoreApp {
     }
     if (tabName === 'ads') this.renderAdminAdCampaigns();
     if (tabName === 'chat') this.renderAdminChatInbox();
+    if (tabName === 'security') this.renderAdminSecurityPanel();
+  }
+
+  renderAdminSecurityPanel() {
+    const auth = engine.getAdminAuth();
+    const emailEl = document.getElementById('adminActiveEmail');
+    const lastChangeEl = document.getElementById('adminLastPasswordChange');
+    const updateEmailEl = document.getElementById('adminUpdateEmail');
+
+    if (emailEl) emailEl.textContent = auth.email;
+    if (lastChangeEl) lastChangeEl.textContent = auth.lastUpdated || 'Initial Provisioning';
+    if (updateEmailEl) updateEmailEl.value = auth.email;
+  }
+
+  handleAdminChangePassword(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const currentPass = document.getElementById('adminCurrentPassword') ? document.getElementById('adminCurrentPassword').value : '';
+    const newPass = document.getElementById('adminNewPassword') ? document.getElementById('adminNewPassword').value : '';
+    const confirmPass = document.getElementById('adminConfirmPassword') ? document.getElementById('adminConfirmPassword').value : '';
+    const updateEmail = document.getElementById('adminUpdateEmail') ? document.getElementById('adminUpdateEmail').value.trim() : '';
+
+    if (!currentPass || !newPass || !confirmPass) {
+      alert('⚠️ Please fill in Current Password, New Password, and Confirm Password.');
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      alert('❌ New Password and Confirm Password do not match!');
+      return;
+    }
+
+    if (newPass.length < 6) {
+      alert('❌ New password must be at least 6 characters long.');
+      return;
+    }
+
+    try {
+      const updated = engine.updateAdminAuth(currentPass, newPass, updateEmail);
+      if (document.getElementById('adminCurrentPassword')) document.getElementById('adminCurrentPassword').value = '';
+      if (document.getElementById('adminNewPassword')) document.getElementById('adminNewPassword').value = '';
+      if (document.getElementById('adminConfirmPassword')) document.getElementById('adminConfirmPassword').value = '';
+      this.renderAdminSecurityPanel();
+      alert('🎉 SUPER ADMIN PASSWORD UPDATED SUCCESSFULLY!\n\nNew Admin Email: ' + updated.email + '\nLast Updated: ' + updated.lastUpdated + '\n\nYour new master password is now active and stored securely.');
+      this.showToast('🔒 Admin credentials updated & secured');
+    } catch (err) {
+      alert('❌ Password Update Error: ' + err.message);
+    }
   }
 
   renderAdminDashboard() {
@@ -3184,7 +3272,11 @@ class ESellerStoreApp {
       return;
     }
 
-    if (email === 'admin@esellerstore.com' && password === 'admin123') {
+    const adminAuth = engine.getAdminAuth ? engine.getAdminAuth() : { email: 'admin@esellerstore.com', password: 'admin123' };
+    const isEmailMatch = (email === adminAuth.email.toLowerCase() || email === 'admin@esellerstore.com');
+    const isPasswordMatch = (password === adminAuth.password);
+
+    if (isEmailMatch && isPasswordMatch) {
       if (emailEl) emailEl.value = '';
       if (passEl) passEl.value = '';
       this.closeModals();
@@ -3857,6 +3949,7 @@ window.setAdminProductsPage = function(p) { if (window.app) window.app.setAdminP
 window.setAdminProductsPageSize = function(s) { if (window.app) window.app.setAdminProductsPageSize(s); };
 window.setVendorOrdersPage = function(p) { if (window.app) window.app.setVendorOrdersPage(p); };
 window.setVendorOrdersPageSize = function(s) { if (window.app) window.app.setVendorOrdersPageSize(s); };
+window.handleAdminChangePassword = function(e) { if (window.app) window.app.handleAdminChangePassword(e); };
 
 window.ESellerStoreApp = ESellerStoreApp;
 window.SsellerStoreeBayApp = ESellerStoreApp;

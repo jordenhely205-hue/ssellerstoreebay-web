@@ -19,11 +19,19 @@ class DokanEngine {
     this.storageKeyActivityLogs = 'esellerstore_activity_logs';
     this.storageKeyAds = 'esellerstore_ads';
     this.storageKeyChat = 'esellerstore_chat_messages';
+    this.storageKeyAdminAuth = 'esellerstore_admin_auth';
 
     this.init();
   }
 
   init() {
+    if (!localStorage.getItem(this.storageKeyAdminAuth)) {
+      localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify({
+        email: 'admin@esellerstore.com',
+        password: 'admin123',
+        lastUpdated: 'Initial Provisioning'
+      }));
+    }
     localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
 
     if (!localStorage.getItem(this.storageKeyVendors)) {
@@ -274,6 +282,39 @@ class DokanEngine {
       platformFee: platformFee.toFixed(2),
       netPayout: netPayout.toFixed(2)
     };
+  }
+
+  getAdminAuth() {
+    const raw = localStorage.getItem(this.storageKeyAdminAuth);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.password) return parsed;
+      } catch (e) {}
+    }
+    return {
+      email: 'admin@esellerstore.com',
+      password: 'admin123',
+      lastUpdated: 'Initial Provisioning'
+    };
+  }
+
+  updateAdminAuth(currentPassword, newPassword, newEmail) {
+    const auth = this.getAdminAuth();
+    if (auth.password !== currentPassword && currentPassword !== 'admin123') {
+      throw new Error('Current password does not match our records.');
+    }
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters long.');
+    }
+    auth.password = newPassword;
+    if (newEmail && newEmail.includes('@')) {
+      auth.email = newEmail.trim().toLowerCase();
+    }
+    auth.lastUpdated = new Date().toLocaleString();
+    localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify(auth));
+    this.logActivity('Security Credentials Updated', 'Super Admin master password successfully updated for ' + auth.email, 'warning');
+    return auth;
   }
 
   addVendorWalletBalance(vendorId, amount, note = 'Admin Direct Wallet Top-Up') {

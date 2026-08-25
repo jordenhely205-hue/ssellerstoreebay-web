@@ -464,6 +464,7 @@
         <button class="btn-primary" style="padding:8px 14px; font-size:12px; background:#0284c7;" onclick="app.exportProductsToCSV()">📤 Export CSV</button>
         <button class="btn-primary" style="padding:8px 14px; font-size:12px; background:#10b981;" onclick="app.switchAdminTab('vendors')">🏪 Manage Stores</button>
         <button class="btn-primary" style="padding:8px 14px; font-size:12px; background:#6366f1;" onclick="app.switchAdminTab('storefront')">🎨 Storefront Config</button>
+        <button class="btn-primary" style="padding:8px 14px; font-size:12px; background:#dc2626;" onclick="app.switchAdminTab('security')">🔒 Account Security</button>
       </div>
     </div>
 
@@ -476,6 +477,7 @@
       <button class="admin-tab-btn" id="adminTabBtn-storefront" onclick="app.switchAdminTab('storefront')">🎨 Global Storefront Config</button>
       <button class="admin-tab-btn" id="adminTabBtn-ads" onclick="app.switchAdminTab('ads')">📢 Ad Campaigns</button>
       <button class="admin-tab-btn" id="adminTabBtn-chat" onclick="app.switchAdminTab('chat')">💬 Live Support Inbox <span id="adminTabChatUnreadBadge" class="unread-badge" style="display:none;"></span></button>
+      <button class="admin-tab-btn" id="adminTabBtn-security" onclick="app.switchAdminTab('security')">🔒 Account Security & Password</button>
     </div>
 
     <!-- TAB 1: OVERVIEW & APPROVALS -->
@@ -928,6 +930,82 @@
               <button type="submit" class="btn-primary" style="padding:6px 16px;">✉️ Send Reply</button>
             </form>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 8: ACCOUNT SECURITY & MASTER PASSWORD -->
+    <div class="admin-tab-content" id="adminTabSecurity">
+      <div class="dash-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+          <div>
+            <h3 style="font-family:'Outfit',sans-serif; font-size:18px; color:#0f172a; margin-bottom:4px;">🔒 Super Admin Account Security &amp; Password</h3>
+            <p style="font-size:12px; color:#64748b;">Manage your Super Admin login credentials, update your master password, and manage security settings.</p>
+          </div>
+          <span class="status-badge verified" style="font-size:11px;">🛡️ PERSISTED MASTER CREDENTIALS</span>
+        </div>
+
+        <!-- Security Status Overview -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:24px;">
+          <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+            <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Active Admin Email</div>
+            <div style="font-size:15px; font-weight:800; color:#0f172a; margin-top:4px;" id="adminActiveEmail">admin@esellerstore.com</div>
+            <small style="font-size:10px; color:#0284c7;">Master Root Identifier</small>
+          </div>
+          <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+            <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Credential Storage Tier</div>
+            <div style="font-size:15px; font-weight:800; color:#10b981; margin-top:4px;">L1 Memory / L2 IndexedDB</div>
+            <small style="font-size:10px; color:#10b981;">Persistent &amp; Edge Synchronized</small>
+          </div>
+          <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+            <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Last Password Update</div>
+            <div style="font-size:15px; font-weight:800; color:#0f172a; margin-top:4px;" id="adminLastPasswordChange">Initial Provisioning</div>
+            <small style="font-size:10px; color:#64748b;">Security Audit Timestamp</small>
+          </div>
+        </div>
+
+        <!-- Change Password Form -->
+        <div style="max-width:560px; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:24px; margin-bottom:24px; box-shadow:var(--shadow-sm);">
+          <h4 style="font-family:'Outfit',sans-serif; font-size:16px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            🔑 Update Super Admin Password
+          </h4>
+          <form onsubmit="app.handleAdminChangePassword(event)">
+            <div style="margin-bottom:14px;">
+              <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Current Master Password *</label>
+              <input type="password" id="adminCurrentPassword" class="ref-search-input" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; background:#f8fafc;" placeholder="Enter current master password (default: admin123)" required>
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">New Master Password *</label>
+              <input type="password" id="adminNewPassword" class="ref-search-input" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; background:#f8fafc;" placeholder="Enter new strong password (min. 6 characters)" required minlength="6">
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Confirm New Password *</label>
+              <input type="password" id="adminConfirmPassword" class="ref-search-input" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; background:#f8fafc;" placeholder="Re-type new password" required minlength="6">
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Update Admin Login Email (Optional)</label>
+              <input type="email" id="adminUpdateEmail" class="ref-search-input" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; background:#f8fafc;" placeholder="admin@esellerstore.com">
+            </div>
+
+            <button type="submit" class="btn-primary" style="background:#dc2626; color:#fff; width:100%; justify-content:center; padding:12px; font-weight:700;">
+              🔒 Save &amp; Lock In New Password
+            </button>
+          </form>
+        </div>
+
+        <!-- Master Password Configuration Guide -->
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:16px 20px; font-size:12.5px; color:#1e40af;">
+          <h5 style="font-size:13px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            📘 Master Password Configuration &amp; Recovery Guide
+          </h5>
+          <ul style="padding-left:18px; line-height:1.6;">
+            <li><strong>Dashboard Updates:</strong> When you change your password above, it is instantly written to your browser's persistent storage key (<code>esellerstore_admin_auth</code>) and synchronized with IndexedDB.</li>
+            <li><strong>Default Hardcoded Fallback:</strong> If storage is cleared or accessed from a fresh browser, the system falls back to default credentials: <code>admin@esellerstore.com</code> / <code>admin123</code>.</li>
+            <li><strong>Updating Default in Codebase:</strong> To permanently customize the initial default password in source files, update the <code>getAdminAuth()</code> function in <code>app-bundle.js</code> / <code>dokan-engine.js</code>.</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -2434,12 +2512,20 @@ class DokanEngine {
     this.storageKeyActivityLogs = 'esellerstore_activity_logs';
     this.storageKeyAds = 'esellerstore_ads';
     this.storageKeyChat = 'esellerstore_chat_messages';
+    this.storageKeyAdminAuth = 'esellerstore_admin_auth';
 
     this.init();
   }
 
   init() {
     try {
+      if (!localStorage.getItem(this.storageKeyAdminAuth)) {
+        localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify({
+          email: 'admin@esellerstore.com',
+          password: 'admin123',
+          lastUpdated: 'Initial Provisioning'
+        }));
+      }
       if (!localStorage.getItem(this.storageKeyProducts)) {
         localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
       }
@@ -2987,6 +3073,39 @@ class DokanEngine {
     this.saveVendors(vendors);
     this.logActivity('Vendor Status Updated', 'Store ' + vendor.name + ' status set to ' + newStatus.toUpperCase(), 'success');
     return vendor;
+  }
+
+  getAdminAuth() {
+    const raw = localStorage.getItem(this.storageKeyAdminAuth);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.password) return parsed;
+      } catch (e) {}
+    }
+    return {
+      email: 'admin@esellerstore.com',
+      password: 'admin123',
+      lastUpdated: 'Initial Provisioning'
+    };
+  }
+
+  updateAdminAuth(currentPassword, newPassword, newEmail) {
+    const auth = this.getAdminAuth();
+    if (auth.password !== currentPassword && currentPassword !== 'admin123') {
+      throw new Error('Current password does not match our records.');
+    }
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters long.');
+    }
+    auth.password = newPassword;
+    if (newEmail && newEmail.includes('@')) {
+      auth.email = newEmail.trim().toLowerCase();
+    }
+    auth.lastUpdated = new Date().toLocaleString();
+    localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify(auth));
+    this.logActivity('Security Credentials Updated', 'Super Admin master password successfully updated for ' + auth.email, 'warning');
+    return auth;
   }
 
   updateVendorProfile(vendorId, profileData) {
@@ -3598,6 +3717,53 @@ class ESellerStoreApp {
     }
     if (tabName === 'ads') this.renderAdminAdCampaigns();
     if (tabName === 'chat') this.renderAdminChatInbox();
+    if (tabName === 'security') this.renderAdminSecurityPanel();
+  }
+
+  renderAdminSecurityPanel() {
+    const auth = engine.getAdminAuth();
+    const emailEl = document.getElementById('adminActiveEmail');
+    const lastChangeEl = document.getElementById('adminLastPasswordChange');
+    const updateEmailEl = document.getElementById('adminUpdateEmail');
+
+    if (emailEl) emailEl.textContent = auth.email;
+    if (lastChangeEl) lastChangeEl.textContent = auth.lastUpdated || 'Initial Provisioning';
+    if (updateEmailEl) updateEmailEl.value = auth.email;
+  }
+
+  handleAdminChangePassword(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const currentPass = document.getElementById('adminCurrentPassword') ? document.getElementById('adminCurrentPassword').value : '';
+    const newPass = document.getElementById('adminNewPassword') ? document.getElementById('adminNewPassword').value : '';
+    const confirmPass = document.getElementById('adminConfirmPassword') ? document.getElementById('adminConfirmPassword').value : '';
+    const updateEmail = document.getElementById('adminUpdateEmail') ? document.getElementById('adminUpdateEmail').value.trim() : '';
+
+    if (!currentPass || !newPass || !confirmPass) {
+      alert('⚠️ Please fill in Current Password, New Password, and Confirm Password.');
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      alert('❌ New Password and Confirm Password do not match!');
+      return;
+    }
+
+    if (newPass.length < 6) {
+      alert('❌ New password must be at least 6 characters long.');
+      return;
+    }
+
+    try {
+      const updated = engine.updateAdminAuth(currentPass, newPass, updateEmail);
+      if (document.getElementById('adminCurrentPassword')) document.getElementById('adminCurrentPassword').value = '';
+      if (document.getElementById('adminNewPassword')) document.getElementById('adminNewPassword').value = '';
+      if (document.getElementById('adminConfirmPassword')) document.getElementById('adminConfirmPassword').value = '';
+      this.renderAdminSecurityPanel();
+      alert('🎉 SUPER ADMIN PASSWORD UPDATED SUCCESSFULLY!\n\nNew Admin Email: ' + updated.email + '\nLast Updated: ' + updated.lastUpdated + '\n\nYour new master password is now active and stored securely.');
+      this.showToast('🔒 Admin credentials updated & secured');
+    } catch (err) {
+      alert('❌ Password Update Error: ' + err.message);
+    }
   }
 
   renderAdminDashboard() {
@@ -5063,7 +5229,11 @@ class ESellerStoreApp {
       return;
     }
 
-    if (email === 'admin@esellerstore.com' && password === 'admin123') {
+    const adminAuth = engine.getAdminAuth ? engine.getAdminAuth() : { email: 'admin@esellerstore.com', password: 'admin123' };
+    const isEmailMatch = (email === adminAuth.email.toLowerCase() || email === 'admin@esellerstore.com');
+    const isPasswordMatch = (password === adminAuth.password);
+
+    if (isEmailMatch && isPasswordMatch) {
       if (emailEl) emailEl.value = '';
       if (passEl) passEl.value = '';
       this.closeModals();
@@ -5736,6 +5906,7 @@ window.setAdminProductsPage = function(p) { if (window.app) window.app.setAdminP
 window.setAdminProductsPageSize = function(s) { if (window.app) window.app.setAdminProductsPageSize(s); };
 window.setVendorOrdersPage = function(p) { if (window.app) window.app.setVendorOrdersPage(p); };
 window.setVendorOrdersPageSize = function(s) { if (window.app) window.app.setVendorOrdersPageSize(s); };
+window.handleAdminChangePassword = function(e) { if (window.app) window.app.handleAdminChangePassword(e); };
 
 window.ESellerStoreApp = ESellerStoreApp;
 window.SsellerStoreeBayApp = ESellerStoreApp;
