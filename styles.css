@@ -13,11 +13,16 @@
 :root {
   --primary-navy: #0f172a;
   --primary-dark: #0f172a;
-  --brand-blue: #1a73e8;
-  --brand-blue-hover: #1557b0;
-  --brand-blue-light: #e8f0fe;
-  --brand-blue-border: #d2e3fc;
-  --brand-red: #e11d48;
+  --brand-blue: #0284c7;
+  --brand-blue-hover: #0369a1;
+  --brand-blue-light: #e0f2fe;
+  --brand-blue-border: #bae6fd;
+  --brand-sky: #38bdf8;
+  --brand-red: #dc2626;
+  --brand-red-hover: #b91c1c;
+  --brand-crimson: #e11d48;
+  --brand-yellow: #f59e0b;
+  --brand-amber: #eab308;
   --accent-gold: #f59e0b;
   --bg-light: #ffffff;
   --bg-subtle: #f8fafc;
