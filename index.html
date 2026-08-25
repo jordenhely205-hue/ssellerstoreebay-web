@@ -134,21 +134,24 @@
   <!-- MAIN HEADER (Clean White Modern E-Commerce Aesthetic) -->
   <header class="ref-main-header">
     <div class="container header-flex">
-      <!-- E Seller Store Official Logo with Shopping Cart Vector Mark -->
-      <a href="#" class="ref-logo" onclick="app.setPersona('customer'); return false;" style="display:flex; align-items:center; gap:10px;">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-          <rect width="36" height="36" rx="9" fill="#0F172A"/>
-          <!-- Clean Shopping Cart Outline in Crisp White -->
-          <path d="M7.5 9.5H10.5L13 22H24.5L27 12.5H11.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="14.5" cy="25.5" r="1.6" fill="#38BDF8"/>
-          <circle cx="23" cy="25.5" r="1.6" fill="#38BDF8"/>
-          <!-- Integrated 'E' & 'S' lines inside Cart Basket with Light Sky-Blue accent stroke -->
-          <path d="M15.5 15H21C21.8 15 22.2 15.4 22.2 16.2C22.2 17 21.6 17.5 20.8 17.5H16.2C15.4 17.5 14.8 18 14.8 18.8C14.8 19.6 15.2 20 16 20H21.5" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span style="font-family:'Outfit','Inter',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px;">
-          <span style="color:#DC2626;">E Seller </span><span style="color:#F59E0B;">Store</span>
-        </span>
-      </a>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="mobile-hamburger-btn" onclick="app.toggleMobileDrawer()" aria-label="Open Navigation Menu">☰</button>
+        <!-- E Seller Store Official Logo with Shopping Cart Vector Mark -->
+        <a href="#" class="ref-logo" onclick="app.setPersona('customer'); return false;" style="display:flex; align-items:center; gap:8px;">
+          <svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+            <rect width="36" height="36" rx="9" fill="#0F172A"/>
+            <!-- Clean Shopping Cart Outline in Crisp White -->
+            <path d="M7.5 9.5H10.5L13 22H24.5L27 12.5H11.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="14.5" cy="25.5" r="1.6" fill="#38BDF8"/>
+            <circle cx="23" cy="25.5" r="1.6" fill="#38BDF8"/>
+            <!-- Integrated 'E' & 'S' lines inside Cart Basket with Light Sky-Blue accent stroke -->
+            <path d="M15.5 15H21C21.8 15 22.2 15.4 22.2 16.2C22.2 17 21.6 17.5 20.8 17.5H16.2C15.4 17.5 14.8 18 14.8 18.8C14.8 19.6 15.2 20 16 20H21.5" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="font-family:'Outfit','Inter',sans-serif; font-size:24px; font-weight:800; letter-spacing:-0.5px;">
+            <span style="color:#DC2626;">E Seller </span><span style="color:#F59E0B;">Store</span>
+          </span>
+        </a>
+      </div>
 
       <!-- Search Bar -->
       <div class="ref-search-container">
@@ -160,7 +163,7 @@
         <div class="ajax-search-dropdown" id="ajaxSearchDropdown"></div>
       </div>
 
-      <!-- User Account Section (Consolidated Auth Widget) -->
+      <!-- User Account & Cart Section -->
       <div class="ref-user-auth">
         <div class="ref-user-avatar" onclick="app.openModal('sellerLoginModalOverlay');" style="cursor:pointer;" title="My Account / Sign In">👤</div>
         <div class="ref-user-links">
@@ -168,9 +171,13 @@
           <div style="font-size:11px; display:flex; gap:6px; align-items:center;">
             <a href="#" onclick="app.openModal('sellerRegModalOverlay'); return false;" style="color:#64748B;">Join / Register</a>
             <span style="color:#CBD5E1;">•</span>
-            <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;" style="color:#1A73E8; font-weight:600;">⚙️ Admin Login</a>
+            <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;" style="color:#0284C7; font-weight:600;">⚙️ Admin Login</a>
           </div>
         </div>
+        <button class="ref-cart-icon-mobile" onclick="app.openCartDrawer()" style="display:none; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:#e0f2fe; color:#0284c7; font-size:16px; position:relative;" title="Shopping Cart">
+          🛒
+          <span class="cart-pill-count" style="position:absolute; top:-2px; right:-2px; background:#dc2626; color:#fff; font-size:10px; font-weight:bold; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;">0</span>
+        </button>
       </div>
     </div>
   </header>
@@ -1779,8 +1786,55 @@
   </div>
 
   <div class="cookie-consent-popup" id="cookieConsentCard">
-    <p>We use cookie for better user experience.</p>
-    <button class="cookie-accept-btn" onclick="document.getElementById('cookieConsentCard').style.display='none';">Ok. I Understood</button>
+    <p>We use cookies for a seamless shopping experience.</p>
+    <button class="cookie-accept-btn" onclick="document.getElementById('cookieConsentCard').style.display='none';">Accept &amp; Continue</button>
+  </div>
+  <!-- OFF-CANVAS MOBILE DRAWER -->
+  <div class="mobile-drawer-overlay" id="mobileNavDrawerOverlay" onclick="app.closeMobileDrawer()">
+    <div class="mobile-drawer" onclick="event.stopPropagation()">
+      <div class="mobile-drawer-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="36" height="36" rx="9" fill="#0F172A"/>
+            <path d="M7.5 9.5H10.5L13 22H24.5L27 12.5H11.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="14.5" cy="25.5" r="1.6" fill="#38BDF8"/>
+            <circle cx="23" cy="25.5" r="1.6" fill="#38BDF8"/>
+            <path d="M15.5 15H21C21.8 15 22.2 15.4 22.2 16.2C22.2 17 21.6 17.5 20.8 17.5H16.2C15.4 17.5 14.8 18 14.8 18.8C14.8 19.6 15.2 20 16 20H21.5" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="font-size:20px; font-weight:800; font-family:'Outfit', sans-serif;"><span style="color:#DC2626;">E Seller </span><span style="color:#F59E0B;">Store</span></span>
+        </div>
+        <button class="mobile-drawer-close" onclick="app.closeMobileDrawer()">&times;</button>
+      </div>
+      <div class="mobile-drawer-body">
+        <div class="mobile-drawer-section">
+          <h5>Quick Portals</h5>
+          <a href="#" onclick="app.setPersona('customer'); app.closeMobileDrawer(); return false;" class="drawer-link">🛍️ Customer Storefront</a>
+          <a href="#" onclick="app.openModal('sellerRegModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">🏪 Become a Seller (Apply Now)</a>
+          <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">🔑 Seller Portal Login</a>
+          <a href="#" onclick="app.openModal('adminLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">⚙️ Super Admin Portal</a>
+          <a href="#" onclick="app.toggleAIChat(); app.closeMobileDrawer(); return false;" class="drawer-link">💬 Live Support &amp; Chat</a>
+        </div>
+        <div class="mobile-drawer-section">
+          <h5>Top Categories</h5>
+          <a href="#" onclick="app.filterByBrand('Apple'); app.closeMobileDrawer(); return false;" class="drawer-link">📱 Phone Accessories (Apple)</a>
+          <a href="#" onclick="app.filterByBrand('Dell'); app.closeMobileDrawer(); return false;" class="drawer-link">💻 Computers &amp; Tech (Dell, HP)</a>
+          <a href="#" onclick="app.filterByBrand('Rolex'); app.closeMobileDrawer(); return false;" class="drawer-link">⌚ Jewelry &amp; Watches (Rolex)</a>
+          <a href="#" onclick="app.filterByBrand('Nike'); app.closeMobileDrawer(); return false;" class="drawer-link">👟 Sneakers &amp; Footwear (Nike)</a>
+          <a href="#" onclick="app.filterByBrand('Sony'); app.closeMobileDrawer(); return false;" class="drawer-link">🎧 Audio &amp; Gadgets (Sony, Bose)</a>
+        </div>
+        <div class="mobile-drawer-section">
+          <h5>Regional Settings</h5>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <select style="flex:1; padding:8px 6px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff;">
+              <option>USD ($)</option><option>EUR (€)</option><option>GBP (£)</option>
+            </select>
+            <select style="flex:1; padding:8px 6px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff;">
+              <option>English</option><option>Español</option><option>Français</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- FOOTER -->
@@ -5591,10 +5645,26 @@ class ESellerStoreApp {
       }
     });
   }
+
+  toggleMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawerOverlay');
+    if (drawer) {
+      drawer.classList.toggle('active');
+    }
+  }
+
+  closeMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawerOverlay');
+    if (drawer) {
+      drawer.classList.remove('active');
+    }
+  }
 }
 
 window.app = new ESellerStoreApp();
 
+window.toggleMobileDrawer = function() { if (window.app) window.app.toggleMobileDrawer(); };
+window.closeMobileDrawer = function() { if (window.app) window.app.closeMobileDrawer(); };
 window.setPersona = function(persona) { if (window.app) window.app.setPersona(persona); };
 window.openModal = function(modalId) { if (window.app) window.app.openModal(modalId); };
 window.closeModals = function() { if (window.app) window.app.closeModals(); };

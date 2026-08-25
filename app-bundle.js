@@ -3766,10 +3766,26 @@ class ESellerStoreApp {
       }
     });
   }
+
+  toggleMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawerOverlay');
+    if (drawer) {
+      drawer.classList.toggle('active');
+    }
+  }
+
+  closeMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawerOverlay');
+    if (drawer) {
+      drawer.classList.remove('active');
+    }
+  }
 }
 
 window.app = new ESellerStoreApp();
 
+window.toggleMobileDrawer = function() { if (window.app) window.app.toggleMobileDrawer(); };
+window.closeMobileDrawer = function() { if (window.app) window.app.closeMobileDrawer(); };
 window.setPersona = function(persona) { if (window.app) window.app.setPersona(persona); };
 window.openModal = function(modalId) { if (window.app) window.app.openModal(modalId); };
 window.closeModals = function() { if (window.app) window.app.closeModals(); };
