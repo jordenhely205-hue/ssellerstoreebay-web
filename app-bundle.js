@@ -2815,10 +2815,10 @@ class ESellerStoreApp {
       heroBannerEl.innerHTML = `
         <img src="${heroAd.mediaUrl}" alt="${heroAd.title}">
         <div class="banner-overlay-content">
-          <span class="hot-badge" style="background:#0f172a; margin-bottom:6px; display:inline-block;">ACTIVE CAMPAIGN</span>
+          <span class="hot-badge" style="background:#0f172a; color:#fff; margin-bottom:6px; display:inline-block;">ACTIVE CAMPAIGN</span>
           <h2>${heroAd.title}</h2>
           <p>Exclusive promotional offer live on E Seller Store Marketplace.</p>
-          <a href="${heroAd.targetUrl}" class="btn-primary">Shop Campaign Now &rsaquo;</a>
+          <button class="btn-primary hero-campaign-cta" id="heroShopCampaignBtn" onclick="app.handleHeroCampaignClick(event)">Shop Campaign Now &rsaquo;</button>
         </div>
       `;
     }
@@ -3731,6 +3731,30 @@ class ESellerStoreApp {
     window.scrollTo({ top: 750, behavior: 'smooth' });
   }
 
+  handleHeroCampaignClick(event) {
+    if (event) {
+      if (event.preventDefault) event.preventDefault();
+      if (event.stopPropagation) event.stopPropagation();
+    }
+
+    if (this.currentPersona !== 'customer') {
+      this.setPersona('customer');
+    }
+
+    this.showToast('🔥 Exploring E Seller Store Mega Summer Promo Deals!');
+
+    const targetSection = document.getElementById('featuredSliderGrid') ||
+                          document.querySelector('.products-grid') ||
+                          document.getElementById('catalogSection');
+    if (targetSection) {
+      targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      targetSection.classList.add('pulse-highlight');
+      setTimeout(() => targetSection.classList.remove('pulse-highlight'), 1500);
+    } else {
+      window.scrollTo({ top: 600, behavior: 'smooth' });
+    }
+  }
+
   openModal(modalId) {
     this.closeModals();
     const modal = document.getElementById(modalId);
@@ -3853,6 +3877,14 @@ class ESellerStoreApp {
         return;
       }
 
+      const heroBtn = e.target.closest('#heroShopCampaignBtn') || e.target.closest('.hero-campaign-cta') || (e.target.tagName === 'BUTTON' && e.target.textContent && (e.target.textContent.includes('Shop Campaign Now') || e.target.textContent.includes('Shop Deal Now')));
+      if (heroBtn && !e.target.closest('form')) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleHeroCampaignClick(e);
+        return;
+      }
+
       const buyNowBtn = e.target.closest('.btn-buy-now');
       if (buyNowBtn) {
         const onclickAttr = buyNowBtn.getAttribute('onclick');
@@ -3950,6 +3982,7 @@ window.setAdminProductsPageSize = function(s) { if (window.app) window.app.setAd
 window.setVendorOrdersPage = function(p) { if (window.app) window.app.setVendorOrdersPage(p); };
 window.setVendorOrdersPageSize = function(s) { if (window.app) window.app.setVendorOrdersPageSize(s); };
 window.handleAdminChangePassword = function(e) { if (window.app) window.app.handleAdminChangePassword(e); };
+window.handleHeroCampaignClick = function(e) { if (window.app) window.app.handleHeroCampaignClick(e); };
 
 window.ESellerStoreApp = ESellerStoreApp;
 window.SsellerStoreeBayApp = ESellerStoreApp;

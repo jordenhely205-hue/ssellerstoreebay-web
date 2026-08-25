@@ -912,6 +912,7 @@ input:checked + .slider-round:before {
   height: 100%;
   object-fit: cover;
   object-position: right center;
+  pointer-events: none;
 }
 
 .banner-overlay-content {
@@ -921,14 +922,34 @@ input:checked + .slider-round:before {
   transform: translateY(-50%);
   color: #0f172a;
   max-width: 480px;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.9);
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 26px 30px;
   border-radius: 12px;
   border: 1px solid rgba(229, 231, 235, 0.9);
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  pointer-events: auto;
+}
+
+.hero-campaign-cta,
+#heroShopCampaignBtn {
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hero-campaign-cta:hover,
+#heroShopCampaignBtn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.4);
 }
 
 .banner-overlay-content h2 {
