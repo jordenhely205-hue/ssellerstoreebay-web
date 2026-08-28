@@ -64,6 +64,40 @@
       ]
     },
     {
+      "source": "/products.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    },
+    {
       "source": "/",
       "headers": [
         {
@@ -74,6 +108,26 @@
     }
   ],
   "routes": [
+    {
+      "src": "/products.json",
+      "dest": "/products.json"
+    },
+    {
+      "src": "/api/products/batch",
+      "dest": "/api/products/batch.js"
+    },
+    {
+      "src": "/api/products",
+      "dest": "/api/products.js"
+    },
+    {
+      "src": "/api/vendors/batch",
+      "dest": "/api/vendors/batch.js"
+    },
+    {
+      "src": "/api/vendors",
+      "dest": "/api/vendors.js"
+    },
     {
       "handle": "filesystem"
     },

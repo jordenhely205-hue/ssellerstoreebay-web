@@ -199,6 +199,17 @@ class DokanEngine {
       if (!data || !Array.isArray(data) || data.length === 0) {
         return INITIAL_PRODUCTS;
       }
+      // If client storage only has legacy initial 10 items, upgrade to full repository master catalog
+      if (data.length < INITIAL_PRODUCTS.length) {
+        const merged = [...data];
+        INITIAL_PRODUCTS.forEach(p => {
+          if (!merged.some(m => m.id === p.id || (m.sku && m.sku === p.sku))) {
+            merged.push(p);
+          }
+        });
+        localStorage.setItem(this.storageKeyProducts, JSON.stringify(merged));
+        return merged;
+      }
       let cleaned = false;
       data.forEach(p => {
         if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') {
@@ -213,6 +224,53 @@ class DokanEngine {
     } catch (e) {
       return INITIAL_PRODUCTS;
     }
+  }
+
+  async fetchServerProducts() {
+    if (typeof fetch === 'undefined') return this.getProducts();
+
+    try {
+      // 1. Try serverless backend endpoint
+      let response = await fetch('/api/products', {
+        headers: { 'Cache-Control': 'no-cache' }
+      }).catch(() => null);
+
+      // 2. Fallback to static products.json
+      if (!response || !response.ok) {
+        response = await fetch('/products.json', {
+          headers: { 'Cache-Control': 'no-cache' }
+        }).catch(() => null);
+      }
+
+      if (response && response.ok) {
+        const serverProducts = await response.json();
+        if (Array.isArray(serverProducts) && serverProducts.length > 0) {
+          const current = this.getProducts();
+          const merged = [...serverProducts];
+          current.forEach(localP => {
+            if (!merged.some(m => m.id === localP.id || (m.sku && m.sku === localP.sku))) {
+              merged.push(localP);
+            }
+          });
+
+          merged.forEach(p => {
+            if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
+          });
+
+          try {
+            localStorage.setItem(this.storageKeyProducts, JSON.stringify(merged));
+          } catch (e) {}
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('products_updated'));
+          }
+          return merged;
+        }
+      }
+    } catch (err) {
+      console.warn('Server products fetch fallback to bundled seed:', err);
+    }
+    return this.getProducts();
   }
 
   getProductById(id) {
@@ -246,6 +304,12 @@ class DokanEngine {
     if (typeof fetch !== 'undefined') {
       try {
         fetch('/api/products/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+
+        fetch('/api/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
           body: JSON.stringify(payload)
