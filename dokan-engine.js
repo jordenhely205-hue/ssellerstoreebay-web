@@ -303,10 +303,12 @@ class DokanEngine {
     const newVendor = {
       id: 'v_' + Date.now(),
       name: storeName.trim(),
+      storeName: storeName.trim(),
       ownerName: ownerName.trim(),
       cnic: cleanCnic,
       email: email.trim(),
       mobile: mobile.trim(),
+      phone: mobile.trim(),
       password: password.trim(),
       description: cleanDesc,
       status: 'pending_verification',

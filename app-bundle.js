@@ -1200,10 +1200,12 @@ class DokanEngine {
     const newVendor = {
       id: 'v_' + Date.now(),
       name: storeName.trim(),
+      storeName: storeName.trim(),
       ownerName: ownerName.trim(),
       cnic: cleanCnic,
       email: email.trim(),
       mobile: mobile.trim(),
+      phone: mobile.trim(),
       password: password.trim(),
       description: cleanDesc,
       status: 'pending_verification',
@@ -1953,13 +1955,20 @@ class ESellerStoreApp {
     const products = engine.getProducts();
     const metrics = JSON.parse(localStorage.getItem('esellerstore_metrics')) || {};
 
+    const verifiedVendors = vendors.filter(v => v.status === 'verified');
+    const pendingVendors = vendors.filter(v => v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review');
+
     const totalVendorsEl = document.getElementById('adminMetricVendors');
+    const vendorSubtextEl = document.getElementById('adminMetricVendorsSubtext');
     const prodCountEl = document.getElementById('adminMetricProductsCount');
     const tabProdCountEl = document.getElementById('adminTabProductCount');
     const platformWalletEl = document.getElementById('adminMetricWallet');
     const totalCommEl = document.getElementById('adminMetricCommission');
 
     if (totalVendorsEl) totalVendorsEl.textContent = vendors.length;
+    if (vendorSubtextEl) {
+      vendorSubtextEl.textContent = `${verifiedVendors.length} Verified • ${pendingVendors.length} Pending`;
+    }
     if (prodCountEl) prodCountEl.textContent = products.length;
     if (tabProdCountEl) tabProdCountEl.textContent = products.length;
     if (platformWalletEl) platformWalletEl.textContent = '$' + parseFloat(metrics.adminWalletTotal || 0).toFixed(2);
@@ -1981,7 +1990,6 @@ class ESellerStoreApp {
     }
 
     // Render Pending Store Requests in Overview Tab
-    const pendingVendors = vendors.filter(v => v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review');
     const pendingAlertSec = document.getElementById('adminPendingVendorsAlertSection');
     const pendingCountEl = document.getElementById('adminPendingVendorsCount');
     const pendingTbody = document.getElementById('adminPendingVendorsOverviewTableBody');
@@ -1993,43 +2001,50 @@ class ESellerStoreApp {
 
     if (pendingTbody) {
       pendingTbody.innerHTML = pendingVendors.map(v => `
-        <tr>
+        <tr style="background:#fffbeb;">
           <td>
             <div style="display:flex; align-items:center; gap:10px;">
               <img src="${v.storeLogo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}" width="36" height="36" style="border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;">
               <div>
                 <strong style="font-size:13px; color:#1e293b;">${v.name}</strong><br>
-                <small style="color:#64748b;">Owner: ${v.ownerName}</small>
+                <small style="color:#64748b;">Joined: ${v.joinedDate || new Date().toISOString().split('T')[0]}</small>
               </div>
             </div>
           </td>
           <td>
-            <span style="font-size:12px; font-weight:700; color:var(--nav-red);">CNIC: ${v.cnic || 'N/A'}</span>
+            <strong style="font-size:13px; color:#0f172a;">${v.ownerName}</strong>
+          </td>
+          <td>
+            <span style="font-size:12px; font-weight:700; color:var(--nav-red);">${v.cnic || 'N/A'}</span>
           </td>
           <td>
             <span style="font-size:12px;">${v.email}</span><br>
-            <small style="color:#64748b;">${v.mobile || ''}</small>
+            <small style="color:#64748b;">${v.mobile || v.phone || ''}</small>
           </td>
           <td>
             <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING VERIFICATION</span>
           </td>
-          <td>
-            <small style="color:#64748b;">${v.joinedDate || new Date().toISOString().split('T')[0]}</small>
-          </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-              <button class="btn-primary" style="padding:6px 12px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve Store</button>
-              <button class="btn-primary" style="padding:6px 12px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject</button>
+              <button class="btn-primary" style="padding:6px 14px; font-size:12px; background:#10b981; font-weight:700;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve</button>
+              <button class="btn-primary" style="padding:6px 14px; font-size:12px; background:#ef4444; font-weight:700;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject</button>
             </div>
           </td>
         </tr>
       `).join('');
     }
 
-    // Overview Vendors Table
+    // Overview All Vendors Table
     const overviewVendorsBody = document.getElementById('adminVendorsOverviewTableBody');
     if (overviewVendorsBody) {
-      overviewVendorsBody.innerHTML = vendors.map(v => {
+      // Sort so pending vendors appear at the top
+      const sortedOverviewVendors = [...vendors].sort((a, b) => {
+        const aPending = (a.status === 'pending_verification' || a.status === 'pending' || a.status === 'under_review') ? 1 : 0;
+        const bPending = (b.status === 'pending_verification' || b.status === 'pending' || b.status === 'under_review') ? 1 : 0;
+        return bPending - aPending;
+      });
+
+      overviewVendorsBody.innerHTML = sortedOverviewVendors.map(v => {
         const isPending = v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review';
         return `
           <tr style="${isPending ? 'background:#fffdf5;' : ''}">
@@ -2038,7 +2053,7 @@ class ESellerStoreApp {
               <small style="color:#666;">Owner: ${v.ownerName}</small><br>
               <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
             </td>
-            <td>${v.email}<br><small style="color:#666;">${v.mobile || ''}</small></td>
+            <td>${v.email}<br><small style="color:#666;">${v.mobile || v.phone || ''}</small></td>
             <td>
               ${isPending
                 ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:3px 8px; border-radius:10px; border:1px solid #fde68a;">⏳ PENDING</span>`
@@ -2054,8 +2069,8 @@ class ESellerStoreApp {
                   <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve</button>
                   <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject</button>
                 ` : `
-                  <button class="admin-act-btn ${v.status === 'suspended' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' ? 'verified' : 'suspended'}')">
-                    ${v.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
+                  <button class="admin-act-btn ${v.status === 'suspended' || v.status === 'rejected' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' || v.status === 'rejected' ? 'verified' : 'suspended'}')">
+                    ${v.status === 'suspended' || v.status === 'rejected' ? 'Unsuspend' : 'Suspend'}
                   </button>
                 `}
               </div>
@@ -3559,6 +3574,8 @@ class ESellerStoreApp {
       const vendor = engine.registerVendor({ ownerName, cnic, email, password, storeName, mobile, description });
       this.closeModals();
       form.reset();
+      this.renderAdminDashboard();
+      this.renderVendorDashboard();
       const cnicDisplay = (vendor.cnic && vendor.cnic !== 'N/A') ? '\nCNIC: ' + vendor.cnic : '';
       alert('✅ ONBOARDING APPLICATION SUBMITTED!\n\nStore Name: ' + vendor.name + '\nOwner: ' + vendor.ownerName + cnicDisplay + '\nEmail: ' + vendor.email + '\nStatus: PENDING ADMIN VERIFICATION\n\nYour account is locked until credentials are reviewed and approved by Super Admin.');
       this.activeVendorId = vendor.id;
@@ -4075,6 +4092,20 @@ class ESellerStoreApp {
       if (this.currentPersona === 'admin') this.renderAdminDashboard();
       if (this.currentPersona === 'vendor') this.renderVendorDashboard();
     });
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'esellerstore_vendors' || e.key === 'esellerstore_products' || e.key === 'esellerstore_orders') {
+        if (this.currentPersona === 'admin') this.renderAdminDashboard();
+        if (this.currentPersona === 'vendor') this.renderVendorDashboard();
+      }
+    });
+
+    const regForm = document.querySelector('#sellerRegModalOverlay form');
+    if (regForm) {
+      regForm.addEventListener('submit', (e) => {
+        this.handleVendorRegistration(e);
+      });
+    }
 
     window.addEventListener('brands_updated', () => {
       this.renderBrandsCarousel();
