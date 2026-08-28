@@ -428,57 +428,180 @@ class DokanEngine {
     return newOrder;
   }
 
-  generateCSVTemplate() {
-    const headers = ['Name', 'Category', 'Brand', 'Price', 'OriginalPrice', 'Stock', 'Badge', 'ImageUrl', 'Description'];
-    const sampleRow1 = ['E Seller Store Pro Gaming Mouse', 'computers', 'Logitech', '129.99', '159.99', '25', 'Pro Pick', 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80', 'RGB tactile switches.'];
-    return [headers.join(','), sampleRow1.map(f => `"${f}"`).join(',')].join('\n');
+  parseCSV(csvText) {
+    const lines = [];
+    let currentRow = [];
+    let currentCell = '';
+    let insideQuote = false;
+
+    for (let i = 0; i < csvText.length; i++) {
+      const char = csvText[i];
+      const nextChar = csvText[i + 1];
+
+      if (char === '"') {
+        if (insideQuote && nextChar === '"') {
+          currentCell += '"';
+          i++;
+        } else {
+          insideQuote = !insideQuote;
+        }
+      } else if (char === ',' && !insideQuote) {
+        currentRow.push(currentCell.trim());
+        currentCell = '';
+      } else if ((char === '\r' || char === '\n') && !insideQuote) {
+        if (char === '\r' && nextChar === '\n') {
+          i++;
+        }
+        currentRow.push(currentCell.trim());
+        if (currentRow.length > 1 || currentRow[0] !== '') {
+          lines.push(currentRow);
+        }
+        currentRow = [];
+        currentCell = '';
+      } else {
+        currentCell += char;
+      }
+    }
+
+    if (currentCell || currentRow.length > 0) {
+      currentRow.push(currentCell.trim());
+      if (currentRow.length > 1 || currentRow[0] !== '') {
+        lines.push(currentRow);
+      }
+    }
+
+    return lines;
   }
 
-  processCSVUpload(csvText, vendorId) {
-    const vendor = this.getVendorById(vendorId);
-    if (!vendor) throw new Error('Invalid vendor session.');
+  importProductsCSV(csvText, fallbackVendorId = 'v101') {
+    const rows = this.parseCSV(csvText);
+    if (!rows || rows.length <= 1) {
+      throw new Error('CSV text does not contain valid data rows.');
+    }
 
-    const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
-    if (lines.length <= 1) throw new Error('CSV file is empty.');
+    const headers = rows[0].map(h => (h || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+    const getIdx = (candidates, defaultIdx = -1) => {
+      for (const cand of candidates) {
+        const idx = headers.indexOf(cand.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        if (idx !== -1) return idx;
+      }
+      return defaultIdx;
+    };
 
+    const titleIdx = getIdx(['title', 'name', 'productname', 'producttitle'], 0);
+    const catIdx = getIdx(['category', 'cat', 'categoryname'], 1);
+    const brandIdx = getIdx(['brand', 'brandname', 'manufacturer'], 2);
+    const vendorIdx = getIdx(['vendor', 'vendorname', 'store', 'storename'], 3);
+    const priceIdx = getIdx(['price', 'regularprice', 'saleprice', 'retailprice'], 4);
+    const origPriceIdx = getIdx(['originalprice', 'listprice', 'msrp', 'compareatprice'], -1);
+    const stockIdx = getIdx(['stock', 'inventory', 'quantity', 'qty', 'count'], 5);
+    const skuIdx = getIdx(['sku', 'code', 'productcode', 'itemid', 'id'], 6);
+    const imgIdx = getIdx(['imageurl', 'image', 'photo', 'picture', 'thumbnail'], 7);
+    const descIdx = getIdx(['description', 'desc', 'details', 'summary'], 8);
+
+    const vendors = this.getVendors();
     const products = this.getProducts();
-    let importedCount = 0;
+    const importedProducts = [];
 
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',');
-      if (!values || values.length < 4) continue;
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      if (!row || row.length === 0 || !row[titleIdx !== -1 ? titleIdx : 0]) continue;
 
-      const name = values[0] || 'Bulk Product';
-      const price = parseFloat(values[3]) || 49.99;
+      const title = (row[titleIdx] !== undefined && row[titleIdx] !== '') ? row[titleIdx] : ('Imported Product #' + r);
+      const category = (row[catIdx] !== undefined && row[catIdx] !== '') ? row[catIdx].toLowerCase() : 'computers';
+      const brand = (row[brandIdx] !== undefined && row[brandIdx] !== '') ? row[brandIdx] : 'Generic';
+      const vendorNameStr = (row[vendorIdx] !== undefined && row[vendorIdx] !== '') ? row[vendorIdx] : '';
 
-      const newProd = {
-        id: 'p_csv_' + Date.now() + '_' + i,
-        name,
-        category: 'computers',
-        brand: 'Generic',
-        vendorId: vendor.id,
-        vendorName: vendor.name,
+      let matchedVendor = vendors.find(v => v.name.toLowerCase() === vendorNameStr.toLowerCase() || v.id.toLowerCase() === vendorNameStr.toLowerCase());
+      if (!matchedVendor) matchedVendor = vendors.find(v => v.id === fallbackVendorId) || vendors[0];
+
+      const priceVal = row[priceIdx];
+      const price = priceVal ? (parseFloat(priceVal.toString().replace(/[^0-9.]/g, '')) || 99.99) : 99.99;
+      
+      const origPriceVal = origPriceIdx !== -1 ? row[origPriceIdx] : null;
+      const origPrice = origPriceVal ? (parseFloat(origPriceVal.toString().replace(/[^0-9.]/g, '')) || (price * 1.15)) : (price * 1.15);
+      
+      const stockVal = row[stockIdx];
+      const stock = (stockVal !== undefined && stockVal !== '') ? (parseInt(stockVal.toString().replace(/[^0-9]/g, '')) || 20) : 20;
+      
+      const skuVal = row[skuIdx];
+      const sku = (skuVal && skuVal.trim() !== '') ? skuVal.trim() : ('ESS-CSV-' + Math.floor(1000 + Math.random() * 9000));
+      
+      const imageVal = row[imgIdx];
+      const image = (imageVal && (imageVal.startsWith('http://') || imageVal.startsWith('https://') || imageVal.startsWith('data:image/'))) ? imageVal.trim() : 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80';
+      
+      const descVal = row[descIdx];
+      const description = (descVal && descVal.trim() !== '') ? descVal.trim() : 'Authentic imported product catalog item.';
+
+      const newP = {
+        id: 'p_csv_' + Date.now() + '_' + r,
+        name: title,
+        category,
+        brand,
+        vendorId: matchedVendor.id,
+        vendorName: matchedVendor.name,
         price,
-        originalPrice: price * 1.2,
+        originalPrice: origPrice,
+        stock,
+        sku,
+        image,
+        description,
         rating: 5.0,
-        reviewsCount: 1,
-        stock: 10,
-        isDeal: false,
-        isFeatured: true,
+        reviewsCount: 0,
+        published: true,
+        publishTarget: 'vendor',
+        isFeatured: false,
         isBestSelling: false,
         isNew: true,
-        badge: 'CSV Import',
-        image: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
-        description: 'CSV product import'
+        isDeal: false,
+        badge: 'Bulk CSV'
       };
 
-      products.unshift(newProd);
-      importedCount++;
+      products.unshift(newP);
+      importedProducts.push(newP);
     }
 
     this.saveProducts(products);
-    this.logActivity('CSV Bulk Upload', `Vendor '${vendor.name}' uploaded ${importedCount} items`, 'info');
-    return importedCount;
+    this.logActivity('Bulk CSV Products Imported', 'Imported ' + importedProducts.length + ' products to master catalog', 'success');
+    return { count: importedProducts.length, importedProducts };
+  }
+
+  exportProductsCSV() {
+    const products = this.getProducts();
+    const headers = ['Title', 'Category', 'Brand', 'VendorName', 'VendorId', 'Price', 'OriginalPrice', 'Stock', 'SKU', 'ImageURL', 'Description', 'Published', 'IsFeatured', 'IsBestSelling'];
+    
+    const rows = products.map(p => [
+      '"' + (p.name || '').replace(/"/g, '""') + '"',
+      '"' + (p.category || '').replace(/"/g, '""') + '"',
+      '"' + (p.brand || '').replace(/"/g, '""') + '"',
+      '"' + (p.vendorName || '').replace(/"/g, '""') + '"',
+      '"' + (p.vendorId || '').replace(/"/g, '""') + '"',
+      p.price !== undefined ? p.price : '',
+      p.originalPrice !== undefined ? p.originalPrice : '',
+      p.stock !== undefined ? p.stock : 0,
+      '"' + (p.sku || p.id || '').replace(/"/g, '""') + '"',
+      '"' + (p.image || '').replace(/"/g, '""') + '"',
+      '"' + (p.description || '').replace(/"/g, '""') + '"',
+      p.published !== false ? 'true' : 'false',
+      p.isFeatured ? 'true' : 'false',
+      p.isBestSelling ? 'true' : 'false'
+    ]);
+
+    return [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+  }
+
+  generateCSVTemplate() {
+    const headers = ['Title', 'Category', 'Brand', 'Vendor', 'Price', 'Stock', 'SKU', 'ImageURL', 'Description'];
+    const sampleRows = [
+      ['Apple iPhone 15 Pro Max 256GB', 'Smartphones', 'Apple', 'TechWorld Hub', '1199.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
+      ['Nike Air Jordan 1 Retro High', 'Sneakers', 'Nike', 'Sneaker Planet', '189.99', '30', 'ESS-AJ1-RED', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80', 'Iconic basketball silhouette with premium leather finish.'],
+      ['Dell XPS 16 OLED Laptop', 'Computers', 'Dell', 'TechWorld Hub', '2499.00', '15', 'ESS-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
+    ];
+    return [headers.join(','), ...sampleRows.map(r => r.map(f => '"' + f + '"').join(','))].join('\r\n');
+  }
+
+  processCSVUpload(csvText, vendorId) {
+    return this.importProductsCSV(csvText, vendorId).count;
   }
 }
 

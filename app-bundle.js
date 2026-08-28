@@ -908,25 +908,25 @@ class DokanEngine {
       throw new Error('CSV text does not contain valid data rows.');
     }
 
-    const headers = rows[0].map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
-    const getIdx = (candidates) => {
+    const headers = rows[0].map(h => (h || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+    const getIdx = (candidates, defaultIdx = -1) => {
       for (const cand of candidates) {
         const idx = headers.indexOf(cand.toLowerCase().replace(/[^a-z0-9]/g, ''));
         if (idx !== -1) return idx;
       }
-      return -1;
+      return defaultIdx;
     };
 
-    const titleIdx = getIdx(['title', 'name', 'productname', 'producttitle']);
-    const catIdx = getIdx(['category', 'cat', 'categoryname']);
-    const brandIdx = getIdx(['brand', 'brandname', 'manufacturer']);
-    const vendorIdx = getIdx(['vendor', 'vendorname', 'store', 'storename']);
-    const regPriceIdx = getIdx(['regularprice', 'price', 'saleprice', 'retailprice']);
-    const origPriceIdx = getIdx(['originalprice', 'listprice', 'msrp', 'compareatprice']);
-    const stockIdx = getIdx(['stock', 'inventory', 'quantity', 'qty', 'count']);
-    const skuIdx = getIdx(['sku', 'code', 'productcode', 'itemid', 'id']);
-    const imgIdx = getIdx(['imageurl', 'image', 'photo', 'picture', 'thumbnail']);
-    const descIdx = getIdx(['description', 'desc', 'details', 'summary']);
+    const titleIdx = getIdx(['title', 'name', 'productname', 'producttitle'], 0);
+    const catIdx = getIdx(['category', 'cat', 'categoryname'], 1);
+    const brandIdx = getIdx(['brand', 'brandname', 'manufacturer'], 2);
+    const vendorIdx = getIdx(['vendor', 'vendorname', 'store', 'storename'], 3);
+    const priceIdx = getIdx(['price', 'regularprice', 'saleprice', 'retailprice'], 4);
+    const origPriceIdx = getIdx(['originalprice', 'listprice', 'msrp', 'compareatprice'], -1);
+    const stockIdx = getIdx(['stock', 'inventory', 'quantity', 'qty', 'count'], 5);
+    const skuIdx = getIdx(['sku', 'code', 'productcode', 'itemid', 'id'], 6);
+    const imgIdx = getIdx(['imageurl', 'image', 'photo', 'picture', 'thumbnail'], 7);
+    const descIdx = getIdx(['description', 'desc', 'details', 'summary'], 8);
 
     const vendors = this.getVendors();
     const products = this.getProducts();
@@ -936,20 +936,31 @@ class DokanEngine {
       const row = rows[r];
       if (!row || row.length === 0 || !row[titleIdx !== -1 ? titleIdx : 0]) continue;
 
-      const title = titleIdx !== -1 && row[titleIdx] ? row[titleIdx] : ('Imported Product #' + r);
-      const category = catIdx !== -1 && row[catIdx] ? row[catIdx].toLowerCase() : 'computers';
-      const brand = brandIdx !== -1 && row[brandIdx] ? row[brandIdx] : 'Generic';
-      const vendorNameStr = vendorIdx !== -1 && row[vendorIdx] ? row[vendorIdx] : '';
+      const title = (row[titleIdx] !== undefined && row[titleIdx] !== '') ? row[titleIdx] : ('Imported Product #' + r);
+      const category = (row[catIdx] !== undefined && row[catIdx] !== '') ? row[catIdx].toLowerCase() : 'computers';
+      const brand = (row[brandIdx] !== undefined && row[brandIdx] !== '') ? row[brandIdx] : 'Generic';
+      const vendorNameStr = (row[vendorIdx] !== undefined && row[vendorIdx] !== '') ? row[vendorIdx] : '';
 
       let matchedVendor = vendors.find(v => v.name.toLowerCase() === vendorNameStr.toLowerCase() || v.id.toLowerCase() === vendorNameStr.toLowerCase());
       if (!matchedVendor) matchedVendor = vendors.find(v => v.id === fallbackVendorId) || vendors[0];
 
-      const price = regPriceIdx !== -1 && row[regPriceIdx] ? (parseFloat(row[regPriceIdx].replace(/[^0-9.]/g, '')) || 99.99) : 99.99;
-      const origPrice = origPriceIdx !== -1 && row[origPriceIdx] ? (parseFloat(row[origPriceIdx].replace(/[^0-9.]/g, '')) || (price * 1.15)) : (price * 1.15);
-      const stock = stockIdx !== -1 && row[stockIdx] ? (parseInt(row[stockIdx].replace(/[^0-9]/g, '')) || 20) : 20;
-      const sku = skuIdx !== -1 && row[skuIdx] ? row[skuIdx] : ('ESS-CSV-' + Math.floor(1000 + Math.random() * 9000));
-      const image = imgIdx !== -1 && row[imgIdx] ? row[imgIdx] : 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80';
-      const description = descIdx !== -1 && row[descIdx] ? row[descIdx] : 'Authentic imported product catalog item.';
+      const priceVal = row[priceIdx];
+      const price = priceVal ? (parseFloat(priceVal.toString().replace(/[^0-9.]/g, '')) || 99.99) : 99.99;
+      
+      const origPriceVal = origPriceIdx !== -1 ? row[origPriceIdx] : null;
+      const origPrice = origPriceVal ? (parseFloat(origPriceVal.toString().replace(/[^0-9.]/g, '')) || (price * 1.15)) : (price * 1.15);
+      
+      const stockVal = row[stockIdx];
+      const stock = (stockVal !== undefined && stockVal !== '') ? (parseInt(stockVal.toString().replace(/[^0-9]/g, '')) || 20) : 20;
+      
+      const skuVal = row[skuIdx];
+      const sku = (skuVal && skuVal.trim() !== '') ? skuVal.trim() : ('ESS-CSV-' + Math.floor(1000 + Math.random() * 9000));
+      
+      const imageVal = row[imgIdx];
+      const image = (imageVal && (imageVal.startsWith('http://') || imageVal.startsWith('https://') || imageVal.startsWith('data:image/'))) ? imageVal.trim() : 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80';
+      
+      const descVal = row[descIdx];
+      const description = (descVal && descVal.trim() !== '') ? descVal.trim() : 'Authentic imported product catalog item.';
 
       const newP = {
         id: 'p_csv_' + Date.now() + '_' + r,
@@ -986,7 +997,7 @@ class DokanEngine {
 
   exportProductsCSV() {
     const products = this.getProducts();
-    const headers = ['Title', 'Category', 'Brand', 'VendorName', 'VendorId', 'RegularPrice', 'SalePrice', 'Stock', 'SKU', 'ImageURL', 'Description', 'Published', 'IsFeatured', 'IsBestSelling'];
+    const headers = ['Title', 'Category', 'Brand', 'VendorName', 'VendorId', 'Price', 'OriginalPrice', 'Stock', 'SKU', 'ImageURL', 'Description', 'Published', 'IsFeatured', 'IsBestSelling'];
     
     const rows = products.map(p => [
       '"' + (p.name || '').replace(/"/g, '""') + '"',
@@ -1009,11 +1020,11 @@ class DokanEngine {
   }
 
   generateCSVTemplate() {
-    const headers = ['Title', 'Category', 'Brand', 'Vendor', 'RegularPrice', 'SalePrice', 'Stock', 'SKU', 'ImageURL', 'Description'];
+    const headers = ['Title', 'Category', 'Brand', 'Vendor', 'Price', 'Stock', 'SKU', 'ImageURL', 'Description'];
     const sampleRows = [
-      ['Apple iPhone 15 Pro Max 256GB', 'computers', 'Apple', 'TechWorld Hub', '1199.00', '1299.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
-      ['Nike Air Jordan 1 Retro High', 'sneakers', 'Nike', 'Sneaker Planet', '189.99', '220.00', '30', 'ESS-AJ1-RED', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80', 'Iconic basketball silhouette with premium leather finish.'],
-      ['Dell XPS 16 OLED Laptop', 'computers', 'Dell', 'TechWorld Hub', '2499.00', '2799.00', '15', 'ESS-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
+      ['Apple iPhone 15 Pro Max 256GB', 'Smartphones', 'Apple', 'TechWorld Hub', '1199.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
+      ['Nike Air Jordan 1 Retro High', 'Sneakers', 'Nike', 'Sneaker Planet', '189.99', '30', 'ESS-AJ1-RED', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80', 'Iconic basketball silhouette with premium leather finish.'],
+      ['Dell XPS 16 OLED Laptop', 'Computers', 'Dell', 'TechWorld Hub', '2499.00', '15', 'ESS-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
     ];
     return [headers.join(','), ...sampleRows.map(r => r.map(f => '"' + f + '"').join(','))].join('\r\n');
   }
@@ -2288,20 +2299,54 @@ class ESellerStoreApp {
         if (previewSec) previewSec.style.display = 'block';
 
         if (tbody) {
+          const headers = rows[0].map(h => (h || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+          const getIdx = (candidates, defaultIdx) => {
+            for (const cand of candidates) {
+              const idx = headers.indexOf(cand.toLowerCase().replace(/[^a-z0-9]/g, ''));
+              if (idx !== -1) return idx;
+            }
+            return defaultIdx;
+          };
+
+          const titleIdx = getIdx(['title', 'name', 'productname', 'producttitle'], 0);
+          const catIdx = getIdx(['category', 'cat', 'categoryname'], 1);
+          const brandIdx = getIdx(['brand', 'brandname', 'manufacturer'], 2);
+          const vendorIdx = getIdx(['vendor', 'vendorname', 'store', 'storename'], 3);
+          const priceIdx = getIdx(['price', 'regularprice', 'saleprice', 'retailprice'], 4);
+          const stockIdx = getIdx(['stock', 'inventory', 'quantity', 'qty', 'count'], 5);
+          const skuIdx = getIdx(['sku', 'code', 'productcode', 'itemid', 'id'], 6);
+          const imgIdx = getIdx(['imageurl', 'image', 'photo', 'picture', 'thumbnail'], 7);
+
           const previewRows = rows.slice(1, 11);
-          tbody.innerHTML = previewRows.map((r, i) => `
-            <tr>
-              <td>#${i + 1}</td>
-              <td><strong>${r[0] || 'N/A'}</strong></td>
-              <td>${r[1] || 'General'}</td>
-              <td>${r[2] || 'Brand'}</td>
-              <td>${r[3] || 'Store'}</td>
-              <td>$${r[4] || '99.99'}</td>
-              <td>${r[6] || '20'}</td>
-              <td>${r[7] || 'SKU'}</td>
-              <td>${r[8] ? ('<img src="' + r[8] + '" width="30" height="30" style="object-fit:cover; border-radius:4px;">') : 'No Image'}</td>
-            </tr>
-          `).join('');
+          tbody.innerHTML = previewRows.map((r, i) => {
+            const title = (r[titleIdx] !== undefined && r[titleIdx] !== '') ? r[titleIdx] : (r[0] || 'N/A');
+            const category = (r[catIdx] !== undefined && r[catIdx] !== '') ? r[catIdx] : (r[1] || 'General');
+            const brand = (r[brandIdx] !== undefined && r[brandIdx] !== '') ? r[brandIdx] : (r[2] || 'Brand');
+            const vendor = (r[vendorIdx] !== undefined && r[vendorIdx] !== '') ? r[vendorIdx] : (r[3] || 'Store');
+            const price = (r[priceIdx] !== undefined && r[priceIdx] !== '') ? r[priceIdx] : (r[4] || '99.99');
+            const stock = (r[stockIdx] !== undefined && r[stockIdx] !== '') ? r[stockIdx] : ((r[5] !== undefined && r[5] !== '') ? r[5] : '20');
+            const sku = (r[skuIdx] !== undefined && r[skuIdx] !== '') ? r[skuIdx] : (r[6] || 'SKU');
+            const image = (r[imgIdx] !== undefined && r[imgIdx] !== '') ? r[imgIdx] : (r[7] || '');
+
+            const formattedPrice = price.toString().startsWith('$') ? price : ('$' + price);
+            const imagePreviewHtml = (image && (image.startsWith('http://') || image.startsWith('https://') || image.startsWith('data:image/')))
+              ? `<img src="${image}" alt="${title}" class="w-12 h-12 object-contain" style="width:48px; height:48px; max-width:48px; max-height:48px; object-fit:contain; border-radius:4px; border:1px solid #e2e8f0; background:#f8fafc;" />`
+              : '<span style="color:#94a3b8; font-size:11px;">No Image</span>';
+
+            return `
+              <tr>
+                <td>#${i + 1}</td>
+                <td><strong>${title}</strong></td>
+                <td>${category}</td>
+                <td>${brand}</td>
+                <td>${vendor}</td>
+                <td>${formattedPrice}</td>
+                <td><span class="status-badge" style="background:#e0f2fe; color:#0369a1; font-weight:700;">${stock}</span></td>
+                <td><code style="font-size:10.5px; background:#f1f5f9; padding:2px 5px; border-radius:4px;">${sku}</code></td>
+                <td class="image-preview" style="text-align:center;">${imagePreviewHtml}</td>
+              </tr>
+            `;
+          }).join('');
         }
 
         this.showToast('📋 CSV Parsed: ' + (rows.length - 1) + ' products detected.');

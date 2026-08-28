@@ -1587,6 +1587,24 @@ input:checked + .slider-round:before {
   border: 1px solid var(--border-light);
 }
 
+/* CSV Table Preview Utilities */
+.image-preview {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.w-12 {
+  width: 48px !important;
+}
+
+.h-12 {
+  height: 48px !important;
+}
+
+.object-contain {
+  object-fit: contain !important;
+}
+
 /* Checkout Payment Methods */
 .payment-methods-grid {
   display: grid;
