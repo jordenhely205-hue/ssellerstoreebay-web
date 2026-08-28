@@ -113,19 +113,19 @@
       "dest": "/products.json"
     },
     {
-      "src": "/api/products/batch",
+      "src": "/api/products/batch(.*)",
       "dest": "/api/products/batch.js"
     },
     {
-      "src": "/api/products",
+      "src": "/api/products(.*)",
       "dest": "/api/products.js"
     },
     {
-      "src": "/api/vendors/batch",
+      "src": "/api/vendors/batch(.*)",
       "dest": "/api/vendors/batch.js"
     },
     {
-      "src": "/api/vendors",
+      "src": "/api/vendors(.*)",
       "dest": "/api/vendors.js"
     },
     {

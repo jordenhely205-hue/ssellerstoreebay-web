@@ -3,6 +3,20 @@
  * Multi-Vendor Marketplace Engine (Dokan-Compatible Architecture)
  */
 
+// --- AUTO-PURGE LEGACY STORAGE UPGRADE ROUTINE ---
+const APP_VERSION = 'v3.0_sanvi_only';
+try {
+  if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
+    localStorage.clear();
+    if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
+    if (typeof window !== 'undefined' && window.indexedDB) {
+      try { indexedDB.deleteDatabase('esellerstore_db'); } catch (e) {}
+      try { indexedDB.deleteDatabase('dokan_store_db'); } catch (e) {}
+    }
+    localStorage.setItem('app_version', APP_VERSION);
+  }
+} catch (e) {}
+
 const MASTER_CATALOG_REPOSITORY = [
   {
     name: 'Apple iPhone 15 Pro Max (256GB Natural Titanium)',
@@ -8145,6 +8159,19 @@ class DokanEngine {
   }
 
   init() {
+    const APP_VERSION = 'v3.0_sanvi_only';
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
+        localStorage.clear();
+        if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
+        if (typeof window !== 'undefined' && window.indexedDB) {
+          try { indexedDB.deleteDatabase('esellerstore_db'); } catch (e) {}
+          try { indexedDB.deleteDatabase('dokan_store_db'); } catch (e) {}
+        }
+        localStorage.setItem('app_version', APP_VERSION);
+      }
+    } catch (e) {}
+
     try {
       if (!localStorage.getItem(this.storageKeyAdminAuth)) {
         localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify({
@@ -8156,8 +8183,14 @@ class DokanEngine {
       if (!localStorage.getItem(this.storageKeyProducts)) {
         localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
       }
+      if (!localStorage.getItem(this.storageKeyMasterCatalog)) {
+        localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(INITIAL_PRODUCTS));
+      }
       if (!localStorage.getItem(this.storageKeyVendors)) {
         localStorage.setItem(this.storageKeyVendors, JSON.stringify(INITIAL_VENDORS));
+      }
+      if (!localStorage.getItem(this.storageKeyOrders)) {
+        localStorage.setItem(this.storageKeyOrders, JSON.stringify(INITIAL_ORDERS));
       }
       if (!localStorage.getItem(this.storageKeyBrands)) {
         localStorage.setItem(this.storageKeyBrands, JSON.stringify(INITIAL_BRANDS));
@@ -8301,22 +8334,18 @@ class DokanEngine {
   }
 
   async fetchServerProducts() {
-    if (typeof fetch === 'undefined') return this.getProducts();
+    const localProducts = this.getProducts();
+    if (typeof fetch === 'undefined') return localProducts;
 
     try {
       const cacheBust = '?_t=' + Date.now();
-      // 1. Try serverless backend endpoint with cache buster
-      let response = await fetch('/api/products' + cacheBust, {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
-        }
+      let response = await fetch('./products.json' + cacheBust, {
+        headers: { 'Cache-Control': 'no-cache, no-store' }
       }).catch(() => null);
 
-      // 2. Fallback to static products.json
       if (!response || !response.ok) {
         response = await fetch('/products.json' + cacheBust, {
-          headers: { 'Cache-Control': 'no-cache' }
+          headers: { 'Cache-Control': 'no-cache, no-store' }
         }).catch(() => null);
       }
 
