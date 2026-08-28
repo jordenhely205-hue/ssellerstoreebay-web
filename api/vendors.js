@@ -2,10 +2,28 @@
 const fs = require('fs');
 
 const DEFAULT_VENDORS = [
-  { id: 'v101', name: 'TechWorld Hub', ownerName: 'Sarah Jenkins', email: 'sarah@techworld.com', status: 'verified', balance: 1450.00, rating: 4.9 },
-  { id: 'v102', name: 'Luxe Watches', ownerName: 'Alex Rivera', email: 'alex@luxewatches.com', status: 'verified', balance: 890.50, rating: 4.8 },
-  { id: 'v103', name: 'Sneaker Planet', ownerName: 'Marcus Vance', email: 'marcus@sneakerplanet.com', status: 'verified', balance: 2150.00, rating: 4.9 },
-  { id: 'v104', name: 'Fashion Haven', ownerName: 'Elena Rostova', email: 'elena@fashionhaven.com', status: 'verified', balance: 3400.00, rating: 4.7 }
+  {
+    id: 'sanvicollection',
+    name: 'Sanvicollection',
+    storeName: 'Sanvicollection',
+    ownerName: 'Sanvi Sharma',
+    cnic: '42101-7890123-5',
+    email: 'sanvi@sanvicollection.com',
+    mobile: '+1 (555) 345-6789',
+    phone: '+1 (555) 345-6789',
+    description: 'Exclusive official vendor of luxury fashion, modern technology, lifestyle accessories, and premium home essentials.',
+    status: 'verified',
+    balance: 3420.50,
+    totalSales: 18750.00,
+    profitEarned: 4685.00,
+    profitMarginPercent: 25,
+    productsSold: 150,
+    commissionRate: 15,
+    storeLogo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80',
+    rating: 5.0,
+    joinedDate: '2026-01-10'
+  }
 ];
 
 let inMemoryVendors = [...DEFAULT_VENDORS];

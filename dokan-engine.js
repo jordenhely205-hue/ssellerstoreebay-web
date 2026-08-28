@@ -4,11 +4,12 @@
  * Ad Campaigns Management Engine, Manual Live Chat Stream & Web Audio Notifications.
  */
 
-import { INITIAL_PRODUCTS, INITIAL_VENDORS, INITIAL_BRANDS, INITIAL_ADS, PLATFORM_METRICS } from './data.js';
+import { INITIAL_PRODUCTS, INITIAL_VENDORS, INITIAL_ORDERS, INITIAL_BRANDS, INITIAL_ADS, PLATFORM_METRICS } from './data.js';
 
 class DokanEngine {
   constructor() {
     this.storageKeyProducts = 'esellerstore_products';
+    this.storageKeyMasterCatalog = 'esellerstore_master_catalog';
     this.storageKeyVendors = 'esellerstore_vendors';
     this.storageKeyMetrics = 'esellerstore_metrics';
     this.storageKeyCart = 'esellerstore_cart';
@@ -60,7 +61,7 @@ class DokanEngine {
     }
     if (!localStorage.getItem(this.storageKeyWalletLogs)) {
       localStorage.setItem(this.storageKeyWalletLogs, JSON.stringify([
-        { id: 'w1', vendorId: 'v101', vendorName: 'TechWorld Hub', amount: 500.00, type: 'credit', note: 'Initial Admin Bonus Grant', date: '2026-07-01 10:30' }
+        { id: 'w1', vendorId: 'sanvicollection', vendorName: 'Sanvicollection', amount: 500.00, type: 'credit', note: 'Initial Admin Bonus Grant', date: '2026-07-01 10:30' }
       ]));
     }
     if (!localStorage.getItem(this.storageKeyActivityLogs)) {
@@ -249,45 +250,38 @@ class DokanEngine {
 
   getProducts() {
     try {
-      const data = JSON.parse(localStorage.getItem(this.storageKeyProducts));
+      const master = JSON.parse(localStorage.getItem(this.storageKeyMasterCatalog));
       let edits = {};
       try { edits = JSON.parse(localStorage.getItem('esellerstore_product_edits')) || {}; } catch (e) {}
       let deleted = [];
       try { deleted = JSON.parse(localStorage.getItem('esellerstore_deleted_products')) || []; } catch (e) {}
 
-      if (!data || !Array.isArray(data) || data.length === 0) {
-        const base = INITIAL_PRODUCTS.filter(p => !deleted.includes(p.id)).map(p => {
-          return edits[p.id] ? { ...p, ...edits[p.id] } : p;
+      if (master && Array.isArray(master) && master.length > 0) {
+        let merged = master.filter(p => !deleted.includes(p.id)).map(p => {
+          if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
+          if (edits[p.id]) return { ...p, ...edits[p.id] };
+          return p;
         });
-        localStorage.setItem(this.storageKeyProducts, JSON.stringify(base));
-        return base;
+        return merged;
       }
 
-      let merged = [...data];
-      // If client storage only has legacy items, merge master catalog items
-      if (merged.length < INITIAL_PRODUCTS.length) {
-        INITIAL_PRODUCTS.forEach(p => {
-          if (!deleted.includes(p.id) && !merged.some(m => m.id === p.id || (m.sku && m.sku === p.sku))) {
-            merged.push(edits[p.id] ? { ...p, ...edits[p.id] } : p);
-          }
+      const data = JSON.parse(localStorage.getItem(this.storageKeyProducts));
+      if (data && Array.isArray(data) && data.length > 0) {
+        let merged = data.filter(p => !deleted.includes(p.id)).map(p => {
+          if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
+          if (edits[p.id]) return { ...p, ...edits[p.id] };
+          return p;
         });
+        localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(merged));
+        return merged;
       }
 
-      // Always overlay explicit user edits & clean badges
-      let hasEdits = false;
-      merged = merged.filter(p => !deleted.includes(p.id)).map(p => {
-        if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
-        if (edits[p.id]) {
-          hasEdits = true;
-          return { ...p, ...edits[p.id] };
-        }
-        return p;
+      const base = INITIAL_PRODUCTS.filter(p => !deleted.includes(p.id)).map(p => {
+        return edits[p.id] ? { ...p, ...edits[p.id] } : p;
       });
-
-      if (hasEdits) {
-        localStorage.setItem(this.storageKeyProducts, JSON.stringify(merged));
-      }
-      return merged;
+      localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(base));
+      localStorage.setItem(this.storageKeyProducts, JSON.stringify(base));
+      return base;
     } catch (e) {
       return INITIAL_PRODUCTS;
     }
@@ -364,6 +358,7 @@ class DokanEngine {
           });
 
           try {
+            localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(mergedList));
             localStorage.setItem(this.storageKeyProducts, JSON.stringify(mergedList));
           } catch (e) {}
 
@@ -391,7 +386,10 @@ class DokanEngine {
         }
       });
     }
-    localStorage.setItem(this.storageKeyProducts, JSON.stringify(products));
+    try {
+      localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(products));
+      localStorage.setItem(this.storageKeyProducts, JSON.stringify(products));
+    } catch (e) {}
     this.syncProductsToCloudBackend(products);
     this.revalidateStorefrontCache();
     if (typeof window !== 'undefined') {
@@ -440,7 +438,7 @@ class DokanEngine {
     const publishTarget = productData.publishTarget || 'vendor';
     const isOfficial = publishTarget === 'official' || publishTarget === 'both' || !!productData.isOfficial;
 
-    let displayVendorName = vendor ? vendor.name : 'TechWorld Hub';
+    let displayVendorName = vendor ? vendor.name : 'Sanvicollection';
     if (publishTarget === 'official') {
       displayVendorName = '🏢 E Seller Store Official Direct';
     } else if (publishTarget === 'both') {
@@ -452,7 +450,7 @@ class DokanEngine {
       name: productData.name || 'New Product',
       category: productData.category || 'computers',
       brand: productData.brand || (vendor ? vendor.name : 'Generic'),
-      vendorId: vendor ? vendor.id : 'v101',
+      vendorId: vendor ? vendor.id : 'sanvicollection',
       vendorName: displayVendorName,
       price: price,
       originalPrice: originalPrice,
@@ -585,6 +583,28 @@ class DokanEngine {
       try {
         localStorage.setItem('esellerstore_cache_bust', Date.now().toString());
       } catch (e) {}
+    }
+  }
+
+  getOrders() {
+    try {
+      const data = JSON.parse(localStorage.getItem(this.storageKeyOrders));
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        localStorage.setItem(this.storageKeyOrders, JSON.stringify(INITIAL_ORDERS));
+        return INITIAL_ORDERS;
+      }
+      return data;
+    } catch (e) {
+      return INITIAL_ORDERS;
+    }
+  }
+
+  saveOrders(orders) {
+    try {
+      localStorage.setItem(this.storageKeyOrders, JSON.stringify(orders));
+    } catch (e) {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('orders_updated'));
     }
   }
 
@@ -880,7 +900,7 @@ class DokanEngine {
     return lines;
   }
 
-  importProductsCSV(csvText, fallbackVendorId = 'v101') {
+  importProductsCSV(csvText, fallbackVendorId = 'sanvicollection') {
     const rows = this.parseCSV(csvText);
     if (!rows || rows.length <= 1) {
       throw new Error('CSV text does not contain valid data rows.');
@@ -1000,9 +1020,9 @@ class DokanEngine {
   generateCSVTemplate() {
     const headers = ['Title', 'Category', 'Brand', 'Vendor', 'Price', 'Stock', 'SKU', 'ImageURL', 'Description'];
     const sampleRows = [
-      ['Apple iPhone 15 Pro Max 256GB', 'Smartphones', 'Apple', 'TechWorld Hub', '1199.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
+      ['Apple iPhone 15 Pro Max 256GB', 'Smartphones', 'Apple', 'Sanvicollection', '1199.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
       ['Nike Air Jordan 1 Retro High', 'Sneakers', 'Nike', 'Sneaker Planet', '189.99', '30', 'ESS-AJ1-RED', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80', 'Iconic basketball silhouette with premium leather finish.'],
-      ['Dell XPS 16 OLED Laptop', 'Computers', 'Dell', 'TechWorld Hub', '2499.00', '15', 'ESS-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
+      ['Dell XPS 16 OLED Laptop', 'Computers', 'Dell', 'Sanvicollection', '2499.00', '15', 'ESS-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
     ];
     return [headers.join(','), ...sampleRows.map(r => r.map(f => '"' + f + '"').join(','))].join('\r\n');
   }
