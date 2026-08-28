@@ -327,6 +327,28 @@ class DokanEngine {
     return newVendor;
   }
 
+  approveVendor(vendorId) {
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => v.id === vendorId);
+    if (!vendor) throw new Error('Vendor not found.');
+
+    vendor.status = 'verified';
+    this.saveVendors(vendors);
+    this.logActivity('Vendor Approved & Unlocked', `Super Admin verified credentials for store: ${vendor.name}`, 'success');
+    return vendor;
+  }
+
+  rejectVendor(vendorId) {
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => v.id === vendorId);
+    if (!vendor) throw new Error('Vendor not found.');
+
+    vendor.status = 'rejected';
+    this.saveVendors(vendors);
+    this.logActivity('Vendor Application Rejected', `Store '${vendor.name}' application rejected`, 'warning');
+    return vendor;
+  }
+
   updateVendorVerificationStatus(vendorId, newStatus) {
     const vendors = this.getVendors();
     const vendor = vendors.find(v => v.id === vendorId);

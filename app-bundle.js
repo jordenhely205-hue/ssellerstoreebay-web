@@ -1133,8 +1133,51 @@ class DokanEngine {
   }
 
   saveVendors(vendors) {
-    localStorage.setItem(this.storageKeyVendors, JSON.stringify(vendors));
-    window.dispatchEvent(new CustomEvent('vendors_updated'));
+    try {
+      localStorage.setItem(this.storageKeyVendors, JSON.stringify(vendors));
+    } catch (e) {}
+
+    // Multi-tier storage persistence (IndexedDB + Cloud DB Sync)
+    try {
+      if (typeof idbStorage !== 'undefined' && idbStorage.putBatch) {
+        idbStorage.putBatch('vendors', vendors);
+      }
+    } catch (e) {}
+
+    this.syncVendorsToCloudBackend(vendors);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('vendors_updated'));
+    }
+  }
+
+  syncVendorsToCloudBackend(vendors) {
+    const payload = {
+      action: 'batch_upsert_vendors',
+      vendors: vendors || this.getVendors(),
+      timestamp: new Date().toISOString(),
+      source: 'vendor_store_sync'
+    };
+
+    if (typeof fetch !== 'undefined') {
+      try {
+        fetch('/api/vendors/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+      } catch (err) {}
+    }
+
+    try {
+      if (typeof idbStorage !== 'undefined' && idbStorage.putBatch) {
+        idbStorage.putBatch('cloud_queue', [{
+          endpoint: '/api/vendors/batch',
+          payload,
+          syncedAt: new Date().toISOString()
+        }]);
+      }
+    } catch (e) {}
   }
 
   getVendorById(id) {
@@ -1188,7 +1231,7 @@ class DokanEngine {
 
     vendor.status = 'verified';
     this.saveVendors(vendors);
-    this.logActivity('Vendor Approved & Unlocked', 'Super Admin approved credentials for store: ' + vendor.name, 'success');
+    this.logActivity('Vendor Approved & Unlocked', 'Super Admin verified credentials for store: ' + vendor.name, 'success');
     return vendor;
   }
 
@@ -1197,9 +1240,9 @@ class DokanEngine {
     const vendor = vendors.find(v => v.id === vendorId);
     if (!vendor) throw new Error('Vendor not found.');
 
-    vendor.status = 'suspended';
+    vendor.status = 'rejected';
     this.saveVendors(vendors);
-    this.logActivity('Vendor Application Rejected', 'Store ' + vendor.name + ' set to suspended', 'warning');
+    this.logActivity('Vendor Application Rejected', 'Store ' + vendor.name + ' application rejected', 'warning');
     return vendor;
   }
 
@@ -1937,41 +1980,95 @@ class ESellerStoreApp {
       `).join('');
     }
 
-    // Overview Vendors Table
-    const overviewVendorsBody = document.getElementById('adminVendorsOverviewTableBody');
-    if (overviewVendorsBody) {
-      overviewVendorsBody.innerHTML = vendors.map(v => `
+    // Render Pending Store Requests in Overview Tab
+    const pendingVendors = vendors.filter(v => v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review');
+    const pendingAlertSec = document.getElementById('adminPendingVendorsAlertSection');
+    const pendingCountEl = document.getElementById('adminPendingVendorsCount');
+    const pendingTbody = document.getElementById('adminPendingVendorsOverviewTableBody');
+
+    if (pendingCountEl) pendingCountEl.textContent = pendingVendors.length;
+    if (pendingAlertSec) {
+      pendingAlertSec.style.display = pendingVendors.length > 0 ? 'block' : 'none';
+    }
+
+    if (pendingTbody) {
+      pendingTbody.innerHTML = pendingVendors.map(v => `
         <tr>
           <td>
-            <strong>${v.name}</strong><br>
-            <small style="color:#666;">Owner: ${v.ownerName}</small><br>
-            <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${v.storeLogo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}" width="36" height="36" style="border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;">
+              <div>
+                <strong style="font-size:13px; color:#1e293b;">${v.name}</strong><br>
+                <small style="color:#64748b;">Owner: ${v.ownerName}</small>
+              </div>
+            </div>
           </td>
-          <td>${v.email}<br><small style="color:#666;">${v.mobile || ''}</small></td>
-          <td><span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span></td>
-          <td><strong>$${parseFloat(v.balance).toFixed(2)}</strong></td>
-          <td><span style="font-weight:700; color:#137333;">${v.commissionRate || 15}% Fee</span></td>
           <td>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
-              ${v.status === 'pending_verification' ? `
-                <button class="admin-act-btn toggle-on" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve Vendor</button>
-                <button class="admin-act-btn delete" onclick="app.adminApproveVendor('${v.id}', 'suspended')">❌ Reject</button>
-              ` : `
-                <button class="admin-act-btn ${v.status === 'suspended' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' ? 'verified' : 'suspended'}')">
-                  ${v.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
-                </button>
-              `}
+            <span style="font-size:12px; font-weight:700; color:var(--nav-red);">CNIC: ${v.cnic || 'N/A'}</span>
+          </td>
+          <td>
+            <span style="font-size:12px;">${v.email}</span><br>
+            <small style="color:#64748b;">${v.mobile || ''}</small>
+          </td>
+          <td>
+            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING VERIFICATION</span>
+          </td>
+          <td>
+            <small style="color:#64748b;">${v.joinedDate || new Date().toISOString().split('T')[0]}</small>
+          </td>
+          <td style="text-align:right;">
+            <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+              <button class="btn-primary" style="padding:6px 12px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve Store</button>
+              <button class="btn-primary" style="padding:6px 12px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject</button>
             </div>
           </td>
         </tr>
       `).join('');
     }
 
+    // Overview Vendors Table
+    const overviewVendorsBody = document.getElementById('adminVendorsOverviewTableBody');
+    if (overviewVendorsBody) {
+      overviewVendorsBody.innerHTML = vendors.map(v => {
+        const isPending = v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review';
+        return `
+          <tr style="${isPending ? 'background:#fffdf5;' : ''}">
+            <td>
+              <strong>${v.name}</strong><br>
+              <small style="color:#666;">Owner: ${v.ownerName}</small><br>
+              <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
+            </td>
+            <td>${v.email}<br><small style="color:#666;">${v.mobile || ''}</small></td>
+            <td>
+              ${isPending
+                ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:3px 8px; border-radius:10px; border:1px solid #fde68a;">⏳ PENDING</span>`
+                : `<span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span>`
+              }
+            </td>
+            <td><strong>$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
+            <td><span style="font-weight:700; color:#137333;">${v.commissionRate || 15}% Fee</span></td>
+            <td>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit</button>
+                ${isPending ? `
+                  <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve</button>
+                  <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject</button>
+                ` : `
+                  <button class="admin-act-btn ${v.status === 'suspended' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' ? 'verified' : 'suspended'}')">
+                    ${v.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
+                  </button>
+                `}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
     // Populate Select Vendor dropdown
     const selectEl = document.getElementById('adminSelectVendor');
     if (selectEl) {
-      selectEl.innerHTML = vendors.map(v => '<option value="' + v.id + '">' + v.name + ' (Balance: $' + parseFloat(v.balance).toFixed(2) + ')</option>').join('');
+      selectEl.innerHTML = vendors.map(v => '<option value="' + v.id + '">' + v.name + (v.status !== 'verified' ? ' (Pending)' : '') + ' (Balance: $' + parseFloat(v.balance || 0).toFixed(2) + ')</option>').join('');
     }
 
     this.renderAdminProductsTable();
@@ -2477,50 +2574,58 @@ class ESellerStoreApp {
     if (!tbody) return;
 
     const vendors = engine.getVendors();
-    tbody.innerHTML = vendors.map(v => `
-      <tr>
-        <td>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${v.storeLogo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}" width="38" height="38" style="border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;">
-            <div>
-              <strong style="font-size:13px; color:#1e293b;">${v.name}</strong><br>
-              <small style="color:#64748b;">Joined: ${v.joinedDate || '2026-07-01'}</small>
+    tbody.innerHTML = vendors.map(v => {
+      const isPending = v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review';
+      const statusBadgeHtml = isPending
+        ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING VERIFICATION</span>`
+        : `<span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span>`;
+
+      return `
+        <tr style="${isPending ? 'background:#fffdf5;' : ''}">
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${v.storeLogo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}" width="38" height="38" style="border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;">
+              <div>
+                <strong style="font-size:13px; color:#1e293b;">${v.name}</strong><br>
+                <small style="color:#64748b;">Joined: ${v.joinedDate || '2026-07-01'}</small>
+              </div>
             </div>
-          </div>
-        </td>
-        <td>
-          <strong>${v.ownerName}</strong><br>
-          <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
-        </td>
-        <td>
-          ${v.email}<br>
-          <small style="color:#64748b;">${v.mobile || 'N/A'}</small>
-        </td>
-        <td>
-          <span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span>
-        </td>
-        <td>
-          <strong style="color:#137333;">${v.commissionRate || 15}% Admin Fee</strong><br>
-          <small style="color:#64748b;">${v.profitMarginPercent || 25}% Vendor Margin</small>
-        </td>
-        <td>
-          <strong style="font-size:14px; color:var(--nav-red);">$${parseFloat(v.balance).toFixed(2)}</strong>
-        </td>
-        <td style="text-align:right;">
-          <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-            <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
-            <button class="admin-act-btn primary" onclick="app.handleAdminVendorInventoryView('${v.id}')">📦 Inventory</button>
-            ${v.status === 'pending_verification' ? `
-              <button class="admin-act-btn toggle-on" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve Vendor</button>
-            ` : `
-              <button class="admin-act-btn ${v.status === 'suspended' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' ? 'verified' : 'suspended'}')">
-                ${v.status === 'suspended' ? 'Unsuspend' : '🚫 Suspend'}
-              </button>
-            `}
-          </div>
-        </td>
-      </tr>
-    `).join('');
+          </td>
+          <td>
+            <strong>${v.ownerName}</strong><br>
+            <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
+          </td>
+          <td>
+            ${v.email}<br>
+            <small style="color:#64748b;">${v.mobile || 'N/A'}</small>
+          </td>
+          <td>
+            ${statusBadgeHtml}
+          </td>
+          <td>
+            <strong style="color:#137333;">${v.commissionRate || 15}% Admin Fee</strong><br>
+            <small style="color:#64748b;">${v.profitMarginPercent || 25}% Vendor Margin</small>
+          </td>
+          <td>
+            <strong style="font-size:14px; color:var(--nav-red);">$${parseFloat(v.balance || 0).toFixed(2)}</strong>
+          </td>
+          <td style="text-align:right;">
+            <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+              <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
+              <button class="admin-act-btn primary" onclick="app.handleAdminVendorInventoryView('${v.id}')">📦 Inventory</button>
+              ${isPending ? `
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve / Verify</button>
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject / Decline</button>
+              ` : `
+                <button class="admin-act-btn ${v.status === 'suspended' || v.status === 'rejected' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' || v.status === 'rejected' ? 'verified' : 'suspended'}')">
+                  ${v.status === 'suspended' || v.status === 'rejected' ? 'Unsuspend' : '🚫 Suspend'}
+                </button>
+              `}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   handleAdminApproveVendor(vendorId) {
@@ -2532,6 +2637,19 @@ class ESellerStoreApp {
       alert('✅ VENDOR APPROVED & UNLOCKED!\n\nStore Name: ' + vendor.name + '\nOwner: ' + vendor.ownerName + '\nCNIC: ' + vendor.cnic + '\nStatus: VERIFIED\n\nFull selling access and 1-Click Master Catalog Sync have been activated.');
     } catch (e) {
       alert('Approval Error: ' + e.message);
+    }
+  }
+
+  handleAdminRejectVendor(vendorId) {
+    if (confirm('Are you sure you want to reject / decline this vendor application?')) {
+      try {
+        const vendor = engine.rejectVendor(vendorId);
+        this.renderAdminDashboard();
+        this.renderVendorDashboard();
+        this.showToast('❌ Vendor ' + vendor.name + ' application rejected.');
+      } catch (e) {
+        alert('Rejection Error: ' + e.message);
+      }
     }
   }
 
