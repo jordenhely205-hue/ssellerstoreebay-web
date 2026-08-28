@@ -268,6 +268,23 @@ class DokanEngine {
     } catch (e) {}
   }
 
+  syncBatchProductsToBackend(products) {
+    if (typeof fetch === 'undefined' || !Array.isArray(products) || products.length === 0) return;
+    try {
+      fetch('/api/products/batch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store'
+        },
+        body: JSON.stringify({
+          action: 'batch_upsert',
+          products: products
+        })
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
   getProducts() {
     try {
       const localMaster = localStorage.getItem(this.storageKeyMasterCatalog);
@@ -425,6 +442,7 @@ class DokanEngine {
       brand: productData.brand || (vendor ? vendor.name : 'Generic'),
       vendorId: vendor ? vendor.id : 'sanvicollection',
       vendorName: displayVendorName,
+      ownerName: vendor ? (vendor.ownerName || 'Sanvi Sharma') : 'Sanvi Sharma',
       price: price,
       originalPrice: originalPrice,
       rating: productData.rating ? parseFloat(productData.rating) : 5.0,
@@ -479,6 +497,7 @@ class DokanEngine {
       ...updatedData,
       vendorName: vendorName,
       publishTarget: publishTarget,
+      ownerName: (vendors.find(item => item.id === (updatedData.vendorId || products[idx].vendorId)) || {}).ownerName || products[idx].ownerName || 'Sanvi Sharma',
       isOfficial: isOfficial,
       price: updatedData.price !== undefined ? parseFloat(updatedData.price) : products[idx].price,
       originalPrice: updatedData.originalPrice !== undefined ? parseFloat(updatedData.originalPrice) : products[idx].originalPrice,
@@ -873,7 +892,7 @@ class DokanEngine {
     return lines;
   }
 
-  importProductsCSV(csvText, fallbackVendorId = 'sanvicollection') {
+  importProductsCSV(csvText, targetVendorId = 'sanvicollection') {
     const rows = this.parseCSV(csvText);
     if (!rows || rows.length <= 1) {
       throw new Error('CSV text does not contain valid data rows.');
@@ -900,6 +919,9 @@ class DokanEngine {
     const descIdx = getIdx(['description', 'desc', 'details', 'summary'], 8);
 
     const vendors = this.getVendors();
+    let targetVendor = vendors.find(v => v.id === targetVendorId || (v.name && v.name.toLowerCase() === (targetVendorId || '').toLowerCase()));
+    if (!targetVendor) targetVendor = vendors[0];
+
     const products = this.getProducts();
     const importedProducts = [];
 
@@ -912,8 +934,11 @@ class DokanEngine {
       const brand = (row[brandIdx] !== undefined && row[brandIdx] !== '') ? row[brandIdx] : 'Generic';
       const vendorNameStr = (row[vendorIdx] !== undefined && row[vendorIdx] !== '') ? row[vendorIdx] : '';
 
-      let matchedVendor = vendors.find(v => v.name.toLowerCase() === vendorNameStr.toLowerCase() || v.id.toLowerCase() === vendorNameStr.toLowerCase());
-      if (!matchedVendor) matchedVendor = vendors.find(v => v.id === fallbackVendorId) || vendors[0];
+      let matchedVendor = targetVendor;
+      if (!matchedVendor && vendorNameStr) {
+        matchedVendor = vendors.find(v => v.name.toLowerCase() === vendorNameStr.toLowerCase() || v.id.toLowerCase() === vendorNameStr.toLowerCase());
+      }
+      if (!matchedVendor) matchedVendor = vendors.find(v => v.id === 'sanvicollection') || vendors[0];
 
       const priceVal = row[priceIdx];
       const price = priceVal ? (parseFloat(priceVal.toString().replace(/[^0-9.]/g, '')) || 99.99) : 99.99;
@@ -938,8 +963,9 @@ class DokanEngine {
         name: title,
         category,
         brand,
-        vendorId: matchedVendor.id,
-        vendorName: matchedVendor.name,
+        vendorId: matchedVendor ? matchedVendor.id : 'sanvicollection',
+        vendorName: matchedVendor ? matchedVendor.name : 'Sanvicollection',
+        ownerName: matchedVendor ? (matchedVendor.ownerName || 'Sanvi Sharma') : 'Sanvi Sharma',
         price,
         originalPrice: origPrice,
         stock,
@@ -948,22 +974,30 @@ class DokanEngine {
         description,
         rating: 5.0,
         reviewsCount: 0,
-        published: true,
-        publishTarget: 'vendor',
+        isDeal: false,
         isFeatured: true,
         isBestSelling: false,
         isNew: true,
-        isDeal: false,
-        badge: ''
+        published: true,
+        publishTarget: 'vendor',
+        isOfficial: false,
+        badge: '',
+        updatedAt: new Date().toISOString(),
+        isEdited: true
       };
 
-      products.unshift(newP);
       importedProducts.push(newP);
     }
 
-    this.saveProducts(products);
-    this.logActivity('Bulk CSV Products Imported', 'Imported ' + importedProducts.length + ' products to master catalog', 'success');
-    return { count: importedProducts.length, importedProducts };
+    if (importedProducts.length === 0) {
+      throw new Error('No valid products could be parsed from the CSV file.');
+    }
+
+    const updatedCatalog = [...importedProducts, ...products];
+    this.saveProducts(updatedCatalog);
+    this.syncBatchProductsToBackend(importedProducts);
+    this.logActivity('Bulk CSV Import', `Successfully imported ${importedProducts.length} items to ${targetVendor ? targetVendor.name : 'Sanvicollection'}`, 'success');
+    return { count: importedProducts.length, products: importedProducts };
   }
 
   exportProductsCSV() {

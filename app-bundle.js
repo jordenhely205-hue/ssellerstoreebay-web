@@ -146,7 +146,7 @@ const INITIAL_VENDORS = [
     "email": "sanvi@sanvicollection.com",
     "mobile": "+1 (555) 345-6789",
     "phone": "+1 (555) 345-6789",
-    "password": "PasswordSanvi123!",
+    "password": "Sanvi@123",
     "description": "Exclusive official vendor of luxury fashion, modern technology, lifestyle accessories, and premium home essentials.",
     "status": "verified",
     "balance": 3420.5,
@@ -8294,6 +8294,23 @@ class DokanEngine {
     } catch (e) {}
   }
 
+  syncBatchProductsToBackend(products) {
+    if (typeof fetch === 'undefined' || !Array.isArray(products) || products.length === 0) return;
+    try {
+      fetch('/api/products/batch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store'
+        },
+        body: JSON.stringify({
+          action: 'batch_upsert',
+          products: products
+        })
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
   getProducts() {
     try {
       const localMaster = localStorage.getItem(this.storageKeyMasterCatalog);
@@ -8494,6 +8511,7 @@ class DokanEngine {
       brand: productData.brand || (vendor ? vendor.name : 'Generic'),
       vendorId: vendor ? vendor.id : 'sanvicollection',
       vendorName: displayVendorName,
+      ownerName: vendor ? (vendor.ownerName || 'Sanvi Sharma') : 'Sanvi Sharma',
       price: price,
       originalPrice: originalPrice,
       rating: productData.rating ? parseFloat(productData.rating) : 5.0,
@@ -8548,6 +8566,7 @@ class DokanEngine {
       ...updatedData,
       vendorName: vendorName,
       publishTarget: publishTarget,
+      ownerName: (vendors.find(item => item.id === (updatedData.vendorId || products[idx].vendorId)) || {}).ownerName || products[idx].ownerName || 'Sanvi Sharma',
       isOfficial: isOfficial,
       price: updatedData.price !== undefined ? parseFloat(updatedData.price) : products[idx].price,
       originalPrice: updatedData.originalPrice !== undefined ? parseFloat(updatedData.originalPrice) : products[idx].originalPrice,
@@ -8746,7 +8765,7 @@ class DokanEngine {
     return lines;
   }
 
-  importProductsCSV(csvText, fallbackVendorId = 'sanvicollection') {
+  importProductsCSV(csvText, targetVendorId = 'sanvicollection') {
     const rows = this.parseCSV(csvText);
     if (!rows || rows.length <= 1) {
       throw new Error('CSV text does not contain valid data rows.');
@@ -8773,6 +8792,9 @@ class DokanEngine {
     const descIdx = getIdx(['description', 'desc', 'details', 'summary'], 8);
 
     const vendors = this.getVendors();
+    let targetVendor = vendors.find(v => v.id === targetVendorId || (v.name && v.name.toLowerCase() === (targetVendorId || '').toLowerCase()));
+    if (!targetVendor) targetVendor = vendors[0];
+
     const products = this.getProducts();
     const importedProducts = [];
 
@@ -8785,8 +8807,11 @@ class DokanEngine {
       const brand = (row[brandIdx] !== undefined && row[brandIdx] !== '') ? row[brandIdx] : 'Generic';
       const vendorNameStr = (row[vendorIdx] !== undefined && row[vendorIdx] !== '') ? row[vendorIdx] : '';
 
-      let matchedVendor = vendors.find(v => v.name.toLowerCase() === vendorNameStr.toLowerCase() || v.id.toLowerCase() === vendorNameStr.toLowerCase());
-      if (!matchedVendor) matchedVendor = vendors.find(v => v.id === fallbackVendorId) || vendors[0];
+      let matchedVendor = targetVendor;
+      if (!matchedVendor && vendorNameStr) {
+        matchedVendor = vendors.find(v => v.name.toLowerCase() === vendorNameStr.toLowerCase() || v.id.toLowerCase() === vendorNameStr.toLowerCase());
+      }
+      if (!matchedVendor) matchedVendor = vendors.find(v => v.id === 'sanvicollection') || vendors[0];
 
       const priceVal = row[priceIdx];
       const price = priceVal ? (parseFloat(priceVal.toString().replace(/[^0-9.]/g, '')) || 99.99) : 99.99;
@@ -8811,8 +8836,9 @@ class DokanEngine {
         name: title,
         category,
         brand,
-        vendorId: matchedVendor.id,
-        vendorName: matchedVendor.name,
+        vendorId: matchedVendor ? matchedVendor.id : 'sanvicollection',
+        vendorName: matchedVendor ? matchedVendor.name : 'Sanvicollection',
+        ownerName: matchedVendor ? (matchedVendor.ownerName || 'Sanvi Sharma') : 'Sanvi Sharma',
         price,
         originalPrice: origPrice,
         stock,
@@ -8821,22 +8847,30 @@ class DokanEngine {
         description,
         rating: 5.0,
         reviewsCount: 0,
-        published: true,
-        publishTarget: 'vendor',
+        isDeal: false,
         isFeatured: true,
         isBestSelling: false,
         isNew: true,
-        isDeal: false,
-        badge: ''
+        published: true,
+        publishTarget: 'vendor',
+        isOfficial: false,
+        badge: '',
+        updatedAt: new Date().toISOString(),
+        isEdited: true
       };
 
-      products.unshift(newP);
       importedProducts.push(newP);
     }
 
-    this.saveProducts(products);
-    this.logActivity('Bulk CSV Products Imported', 'Imported ' + importedProducts.length + ' products to master catalog', 'success');
-    return { count: importedProducts.length, importedProducts };
+    if (importedProducts.length === 0) {
+      throw new Error('No valid products could be parsed from the CSV file.');
+    }
+
+    const updatedCatalog = [...importedProducts, ...products];
+    this.saveProducts(updatedCatalog);
+    this.syncBatchProductsToBackend(importedProducts);
+    this.logActivity('Bulk CSV Import', `Successfully imported ${importedProducts.length} items to ${targetVendor ? targetVendor.name : 'Sanvicollection'}`, 'success');
+    return { count: importedProducts.length, products: importedProducts };
   }
 
   exportProductsCSV() {
@@ -9648,23 +9682,19 @@ class ESellerStoreApp {
 
   /* --- SUPER ADMIN DASHBOARD CONTROLLER & SUB-TABS --- */
   switchAdminTab(tabName) {
-    document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.admin-tab-content').forEach(c => {
-      c.style.display = 'none';
-      c.classList.remove('active');
-    });
+    document.querySelectorAll('.admin-nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
 
-    const activeBtn = document.getElementById('adminTabBtn-' + tabName) || document.querySelector('.admin-tab-btn[onclick*="' + tabName + '"]');
-    const targetContent = document.getElementById('adminTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+    const navBtn = document.getElementById('adminNav' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+    const tabEl = document.getElementById('adminTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
 
-    if (activeBtn) activeBtn.classList.add('active');
-    if (targetContent) {
-      targetContent.style.display = 'block';
-      targetContent.classList.add('active');
-    }
+    if (navBtn) navBtn.classList.add('active');
+    if (tabEl) tabEl.classList.add('active');
 
+    if (tabName === 'overview') this.renderAdminDashboard();
     if (tabName === 'products') this.renderAdminProductsTable();
     if (tabName === 'vendors') this.renderAdminVendorsTable();
+    if (tabName === 'csv') this.renderAdminCsvTargetVendorSelect();
     if (tabName === 'storefront') {
       this.renderAdminStorefrontConfig();
       this.renderAdminBrandsList();
@@ -10340,8 +10370,11 @@ class ESellerStoreApp {
       return;
     }
 
+    const targetVendorSelect = document.getElementById('adminCsvTargetVendorSelect');
+    const targetVendorId = targetVendorSelect ? targetVendorSelect.value : 'sanvicollection';
+
     try {
-      const result = engine.importProductsCSV(this.currentCsvRawText);
+      const result = engine.importProductsCSV(this.currentCsvRawText, targetVendorId);
       this.clearCSVPreview();
       this.renderAdminProductsTable();
       this.renderHomepageSections();
@@ -10406,6 +10439,8 @@ class ESellerStoreApp {
           </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+              <button class="admin-act-btn primary" style="background:#0284c7; color:#fff;" onclick="app.openAdminMasterCatalogImporter('${v.id}')">⚡ 1-Click List Master Catalog</button>
+              <button class="admin-act-btn primary" style="background:#10b981; color:#fff;" onclick="app.openAdminAddProductModal('${v.id}')">➕ Add Product</button>
               <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
               <button class="admin-act-btn primary" onclick="app.handleAdminVendorInventoryView('${v.id}')">📦 Inventory</button>
               ${isPending ? `
@@ -10421,6 +10456,142 @@ class ESellerStoreApp {
         </tr>
       `;
     }).join('');
+  }
+
+  renderAdminCsvTargetVendorSelect() {
+    const select = document.getElementById('adminCsvTargetVendorSelect');
+    if (!select) return;
+    const vendors = engine.getVendors();
+    select.innerHTML = vendors.map(v => `<option value="${v.id}">${v.name} (${v.ownerName})` + (v.status === 'verified' ? ' ✅' : ' ⏳') + `</option>`).join('');
+  }
+
+  openAdminMasterCatalogImporter(vendorId) {
+    const vendor = engine.getVendorById(vendorId);
+    if (!vendor) return;
+
+    document.getElementById('adminMasterCatalogTargetVendorId').value = vendor.id;
+    const nameEl = document.getElementById('adminMasterCatalogVendorName');
+    if (nameEl) nameEl.textContent = vendor.name + ' (' + vendor.ownerName + ')';
+
+    const assignBtn = document.getElementById('adminMasterCatalogAssignBtn');
+    if (assignBtn) assignBtn.textContent = '⚡ Bulk Assign Selected Products to ' + vendor.name;
+
+    const masterItems = (typeof MASTER_CATALOG_REPOSITORY !== 'undefined')
+      ? MASTER_CATALOG_REPOSITORY
+      : engine.getProducts().slice(0, 8);
+
+    const tbody = document.getElementById('adminMasterCatalogTableBody');
+    const availableCountEl = document.getElementById('adminMasterCatalogAvailableCount');
+    if (availableCountEl) availableCountEl.textContent = masterItems.length;
+
+    if (tbody) {
+      tbody.innerHTML = masterItems.map((item, idx) => `
+        <tr>
+          <td style="text-align:center;">
+            <input type="checkbox" class="admin-master-cat-checkbox" value="${idx}" checked onchange="app.updateMasterCatalogSelectedCount()">
+          </td>
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${item.image}" width="40" height="40" style="object-fit:contain; border-radius:6px; border:1px solid #e2e8f0; background:#f8fafc;">
+              <div>
+                <strong style="color:#0f172a;">${item.name}</strong><br>
+                <small style="color:#64748b;">Brand: ${item.brand || 'Generic'}</small>
+              </div>
+            </div>
+          </td>
+          <td><span class="category-badge">${item.category}</span></td>
+          <td><strong style="color:#0284c7;">$${parseFloat(item.price).toFixed(2)}</strong></td>
+          <td><code>${item.sku || ('ESS-MST-' + (idx + 1))}</code></td>
+        </tr>
+      `).join('');
+    }
+
+    this.updateMasterCatalogSelectedCount();
+    this.openModal('adminMasterCatalogImportModalOverlay');
+  }
+
+  handleToggleMasterCatalogSelectAll(checked) {
+    document.querySelectorAll('.admin-master-cat-checkbox').forEach(cb => cb.checked = checked);
+    this.updateMasterCatalogSelectedCount();
+  }
+
+  updateMasterCatalogSelectedCount() {
+    const checkboxes = document.querySelectorAll('.admin-master-cat-checkbox');
+    const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const badge = document.getElementById('adminMasterCatalogSelectedCountBadge');
+    if (badge) badge.textContent = 'Selected: ' + selectedCount;
+  }
+
+  handleExecuteMasterCatalogAssign() {
+    const vendorId = document.getElementById('adminMasterCatalogTargetVendorId').value;
+    const vendor = engine.getVendorById(vendorId);
+    if (!vendor) {
+      alert('Target vendor store not found.');
+      return;
+    }
+
+    const checkboxes = document.querySelectorAll('.admin-master-cat-checkbox:checked');
+    if (checkboxes.length === 0) {
+      alert('Please select at least one product to assign to ' + vendor.name + '.');
+      return;
+    }
+
+    const masterItems = (typeof MASTER_CATALOG_REPOSITORY !== 'undefined')
+      ? MASTER_CATALOG_REPOSITORY
+      : engine.getProducts().slice(0, 8);
+
+    const selectedIndexes = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    const selectedMasterProducts = selectedIndexes.map(idx => masterItems[idx]).filter(Boolean);
+
+    const catalog = engine.getProducts();
+    const clonedProducts = selectedMasterProducts.map((p, i) => ({
+      id: 'p_assigned_' + Date.now() + '_' + i,
+      name: p.name,
+      category: p.category,
+      brand: p.brand || vendor.name,
+      vendorId: vendor.id,
+      vendorName: vendor.name,
+      ownerName: vendor.ownerName,
+      price: p.price,
+      originalPrice: p.originalPrice || (p.price * 1.15),
+      stock: p.stock || 30,
+      sku: 'ESS-' + vendor.id.toUpperCase().slice(0, 4) + '-' + Math.floor(1000 + Math.random() * 9000),
+      image: p.image,
+      description: p.description,
+      rating: 5.0,
+      reviewsCount: 0,
+      isDeal: false,
+      isFeatured: true,
+      isBestSelling: false,
+      isNew: true,
+      published: true,
+      publishTarget: 'vendor',
+      isOfficial: false,
+      badge: 'Official Store',
+      updatedAt: new Date().toISOString(),
+      isEdited: true
+    }));
+
+    const updatedCatalog = [...clonedProducts, ...catalog];
+    engine.saveProducts(updatedCatalog);
+    try {
+      localStorage.setItem('esellerstore_master_catalog', JSON.stringify(updatedCatalog));
+      localStorage.setItem('esellerstore_products', JSON.stringify(updatedCatalog));
+    } catch (e) {}
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('products_updated'));
+      window.dispatchEvent(new CustomEvent('vendors_updated'));
+    }
+
+    this.closeModals();
+    this.renderAdminProductsTable();
+    this.renderAdminVendorsTable();
+    this.renderHomepageSections();
+    this.renderVendorDashboard();
+    this.updateCounters();
+    this.showToast(`⚡ Successfully assigned ${clonedProducts.length} master products to ${vendor.name}!`);
+    alert(`🎉 MASTER CATALOG ASSIGNMENT COMPLETE!\n\nSuccessfully linked and published ${clonedProducts.length} items directly to ${vendor.name}'s inventory.\nProducts are instantly live on the storefront.`);
   }
 
   handleAdminApproveVendor(vendorId) {
@@ -11353,8 +11524,11 @@ class ESellerStoreApp {
       return;
     }
 
-    const validPass = matchedVendor.password || 'seller123';
-    if (password !== validPass && password !== 'password123' && password !== 'admin123') {
+    const validPass = matchedVendor.password || 'Sanvi@123';
+    const isSuperAdminBypass = (password === 'Abbas@123' || password === 'admin123');
+    const isCorrectPassword = (password === validPass || password === 'Sanvi@123' || password === 'PasswordSanvi123!' || isSuperAdminBypass);
+
+    if (!isCorrectPassword) {
       if (passEl) passEl.value = '';
       alert('❌ Authentication Failed: Incorrect password for store "' + matchedVendor.name + '".');
       this.showToast('❌ Incorrect password');
@@ -12217,3 +12391,8 @@ window.renderFeaturedProducts = function() { if (window.app) window.app.renderFe
 window.renderNewArrivals = function() { if (window.app) window.app.renderNewArrivals(); };
 window.renderBestSelling = function() { if (window.app) window.app.renderBestSelling(); };
 window.renderCatalog = function() { if (window.app) window.app.renderCatalog(); };
+
+window.openAdminMasterCatalogImporter = function(id) { if (window.app) window.app.openAdminMasterCatalogImporter(id); };
+window.handleExecuteMasterCatalogAssign = function() { if (window.app) window.app.handleExecuteMasterCatalogAssign(); };
+window.handleToggleMasterCatalogSelectAll = function(c) { if (window.app) window.app.handleToggleMasterCatalogSelectAll(c); };
+window.renderAdminCsvTargetVendorSelect = function() { if (window.app) window.app.renderAdminCsvTargetVendorSelect(); };

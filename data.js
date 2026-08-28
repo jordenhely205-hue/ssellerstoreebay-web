@@ -65,7 +65,7 @@ export const INITIAL_VENDORS = [
     "email": "sanvi@sanvicollection.com",
     "mobile": "+1 (555) 345-6789",
     "phone": "+1 (555) 345-6789",
-    "password": "PasswordSanvi123!",
+    "password": "Sanvi@123",
     "description": "Exclusive official vendor of luxury fashion, modern technology, lifestyle accessories, and premium home essentials.",
     "status": "verified",
     "balance": 3420.5,
