@@ -4,7 +4,7 @@
  */
 
 // --- AUTO-PURGE LEGACY STORAGE UPGRADE ROUTINE ---
-const APP_VERSION = 'v3.0_sanvi_only';
+const APP_VERSION = 'v3.1_reactive_storefront';
 try {
   if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
     localStorage.clear();
@@ -26,7 +26,7 @@ const MASTER_CATALOG_REPOSITORY = [
     originalPrice: 1299.00,
     stock: 35,
     sku: 'ESS-MST-IP15',
-    image: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80',
     description: 'Forged in titanium featuring the A17 Pro chip and 48MP camera system.'
   },
   {
@@ -4166,7 +4166,7 @@ const INITIAL_ORDERS = [
         "price": 1199,
         "quantity": 1,
         "sku": "ESS-1001",
-        "image": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80",
+        "image": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80",
         "vendorId": "sanvicollection",
         "vendorName": "Sanvicollection"
       }
@@ -4835,7 +4835,7 @@ const INITIAL_PRODUCTS = [
     "publishTarget": "vendor",
     "isOfficial": false,
     "badge": "Apple Deal",
-    "image": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80",
+    "image": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80",
     "description": "Forged in titanium featuring the groundbreaking A17 Pro chip and 48MP main camera.",
     "sku": "ESS-1001",
     "ownerName": "Sanvi Sharma"
@@ -8159,7 +8159,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.0_sanvi_only';
+    const APP_VERSION = 'v3.1_reactive_storefront';
     try {
       if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
         localStorage.clear();
@@ -8866,7 +8866,7 @@ class DokanEngine {
   generateCSVTemplate() {
     const headers = ['Title', 'Category', 'Brand', 'Vendor', 'Price', 'Stock', 'SKU', 'ImageURL', 'Description'];
     const sampleRows = [
-      ['Apple iPhone 15 Pro Max 256GB', 'Smartphones', 'Apple', 'Sanvicollection', '1199.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
+      ['Apple iPhone 15 Pro Max 256GB', 'Smartphones', 'Apple', 'Sanvicollection', '1199.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
       ['Nike Air Jordan 1 Retro High', 'Sneakers', 'Nike', 'Sneaker Planet', '189.99', '30', 'ESS-AJ1-RED', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80', 'Iconic basketball silhouette with premium leather finish.'],
       ['Dell XPS 16 OLED Laptop', 'Computers', 'Dell', 'Sanvicollection', '2499.00', '15', 'ESS-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
     ];
@@ -10867,9 +10867,83 @@ class ESellerStoreApp {
     }
   }
 
-  renderHomepageSections() {
+  renderFeaturedProducts() {
     const products = engine.getProducts().filter(p => p.published !== false);
-    const cfg = engine.getStorefrontConfig();
+    const featuredProducts = products.filter(p => p.isFeatured);
+    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
+  }
+
+  renderBestSelling() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    const bestSellingProducts = products.filter(p => p.isBestSelling);
+    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
+  }
+
+  renderNewArrivals() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    const newProducts = products.filter(p => p.isNew);
+    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
+  }
+
+  renderCatalog() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    this.renderProductGrid('catalogGrid', products);
+    this.renderProductGrid('catalogProductsGrid', products);
+    this.renderProductGrid('allProductsGrid', products);
+  }
+
+  renderFeaturedProducts() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    const featuredProducts = products.filter(p => p.isFeatured);
+    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
+  }
+
+  renderBestSelling() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    const bestSellingProducts = products.filter(p => p.isBestSelling);
+    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
+  }
+
+  renderNewArrivals() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    const newProducts = products.filter(p => p.isNew);
+    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
+  }
+
+  renderCatalog() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    this.renderProductGrid('catalogGrid', products);
+    this.renderProductGrid('catalogProductsGrid', products);
+    this.renderProductGrid('allProductsGrid', products);
+  }
+
+  renderFeaturedProducts() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    const featuredProducts = products.filter(p => p.isFeatured);
+    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
+  }
+
+  renderBestSelling() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    const bestSellingProducts = products.filter(p => p.isBestSelling);
+    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
+  }
+
+  renderNewArrivals() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    const newProducts = products.filter(p => p.isNew);
+    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
+  }
+
+  renderCatalog() {
+    const products = engine.getProducts().filter(p => p.published !== false);
+    this.renderProductGrid('catalogGrid', products);
+    this.renderProductGrid('catalogProductsGrid', products);
+    this.renderProductGrid('allProductsGrid', products);
+  }
+
+  renderHomepageSections() {
+    const cfg = engine.getStorefrontConfig ? engine.getStorefrontConfig() : {};
 
     const dealSidebar = document.getElementById('sidebarAdBannerBox');
     if (dealSidebar) {
@@ -10887,14 +10961,10 @@ class ESellerStoreApp {
       upfrontBrandSec.style.display = cfg.showUpfrontBrands !== false ? 'block' : 'none';
     }
 
-    const featuredProducts = products.filter(p => p.isFeatured);
-    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
-
-    const bestSellingProducts = products.filter(p => p.isBestSelling);
-    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
-
-    const newProducts = products.filter(p => p.isNew);
-    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
+    this.renderFeaturedProducts();
+    this.renderBestSelling();
+    this.renderNewArrivals();
+    this.renderCatalog();
   }
 
   renderBrandsCarousel() {
@@ -10935,6 +11005,12 @@ class ESellerStoreApp {
     }
 
     container.innerHTML = productList.map(prod => {
+      const title = prod.name || prod.title || 'Product Item';
+      const price = typeof prod.price === 'number' ? prod.price : (parseFloat(prod.price) || 0);
+      const origPrice = typeof prod.originalPrice === 'number' ? prod.originalPrice : (parseFloat(prod.originalPrice) || 0);
+      const image = prod.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80';
+      const seller = prod.vendorName || prod.seller || 'Sanvicollection';
+
       let badgeHtml = '';
       if (prod.publishTarget === 'official' || prod.isOfficial) {
         badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;">🏢 OFFICIAL DIRECT</span>';
@@ -10945,19 +11021,19 @@ class ESellerStoreApp {
       }
 
       return `
-        <div class="product-card">
+        <div class="product-card" data-product-id="${prod.id}">
           ${badgeHtml}
           <div class="product-img-box">
-            <img src="${prod.image}" alt="${prod.name}" loading="lazy">
+            <img src="${image}" alt="${title}" loading="lazy">
           </div>
 
           <div class="product-card-body">
-            <h4 class="product-title" title="${prod.name}">${prod.name}</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">🏪 Seller: ${prod.vendorName || 'Sanvicollection'}</div>
+            <h4 class="product-title" title="${title}">${title}</h4>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">🏪 Seller: ${seller}</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ ${prod.rating || 5.0} (${prod.reviewsCount || 0})</div>
             <div class="product-price">
-              $${prod.price.toFixed(2)}
-              ${prod.originalPrice ? ('<span class="original">$' + prod.originalPrice.toFixed(2) + '</span>') : ''}
+              $${price.toFixed(2)}
+              ${origPrice > 0 ? ('<span class="original">$' + origPrice.toFixed(2) + '</span>') : ''}
             </div>
 
             <div class="product-card-actions-row">
@@ -11946,8 +12022,15 @@ class ESellerStoreApp {
     });
 
     window.addEventListener('products_updated', () => {
+      this.renderFeaturedProducts();
+      this.renderNewArrivals();
+      this.renderBestSelling();
+      this.renderCatalog();
       this.renderHomepageSections();
-      if (this.currentPersona === 'admin') this.renderAdminDashboard();
+      if (this.currentPersona === 'admin') {
+        this.renderAdminDashboard();
+        this.renderAdminProductsTable();
+      }
       if (this.currentPersona === 'vendor') this.renderVendorDashboard();
     });
 
@@ -12128,3 +12211,9 @@ window.handleHeroCampaignClick = function(e) { if (window.app) window.app.handle
 
 window.ESellerStoreApp = ESellerStoreApp;
 window.SsellerStoreeBayApp = ESellerStoreApp;
+
+
+window.renderFeaturedProducts = function() { if (window.app) window.app.renderFeaturedProducts(); };
+window.renderNewArrivals = function() { if (window.app) window.app.renderNewArrivals(); };
+window.renderBestSelling = function() { if (window.app) window.app.renderBestSelling(); };
+window.renderCatalog = function() { if (window.app) window.app.renderCatalog(); };

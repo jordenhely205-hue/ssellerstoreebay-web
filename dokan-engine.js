@@ -26,7 +26,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.0_sanvi_only';
+    const APP_VERSION = 'v3.1_reactive_storefront';
     try {
       if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
         localStorage.clear();
@@ -993,7 +993,7 @@ class DokanEngine {
   generateCSVTemplate() {
     const headers = ['Title', 'Category', 'Brand', 'Vendor', 'Price', 'Stock', 'SKU', 'ImageURL', 'Description'];
     const sampleRows = [
-      ['Apple iPhone 15 Pro Max 256GB', 'Smartphones', 'Apple', 'Sanvicollection', '1199.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
+      ['Apple iPhone 15 Pro Max 256GB', 'Smartphones', 'Apple', 'Sanvicollection', '1199.00', '50', 'ESS-IP15-256', 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80', 'A17 Pro titanium flagship with Super Retina XDR.'],
       ['Nike Air Jordan 1 Retro High', 'Sneakers', 'Nike', 'Sneaker Planet', '189.99', '30', 'ESS-AJ1-RED', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80', 'Iconic basketball silhouette with premium leather finish.'],
       ['Dell XPS 16 OLED Laptop', 'Computers', 'Dell', 'Sanvicollection', '2499.00', '15', 'ESS-XPS16-OLED', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80', 'Intel Core Ultra 9 OLED screen laptop.']
     ];

@@ -4755,7 +4755,7 @@ export const INITIAL_PRODUCTS = [
     "publishTarget": "vendor",
     "isOfficial": false,
     "badge": "Apple Deal",
-    "image": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80",
+    "image": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80",
     "description": "Forged in titanium featuring the groundbreaking A17 Pro chip and 48MP main camera.",
     "sku": "ESS-1001",
     "ownerName": "Sanvi Sharma"
