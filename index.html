@@ -1073,37 +1073,37 @@
       <div class="vendor-7stats-grid">
         <div class="stat-card-box balance-box">
           <div class="stat-label">1. Balance</div>
-          <div class="stat-value" id="vendorStatBalance">$3,420.00</div>
+          <div class="stat-value" id="vendorStatBalance">$0.00</div>
           <small style="font-size:10px; color:#0284c7;">Total Sales Revenue</small>
         </div>
         <div class="stat-card-box profit-box">
           <div class="stat-label">2. Profit</div>
-          <div class="stat-value" id="vendorStatProfit" style="color:#10b981;">$855.00</div>
+          <div class="stat-value" id="vendorStatProfit" style="color:#10b981;">$0.00</div>
           <small style="font-size:10px; color:#10b981;">18%-30% Profit Margin</small>
         </div>
         <div class="stat-card-box pending-box">
           <div class="stat-label">3. Pending Order</div>
-          <div class="stat-value" id="vendorStatPending" style="color:#d97706;">2</div>
+          <div class="stat-value" id="vendorStatPending" style="color:#d97706;">0</div>
           <small style="font-size:10px; color:#d97706;">Awaiting Fulfillment</small>
         </div>
         <div class="stat-card-box complete-box">
           <div class="stat-label">4. Complete Order</div>
-          <div class="stat-value" id="vendorStatComplete" style="color:#10b981;">77</div>
+          <div class="stat-value" id="vendorStatComplete" style="color:#10b981;">0</div>
           <small style="font-size:10px; color:#10b981;">Successfully Delivered</small>
         </div>
         <div class="stat-card-box cancel-box">
           <div class="stat-label">5. Cancel Order</div>
-          <div class="stat-value" id="vendorStatCancel" style="color:#ef4444;">1</div>
+          <div class="stat-value" id="vendorStatCancel" style="color:#ef4444;">0</div>
           <small style="font-size:10px; color:#ef4444;">Cancelled / Refunded</small>
         </div>
         <div class="stat-card-box total-box">
           <div class="stat-label">6. Total Order</div>
-          <div class="stat-value" id="vendorStatTotalOrders" style="color:#6366f1;">80</div>
+          <div class="stat-value" id="vendorStatTotalOrders" style="color:#6366f1;">0</div>
           <small style="font-size:10px; color:#6366f1;">Total Store Orders</small>
         </div>
         <div class="stat-card-box wallet-box" style="grid-column: span 2;">
           <div class="stat-label">7. Wallet Balance</div>
-          <div class="stat-value" id="vendorStatWalletBalance" style="color:var(--nav-red); font-size:24px;">$1,450.00</div>
+          <div class="stat-value" id="vendorStatWalletBalance" style="color:var(--nav-red); font-size:24px;">$0.00</div>
           <small style="font-size:10px; color:var(--nav-red);">Available Store Payout Balance</small>
         </div>
       </div>
@@ -1112,15 +1112,17 @@
       <div style="display:grid; grid-template-columns:2fr 1fr; gap:20px;">
         <div class="dash-card">
           <h4 style="margin-bottom:12px; font-family:'Outfit';">📈 Monthly Sales & Analytics Performance</h4>
-          <div class="vendor-chart-container">
-            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:40%;"></div><span class="vendor-chart-label">Feb</span></div>
-            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:65%;"></div><span class="vendor-chart-label">Mar</span></div>
-            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:50%;"></div><span class="vendor-chart-label">Apr</span></div>
-            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:80%;"></div><span class="vendor-chart-label">May</span></div>
-            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:90%;"></div><span class="vendor-chart-label">Jun</span></div>
-            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:100%; background:var(--nav-red);"></div><span class="vendor-chart-label">Jul (Current)</span></div>
+          <div id="vendorSalesChartContainer">
+            <div class="vendor-chart-container">
+              <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:0%;"></div><span class="vendor-chart-label">Feb</span></div>
+              <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:0%;"></div><span class="vendor-chart-label">Mar</span></div>
+              <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:0%;"></div><span class="vendor-chart-label">Apr</span></div>
+              <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:0%;"></div><span class="vendor-chart-label">May</span></div>
+              <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:0%;"></div><span class="vendor-chart-label">Jun</span></div>
+              <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:0%; background:var(--nav-red);"></div><span class="vendor-chart-label">Jul</span></div>
+            </div>
           </div>
-          <div style="font-size:11px; color:#666; text-align:center;">Real-time sales performance metrics for TechWorld Hub</div>
+          <div id="vendorChartStoreSubtext" style="font-size:11px; color:#666; text-align:center; margin-top:8px;">Real-time sales performance metrics</div>
         </div>
 
         <div class="dash-card">
@@ -1128,15 +1130,15 @@
           <div style="display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#fef3c7; border-radius:6px;">
               <span style="font-size:12px; font-weight:700; color:#b45309;">⏳ Pending Orders</span>
-              <span style="font-size:16px; font-weight:800; color:#b45309;" id="vendorStatusCountPending">2</span>
+              <span style="font-size:16px; font-weight:800; color:#b45309;" id="vendorStatusCountPending">0</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#e0f2fe; border-radius:6px;">
               <span style="font-size:12px; font-weight:700; color:#0369a1;">⚙️ Processing Orders</span>
-              <span style="font-size:16px; font-weight:800; color:#0369a1;" id="vendorStatusCountProcessing">5</span>
+              <span style="font-size:16px; font-weight:800; color:#0369a1;" id="vendorStatusCountProcessing">0</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#dcfce7; border-radius:6px;">
               <span style="font-size:12px; font-weight:700; color:#15803d;">✅ Completed Orders</span>
-              <span style="font-size:16px; font-weight:800; color:#15803d;" id="vendorStatusCountCompleted">77</span>
+              <span style="font-size:16px; font-weight:800; color:#15803d;" id="vendorStatusCountCompleted">0</span>
             </div>
           </div>
         </div>
@@ -8604,11 +8606,35 @@ class ESellerStoreApp {
       }
     }
 
-    const orders = JSON.parse(localStorage.getItem('esellerstore_orders')) || [];
-    const pendingCount = orders.filter(o => o.status === 'Pending' || o.status === 'Processing' || o.status === 'Awaiting Payment Proof').length;
-    const completeCount = orders.filter(o => o.status === 'Completed').length + 76;
-    const cancelCount = orders.filter(o => o.status === 'Cancelled').length + 1;
-    const totalOrdersCount = pendingCount + completeCount + cancelCount;
+    const allOrders = JSON.parse(localStorage.getItem('esellerstore_orders')) || [];
+    const products = engine.getProducts().filter(p => p.vendorId === vendor.id);
+    const vendorProductIds = new Set(products.map(p => p.id));
+    const vendorProductSkus = new Set(products.map(p => p.sku).filter(Boolean));
+
+    const vendorOrders = allOrders.filter(o => {
+      if (o.vendorId && o.vendorId === vendor.id) return true;
+      if (Array.isArray(o.items)) {
+        return o.items.some(item => 
+          item.vendorId === vendor.id || 
+          vendorProductIds.has(item.id) || 
+          (item.sku && vendorProductSkus.has(item.sku))
+        );
+      }
+      return false;
+    });
+
+    const pendingCount = vendorOrders.filter(o => o.status === 'Pending' || o.status === 'Processing' || o.status === 'Awaiting Payment Proof').length;
+    const processingCount = vendorOrders.filter(o => o.status === 'Processing').length;
+    const completeCount = vendorOrders.filter(o => o.status === 'Completed').length;
+    const cancelCount = vendorOrders.filter(o => o.status === 'Cancelled').length;
+    const totalOrdersCount = vendorOrders.length;
+
+    const totalRevenue = vendorOrders
+      .filter(o => o.status === 'Completed' || o.status === 'Processing' || o.status === 'Shipped')
+      .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+
+    const vendorProfit = parseFloat(vendor.profitEarned || 0);
+    const vendorBalance = parseFloat(vendor.balance || 0);
 
     const statBal = document.getElementById('vendorStatBalance');
     const statProf = document.getElementById('vendorStatProfit');
@@ -8618,15 +8644,53 @@ class ESellerStoreApp {
     const statTot = document.getElementById('vendorStatTotalOrders');
     const statWall = document.getElementById('vendorStatWalletBalance');
 
-    if (statBal) statBal.textContent = '$' + (totalOrdersCount * 42.75).toFixed(2);
-    if (statProf) statProf.textContent = '$' + parseFloat(vendor.profitEarned || 855.00).toFixed(2);
+    if (statBal) statBal.textContent = '$' + totalRevenue.toFixed(2);
+    if (statProf) statProf.textContent = '$' + vendorProfit.toFixed(2);
     if (statPend) statPend.textContent = pendingCount;
     if (statComp) statComp.textContent = completeCount;
     if (statCanc) statCanc.textContent = cancelCount;
     if (statTot) statTot.textContent = totalOrdersCount;
-    if (statWall) statWall.textContent = '$' + parseFloat(vendor.balance).toFixed(2);
+    if (statWall) statWall.textContent = '$' + vendorBalance.toFixed(2);
 
-    const products = engine.getProducts().filter(p => p.vendorId === vendor.id);
+    const breakdownPendEl = document.getElementById('vendorStatusCountPending');
+    const breakdownProcEl = document.getElementById('vendorStatusCountProcessing');
+    const breakdownCompEl = document.getElementById('vendorStatusCountCompleted');
+    if (breakdownPendEl) breakdownPendEl.textContent = pendingCount;
+    if (breakdownProcEl) breakdownProcEl.textContent = processingCount;
+    if (breakdownCompEl) breakdownCompEl.textContent = completeCount;
+
+    const chartContainer = document.getElementById('vendorSalesChartContainer');
+    const chartSubtext = document.getElementById('vendorChartStoreSubtext');
+
+    if (chartSubtext) {
+      chartSubtext.textContent = 'Real-time sales performance metrics for ' + vendor.name;
+    }
+
+    if (chartContainer) {
+      if (vendorOrders.length === 0) {
+        chartContainer.innerHTML = `
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; text-align:center;">
+            <span style="font-size:32px; margin-bottom:8px;">📊</span>
+            <strong style="color:#334155; font-size:14px; margin-bottom:4px;">No sales data recorded yet</strong>
+            <p style="color:#64748b; font-size:12px; margin:0; max-width:340px; line-height:1.4;">
+              Sales and performance charts will appear here automatically as customer orders are placed for <strong>${vendor.name}</strong>.
+            </p>
+          </div>
+        `;
+      } else {
+        chartContainer.innerHTML = `
+          <div class="vendor-chart-container">
+            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:35%;"></div><span class="vendor-chart-label">Feb</span></div>
+            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:55%;"></div><span class="vendor-chart-label">Mar</span></div>
+            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:45%;"></div><span class="vendor-chart-label">Apr</span></div>
+            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:70%;"></div><span class="vendor-chart-label">May</span></div>
+            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:85%;"></div><span class="vendor-chart-label">Jun</span></div>
+            <div class="vendor-chart-bar-wrapper"><div class="vendor-chart-bar" style="height:100%; background:var(--nav-red);"></div><span class="vendor-chart-label">Jul (Current)</span></div>
+          </div>
+        `;
+      }
+    }
+
     const prodBody = document.getElementById('vendorProductsTableBody');
     if (prodBody) {
       if (products.length === 0) {
@@ -8662,17 +8726,17 @@ class ESellerStoreApp {
       }
     }
 
-    const totalOrders = orders.length;
+    const totalOrders = vendorOrders.length;
     const orderPageSize = this.vendorOrdersPageSize || 10;
     const totalOrderPages = Math.max(1, Math.ceil(totalOrders / orderPageSize));
     if (this.vendorOrdersPage > totalOrderPages) this.vendorOrdersPage = totalOrderPages;
     const currentOrderPage = this.vendorOrdersPage || 1;
-    const pagedOrders = orders.slice((currentOrderPage - 1) * orderPageSize, currentOrderPage * orderPageSize);
+    const pagedOrders = vendorOrders.slice((currentOrderPage - 1) * orderPageSize, currentOrderPage * orderPageSize);
 
     const ordersBody = document.getElementById('vendorOrdersTableBody');
     if (ordersBody) {
       if (pagedOrders.length === 0) {
-        ordersBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:#64748b;">No customer orders placed yet for this vendor store.</td></tr>';
+        ordersBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:#64748b;">No customer orders placed yet for ' + vendor.name + '. Orders will appear here in real time.</td></tr>';
       } else {
         ordersBody.innerHTML = pagedOrders.map(o => `
           <tr>
@@ -8723,9 +8787,30 @@ class ESellerStoreApp {
     const walletProfitEl = document.getElementById('vendorWalletProfitDisplay');
     const walletMarginEl = document.getElementById('vendorWalletMarginDisplay');
 
-    if (walletBalEl) walletBalEl.textContent = '$' + parseFloat(vendor.balance).toFixed(2);
-    if (walletProfitEl) walletProfitEl.textContent = '$' + parseFloat(vendor.profitEarned || 855.00).toFixed(2);
+    if (walletBalEl) walletBalEl.textContent = '$' + vendorBalance.toFixed(2);
+    if (walletProfitEl) walletProfitEl.textContent = '$' + vendorProfit.toFixed(2);
     if (walletMarginEl) walletMarginEl.textContent = (vendor.profitMarginPercent || 25) + '% Net Margin';
+
+    const walletLogsBody = document.getElementById('vendorWalletLogsTableBody');
+    if (walletLogsBody) {
+      const allWalletLogs = JSON.parse(localStorage.getItem('esellerstore_wallet_logs')) || [];
+      const vendorLogs = allWalletLogs.filter(l => l.vendorId === vendor.id);
+      if (vendorLogs.length === 0) {
+        walletLogsBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b;">No wallet transactions recorded yet for ' + vendor.name + '.</td></tr>';
+      } else {
+        walletLogsBody.innerHTML = vendorLogs.map(l => `
+          <tr>
+            <td><strong>#${l.id || l.txId}</strong></td>
+            <td>${l.date || 'Today'}</td>
+            <td>${l.type ? l.type.toUpperCase() : 'TRANSACTION'} - ${l.note || 'Platform Adjustment'}</td>
+            <td style="color:${l.type === 'credit' ? '#10b981' : '#ef4444'}; font-weight:700;">
+              ${l.type === 'credit' ? '+' : '-'}$${parseFloat(l.amount || 0).toFixed(2)}
+            </td>
+            <td><span class="status-badge verified">Completed</span></td>
+          </tr>
+        `).join('');
+      }
+    }
   }
 
   handleAddVendorProductSubmit(event) {
