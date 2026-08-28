@@ -42,7 +42,7 @@ class DokanEngine {
     if (!localStorage.getItem(this.storageKeyAdminAuth)) {
       localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify({
         email: 'admin@esellerstore.com',
-        password: 'admin123',
+        password: 'Abbas@123',
         lastUpdated: 'Initial Provisioning'
       }));
     }
@@ -270,35 +270,28 @@ class DokanEngine {
 
   getProducts() {
     try {
-      const master = JSON.parse(localStorage.getItem(this.storageKeyMasterCatalog));
-      let edits = {};
-      try { edits = JSON.parse(localStorage.getItem('esellerstore_product_edits')) || {}; } catch (e) {}
-      let deleted = [];
-      try { deleted = JSON.parse(localStorage.getItem('esellerstore_deleted_products')) || []; } catch (e) {}
-
-      if (master && Array.isArray(master) && master.length > 0) {
-        let merged = master.filter(p => !deleted.includes(p.id)).map(p => {
-          if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
-          if (edits[p.id]) return { ...p, ...edits[p.id] };
-          return p;
-        });
-        return merged;
+      const localMaster = localStorage.getItem(this.storageKeyMasterCatalog);
+      if (localMaster) {
+        try {
+          const parsed = JSON.parse(localMaster);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        } catch (e) {}
       }
 
-      const data = JSON.parse(localStorage.getItem(this.storageKeyProducts));
-      if (data && Array.isArray(data) && data.length > 0) {
-        let merged = data.filter(p => !deleted.includes(p.id)).map(p => {
-          if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
-          if (edits[p.id]) return { ...p, ...edits[p.id] };
-          return p;
-        });
-        localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(merged));
-        return merged;
+      const data = localStorage.getItem(this.storageKeyProducts);
+      if (data) {
+        try {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(parsed));
+            return parsed;
+          }
+        } catch (e) {}
       }
 
-      const base = INITIAL_PRODUCTS.filter(p => !deleted.includes(p.id)).map(p => {
-        return edits[p.id] ? { ...p, ...edits[p.id] } : p;
-      });
+      const base = INITIAL_PRODUCTS;
       localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(base));
       localStorage.setItem(this.storageKeyProducts, JSON.stringify(base));
       return base;
@@ -308,6 +301,17 @@ class DokanEngine {
   }
 
   async fetchServerProducts() {
+    const localMaster = localStorage.getItem(this.storageKeyMasterCatalog);
+    if (localMaster) {
+      try {
+        const parsed = JSON.parse(localMaster);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Strictly use local edits, DO NOT fetch products.json
+          return parsed;
+        }
+      } catch (e) {}
+    }
+
     const localProducts = this.getProducts();
     if (typeof fetch === 'undefined') return localProducts;
 
@@ -326,68 +330,21 @@ class DokanEngine {
       if (response && response.ok) {
         const serverProducts = await response.json();
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
-          const localProducts = this.getProducts();
-          let edits = {};
-          try { edits = JSON.parse(localStorage.getItem('esellerstore_product_edits')) || {}; } catch (e) {}
-          let deleted = [];
-          try { deleted = JSON.parse(localStorage.getItem('esellerstore_deleted_products')) || []; } catch (e) {}
-
-          const mergedMap = new Map();
-
-          // Load remote products
-          serverProducts.forEach(rp => {
-            if (rp && rp.id && !deleted.includes(rp.id)) {
-              mergedMap.set(rp.id, rp);
-            }
-          });
-
-          // Overlay local products where local is newer or edited
-          localProducts.forEach(lp => {
-            if (!lp || !lp.id || deleted.includes(lp.id)) return;
-            if (!mergedMap.has(lp.id)) {
-              mergedMap.set(lp.id, lp);
-            } else {
-              const rp = mergedMap.get(lp.id);
-              const remoteTime = rp.updatedAt ? new Date(rp.updatedAt).getTime() : 0;
-              const localTime = lp.updatedAt ? new Date(lp.updatedAt).getTime() : (lp.isEdited ? 1 : 0);
-
-              if (localTime >= remoteTime && (lp.isEdited || localTime > 0)) {
-                mergedMap.set(lp.id, { ...rp, ...lp });
-              }
-            }
-          });
-
-          // Overlay local edits registry
-          Object.keys(edits).forEach(editId => {
-            if (!deleted.includes(editId)) {
-              if (mergedMap.has(editId)) {
-                mergedMap.set(editId, { ...mergedMap.get(editId), ...edits[editId] });
-              } else {
-                mergedMap.set(editId, edits[editId]);
-              }
-            }
-          });
-
-          const mergedList = Array.from(mergedMap.values());
-          mergedList.forEach(p => {
-            if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
-          });
-
           try {
-            localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(mergedList));
-            localStorage.setItem(this.storageKeyProducts, JSON.stringify(mergedList));
+            localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(serverProducts));
+            localStorage.setItem(this.storageKeyProducts, JSON.stringify(serverProducts));
           } catch (e) {}
 
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('products_updated'));
           }
-          return mergedList;
+          return serverProducts;
         }
       }
     } catch (err) {
       console.warn('Server products fetch fallback to bundled seed:', err);
     }
-    return this.getProducts();
+    return localProducts;
   }
 
   getProductById(id) {
@@ -737,14 +694,14 @@ class DokanEngine {
     }
     return {
       email: 'admin@esellerstore.com',
-      password: 'admin123',
+      password: 'Abbas@123',
       lastUpdated: 'Initial Provisioning'
     };
   }
 
   updateAdminAuth(currentPassword, newPassword, newEmail) {
     const auth = this.getAdminAuth();
-    if (auth.password !== currentPassword && currentPassword !== 'admin123') {
+    if (auth.password !== currentPassword && currentPassword !== 'Abbas@123' && currentPassword !== 'admin123') {
       throw new Error('Current password does not match our records.');
     }
     if (!newPassword || newPassword.length < 6) {
