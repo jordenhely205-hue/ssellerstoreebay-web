@@ -122,7 +122,7 @@ class E Seller StoreApp {
       const isWishlisted = this.wishlist.includes(prod.id);
       return `
         <div class="product-card">
-          ${prod.badge ? `<span class="product-badge">${prod.badge}</span>` : ''}
+          ${(prod.badge && prod.badge !== 'Bulk CSV' && prod.badge !== 'CSV Import') ? `<span class="product-badge">${prod.badge}</span>` : ''}
           <div class="product-img-box">
             <img src="${prod.image}" alt="${prod.name}" loading="lazy">
             

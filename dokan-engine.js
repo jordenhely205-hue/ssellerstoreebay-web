@@ -194,7 +194,25 @@ class DokanEngine {
 
   // --- CORE PRODUCTS & VENDORS ENGINE ---
   getProducts() {
-    return JSON.parse(localStorage.getItem(this.storageKeyProducts)) || INITIAL_PRODUCTS;
+    try {
+      const data = JSON.parse(localStorage.getItem(this.storageKeyProducts));
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return INITIAL_PRODUCTS;
+      }
+      let cleaned = false;
+      data.forEach(p => {
+        if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') {
+          p.badge = '';
+          cleaned = true;
+        }
+      });
+      if (cleaned) {
+        localStorage.setItem(this.storageKeyProducts, JSON.stringify(data));
+      }
+      return data;
+    } catch (e) {
+      return INITIAL_PRODUCTS;
+    }
   }
 
   getProductById(id) {
@@ -202,7 +220,58 @@ class DokanEngine {
   }
 
   saveProducts(products) {
+    if (Array.isArray(products)) {
+      products.forEach(p => {
+        if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') {
+          p.badge = '';
+        }
+      });
+    }
     localStorage.setItem(this.storageKeyProducts, JSON.stringify(products));
+    this.syncProductsToCloudBackend(products);
+    this.revalidateStorefrontCache();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('products_updated'));
+    }
+  }
+
+  syncProductsToCloudBackend(products) {
+    const payload = {
+      action: 'batch_upsert',
+      products: products || this.getProducts(),
+      timestamp: new Date().toISOString(),
+      source: 'csv_bulk_import_sync'
+    };
+
+    if (typeof fetch !== 'undefined') {
+      try {
+        fetch('/api/products/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+      } catch (err) {}
+    }
+  }
+
+  revalidateStorefrontCache() {
+    if (typeof window !== 'undefined') {
+      try {
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => {
+              if (name.includes('products') || name.includes('storefront') || name.includes('api')) {
+                caches.delete(name);
+              }
+            });
+          });
+        }
+      } catch (e) {}
+
+      try {
+        localStorage.setItem('esellerstore_cache_bust', Date.now().toString());
+      } catch (e) {}
+    }
   }
 
   getVendors() {
@@ -550,11 +619,11 @@ class DokanEngine {
         reviewsCount: 0,
         published: true,
         publishTarget: 'vendor',
-        isFeatured: false,
+        isFeatured: true,
         isBestSelling: false,
         isNew: true,
         isDeal: false,
-        badge: 'Bulk CSV'
+        badge: ''
       };
 
       products.unshift(newP);

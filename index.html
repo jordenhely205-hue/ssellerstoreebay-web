@@ -2590,6 +2590,16 @@ class DokanEngine {
         localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
         return INITIAL_PRODUCTS;
       }
+      let cleaned = false;
+      data.forEach(p => {
+        if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') {
+          p.badge = '';
+          cleaned = true;
+        }
+      });
+      if (cleaned) {
+        localStorage.setItem(this.storageKeyProducts, JSON.stringify(data));
+      }
       return data;
     } catch (e) {
       return INITIAL_PRODUCTS;
@@ -2601,8 +2611,83 @@ class DokanEngine {
   }
 
   saveProducts(products) {
-    localStorage.setItem(this.storageKeyProducts, JSON.stringify(products));
-    window.dispatchEvent(new CustomEvent('products_updated'));
+    if (Array.isArray(products)) {
+      products.forEach(p => {
+        if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') {
+          p.badge = '';
+        }
+      });
+    }
+
+    try {
+      localStorage.setItem(this.storageKeyProducts, JSON.stringify(products));
+    } catch (e) {}
+
+    // Multi-tier storage persistence (IndexedDB + Cloud DB Sync)
+    try {
+      if (typeof idbStorage !== 'undefined' && idbStorage.putBatch) {
+        idbStorage.putBatch('products', products);
+      }
+    } catch (e) {}
+
+    // Cloud Database Persistence & Shared API Dispatch
+    this.syncProductsToCloudBackend(products);
+
+    // Invalidate & revalidate storefront cache
+    this.revalidateStorefrontCache();
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('products_updated'));
+    }
+  }
+
+  syncProductsToCloudBackend(products) {
+    const payload = {
+      action: 'batch_upsert',
+      products: products || this.getProducts(),
+      timestamp: new Date().toISOString(),
+      source: 'csv_bulk_import_sync'
+    };
+
+    if (typeof fetch !== 'undefined') {
+      try {
+        fetch('/api/products/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+      } catch (err) {}
+    }
+
+    try {
+      if (typeof idbStorage !== 'undefined' && idbStorage.putBatch) {
+        idbStorage.putBatch('cloud_queue', [{
+          endpoint: '/api/products/batch',
+          payload,
+          syncedAt: new Date().toISOString()
+        }]);
+      }
+    } catch (e) {}
+  }
+
+  revalidateStorefrontCache() {
+    if (typeof window !== 'undefined') {
+      try {
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => {
+              if (name.includes('products') || name.includes('storefront') || name.includes('api')) {
+                caches.delete(name);
+              }
+            });
+          });
+        }
+      } catch (e) {}
+
+      try {
+        localStorage.setItem('esellerstore_cache_bust', Date.now().toString());
+      } catch (e) {}
+    }
   }
 
   addProduct(productData) {
@@ -2936,11 +3021,11 @@ class DokanEngine {
         reviewsCount: 0,
         published: true,
         publishTarget: 'vendor',
-        isFeatured: false,
+        isFeatured: true,
         isBestSelling: false,
         isNew: true,
         isDeal: false,
-        badge: 'Bulk CSV'
+        badge: ''
       };
 
       products.unshift(newP);
@@ -4899,7 +4984,7 @@ class ESellerStoreApp {
         badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;">🏢 OFFICIAL DIRECT</span>';
       } else if (prod.publishTarget === 'both') {
         badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;">⭐ OFFICIAL PARTNER</span>';
-      } else if (prod.badge) {
+      } else if (prod.badge && prod.badge !== 'Bulk CSV' && prod.badge !== 'CSV Import') {
         badgeHtml = '<span class="product-badge">' + prod.badge + '</span>';
       }
 
