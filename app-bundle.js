@@ -3479,35 +3479,101 @@ class DokanEngine {
   }
 
   /* --- PRODUCT MANAGEMENT (CRUD, MULTI-TARGET & VISIBILITY) --- */
+  recordProductEdit(product) {
+    if (!product || !product.id) return;
+    try {
+      const edits = JSON.parse(localStorage.getItem('esellerstore_product_edits')) || {};
+      edits[product.id] = {
+        ...(edits[product.id] || {}),
+        ...product,
+        updatedAt: product.updatedAt || new Date().toISOString(),
+        isEdited: true
+      };
+      localStorage.setItem('esellerstore_product_edits', JSON.stringify(edits));
+    } catch (e) {}
+  }
+
+  recordProductDeletion(productId) {
+    if (!productId) return;
+    try {
+      const deleted = JSON.parse(localStorage.getItem('esellerstore_deleted_products')) || [];
+      if (!deleted.includes(productId)) {
+        deleted.push(productId);
+        localStorage.setItem('esellerstore_deleted_products', JSON.stringify(deleted));
+      }
+      const edits = JSON.parse(localStorage.getItem('esellerstore_product_edits')) || {};
+      delete edits[productId];
+      localStorage.setItem('esellerstore_product_edits', JSON.stringify(edits));
+    } catch (e) {}
+  }
+
+  syncSingleProductToBackend(product, method = 'PUT') {
+    if (typeof fetch === 'undefined' || !product) return;
+    try {
+      fetch('/api/products', {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        },
+        body: JSON.stringify(product)
+      }).catch(() => {});
+
+      fetch('/api/products/batch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store'
+        },
+        body: JSON.stringify({
+          action: 'batch_upsert',
+          products: [product]
+        })
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
   getProducts() {
     try {
       const data = JSON.parse(localStorage.getItem(this.storageKeyProducts));
+      let edits = {};
+      try { edits = JSON.parse(localStorage.getItem('esellerstore_product_edits')) || {}; } catch (e) {}
+      let deleted = [];
+      try { deleted = JSON.parse(localStorage.getItem('esellerstore_deleted_products')) || []; } catch (e) {}
+
       if (!data || !Array.isArray(data) || data.length === 0) {
-        localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
-        return INITIAL_PRODUCTS;
+        const base = INITIAL_PRODUCTS.filter(p => !deleted.includes(p.id)).map(p => {
+          return edits[p.id] ? { ...p, ...edits[p.id] } : p;
+        });
+        localStorage.setItem(this.storageKeyProducts, JSON.stringify(base));
+        return base;
       }
-      // If client storage only has legacy initial items, upgrade to full repository master catalog
-      if (data.length < INITIAL_PRODUCTS.length) {
-        const merged = [...data];
+
+      let merged = [...data];
+      // If client storage only has legacy items, upgrade and merge master catalog
+      if (merged.length < INITIAL_PRODUCTS.length) {
         INITIAL_PRODUCTS.forEach(p => {
-          if (!merged.some(m => m.id === p.id || (m.sku && m.sku === p.sku))) {
-            merged.push(p);
+          if (!deleted.includes(p.id) && !merged.some(m => m.id === p.id || (m.sku && m.sku === p.sku))) {
+            merged.push(edits[p.id] ? { ...p, ...edits[p.id] } : p);
           }
         });
-        localStorage.setItem(this.storageKeyProducts, JSON.stringify(merged));
-        return merged;
       }
-      let cleaned = false;
-      data.forEach(p => {
-        if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') {
-          p.badge = '';
-          cleaned = true;
+
+      // Always overlay explicit user edits & clean badges
+      let hasEdits = false;
+      merged = merged.filter(p => !deleted.includes(p.id)).map(p => {
+        if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
+        if (edits[p.id]) {
+          hasEdits = true;
+          return { ...p, ...edits[p.id] };
         }
+        return p;
       });
-      if (cleaned) {
-        localStorage.setItem(this.storageKeyProducts, JSON.stringify(data));
+
+      if (hasEdits) {
+        localStorage.setItem(this.storageKeyProducts, JSON.stringify(merged));
       }
-      return data;
+      return merged;
     } catch (e) {
       return INITIAL_PRODUCTS;
     }
@@ -3517,14 +3583,18 @@ class DokanEngine {
     if (typeof fetch === 'undefined') return this.getProducts();
 
     try {
-      // 1. Try serverless backend endpoint
-      let response = await fetch('/api/products', {
-        headers: { 'Cache-Control': 'no-cache' }
+      const cacheBust = '?_t=' + Date.now();
+      // 1. Try serverless backend endpoint with cache buster
+      let response = await fetch('/api/products' + cacheBust, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
       }).catch(() => null);
 
       // 2. Fallback to static products.json
       if (!response || !response.ok) {
-        response = await fetch('/products.json', {
+        response = await fetch('/products.json' + cacheBust, {
           headers: { 'Cache-Control': 'no-cache' }
         }).catch(() => null);
       }
@@ -3532,26 +3602,61 @@ class DokanEngine {
       if (response && response.ok) {
         const serverProducts = await response.json();
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
-          const current = this.getProducts();
-          const merged = [...serverProducts];
-          current.forEach(localP => {
-            if (!merged.some(m => m.id === localP.id || (m.sku && m.sku === localP.sku))) {
-              merged.push(localP);
+          const localProducts = this.getProducts();
+          let edits = {};
+          try { edits = JSON.parse(localStorage.getItem('esellerstore_product_edits')) || {}; } catch (e) {}
+          let deleted = [];
+          try { deleted = JSON.parse(localStorage.getItem('esellerstore_deleted_products')) || []; } catch (e) {}
+
+          const mergedMap = new Map();
+
+          // Load remote products
+          serverProducts.forEach(rp => {
+            if (rp && rp.id && !deleted.includes(rp.id)) {
+              mergedMap.set(rp.id, rp);
             }
           });
 
-          merged.forEach(p => {
+          // Overlay local products where local is newer or edited
+          localProducts.forEach(lp => {
+            if (!lp || !lp.id || deleted.includes(lp.id)) return;
+            if (!mergedMap.has(lp.id)) {
+              mergedMap.set(lp.id, lp);
+            } else {
+              const rp = mergedMap.get(lp.id);
+              const remoteTime = rp.updatedAt ? new Date(rp.updatedAt).getTime() : 0;
+              const localTime = lp.updatedAt ? new Date(lp.updatedAt).getTime() : (lp.isEdited ? 1 : 0);
+
+              if (localTime >= remoteTime && (lp.isEdited || localTime > 0)) {
+                mergedMap.set(lp.id, { ...rp, ...lp });
+              }
+            }
+          });
+
+          // Overlay local edits registry
+          Object.keys(edits).forEach(editId => {
+            if (!deleted.includes(editId)) {
+              if (mergedMap.has(editId)) {
+                mergedMap.set(editId, { ...mergedMap.get(editId), ...edits[editId] });
+              } else {
+                mergedMap.set(editId, edits[editId]);
+              }
+            }
+          });
+
+          const mergedList = Array.from(mergedMap.values());
+          mergedList.forEach(p => {
             if (p.badge === 'Bulk CSV' || p.badge === 'CSV Import') p.badge = '';
           });
 
           try {
-            localStorage.setItem(this.storageKeyProducts, JSON.stringify(merged));
+            localStorage.setItem(this.storageKeyProducts, JSON.stringify(mergedList));
           } catch (e) {}
 
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('products_updated'));
           }
-          return merged;
+          return mergedList;
         }
       }
     } catch (err) {
@@ -3607,13 +3712,19 @@ class DokanEngine {
       try {
         fetch('/api/products/batch', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          },
           body: JSON.stringify(payload)
         }).catch(() => {});
 
         fetch('/api/products', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          },
           body: JSON.stringify(payload)
         }).catch(() => {});
       } catch (err) {}
@@ -3689,11 +3800,15 @@ class DokanEngine {
       isOfficial: isOfficial,
       badge: productData.badge || (isOfficial ? 'Official Store' : (productData.isNew ? 'New Release' : '')),
       image: productData.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
-      description: productData.description || 'Authentic high quality marketplace product.'
+      description: productData.description || 'Authentic high quality marketplace product.',
+      updatedAt: new Date().toISOString(),
+      isEdited: true
     };
 
     products.unshift(newProd);
+    this.recordProductEdit(newProd);
     this.saveProducts(products);
+    this.syncSingleProductToBackend(newProd, 'POST');
     this.logActivity('New Product Created', 'Listing ' + newProd.name + ' published [Target: ' + publishTarget.toUpperCase() + ']', 'success');
     return newProd;
   }
@@ -3727,10 +3842,14 @@ class DokanEngine {
       isOfficial: isOfficial,
       price: updatedData.price !== undefined ? parseFloat(updatedData.price) : products[idx].price,
       originalPrice: updatedData.originalPrice !== undefined ? parseFloat(updatedData.originalPrice) : products[idx].originalPrice,
-      stock: updatedData.stock !== undefined ? parseInt(updatedData.stock) : products[idx].stock
+      stock: updatedData.stock !== undefined ? parseInt(updatedData.stock) : products[idx].stock,
+      updatedAt: new Date().toISOString(),
+      isEdited: true
     };
 
+    this.recordProductEdit(products[idx]);
     this.saveProducts(products);
+    this.syncSingleProductToBackend(products[idx], 'PUT');
     this.logActivity('Product Updated', 'Modified product ' + products[idx].name + ' [Target: ' + publishTarget.toUpperCase() + ']', 'info');
     return products[idx];
   }
@@ -3739,7 +3858,14 @@ class DokanEngine {
     let products = this.getProducts();
     const prod = products.find(p => p.id === productId);
     products = products.filter(p => p.id !== productId);
+    this.recordProductDeletion(productId);
     this.saveProducts(products);
+    if (typeof fetch !== 'undefined') {
+      fetch('/api/products?id=' + encodeURIComponent(productId), {
+        method: 'DELETE',
+        headers: { 'Cache-Control': 'no-cache, no-store' }
+      }).catch(() => {});
+    }
     if (prod) this.logActivity('Product Deleted', 'Removed ' + prod.name + ' from master catalog', 'warning');
   }
 
@@ -3748,7 +3874,11 @@ class DokanEngine {
     const prod = products.find(p => p.id === productId);
     if (prod) {
       prod.published = prod.published === false ? true : false;
+      prod.updatedAt = new Date().toISOString();
+      prod.isEdited = true;
+      this.recordProductEdit(prod);
       this.saveProducts(products);
+      this.syncSingleProductToBackend(prod, 'PUT');
       this.logActivity('Product Visibility Changed', prod.name + ' is now ' + (prod.published ? 'LIVE (PUBLISHED)' : 'HIDDEN (UNPUBLISHED)'), 'info');
     }
     return prod;
@@ -3759,13 +3889,16 @@ class DokanEngine {
     const prod = products.find(p => p.id === productId);
     if (prod && ['isFeatured', 'isBestSelling', 'isNew', 'isDeal'].includes(flag)) {
       prod[flag] = !prod[flag];
+      prod.updatedAt = new Date().toISOString();
+      prod.isEdited = true;
+      this.recordProductEdit(prod);
       this.saveProducts(products);
-      this.logActivity('Product Flag Toggled', 'Toggled ' + flag + ' to ' + prod[flag] + ' for ' + prod.name, 'info');
+      this.syncSingleProductToBackend(prod, 'PUT');
+      this.logActivity('Product Flag Toggled', prod.name + ' [' + flag + ': ' + prod[flag] + ']', 'info');
     }
     return prod;
   }
 
-  
   /* --- CLOUD DATABASE EXPORT & HIGH-CONCURRENCY STORAGE --- */
   exportCloudDatabaseSchema() {
     return {
