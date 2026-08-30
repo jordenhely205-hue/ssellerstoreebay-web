@@ -27,7 +27,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.3_live_master_sync';
+    const APP_VERSION = 'v3.4_clean_placeholders';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
