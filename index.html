@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=3.2">
+  <link rel="stylesheet" href="styles.css?v=3.3">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -432,6 +432,20 @@
           </div>
         </div>
       </div>
+
+      <!-- COMPLETE MARKETPLACE FULL CATALOG SECTION (ALL LIVE & IMPORTED PRODUCTS) -->
+      <div class="section-heading" style="margin-top:36px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;" id="catalogSection">
+        <span>📦 Marketplace Full Catalog (<span id="storefrontCatalogCount">0</span> Live Products)</span>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#0f172a;" onclick="app.renderCatalog(); return false;">All Items</button>
+          <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#0284c7;" onclick="app.filterByCategory('computers'); return false;">Computers</button>
+          <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.filterByCategory('sneakers'); return false;">Sneakers</button>
+          <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#d97706;" onclick="app.filterByCategory('jewelry'); return false;">Jewelry</button>
+          <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#7c3aed;" onclick="app.filterByCategory('fashion'); return false;">Fashion</button>
+          <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#e11d48;" onclick="app.filterByCategory('beauty'); return false;">Beauty</button>
+        </div>
+      </div>
+      <div class="products-grid" id="catalogGrid"></div>
     </div>
 
     <!-- FEATURE #1: IN-FEED AD BANNER CONTAINER SECTION -->
@@ -561,7 +575,10 @@
               Multi-tier architecture: In-Memory L1 Cache + Unlimited IndexedDB L2 Store + Cloud Database Sync (PostgreSQL, Supabase, Firebase, MongoDB ready).
             </p>
           </div>
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-primary" style="background:#d97706; color:#fff; padding:6px 14px; font-size:11px;" onclick="app.handleForceSyncCatalog(); return false;">
+              ⚡ Force Sync Catalog
+            </button>
             <button class="btn-primary" style="padding:6px 14px; font-size:11px;" onclick="app.exportCloudDatabaseJson()">
               📥 Export Full Cloud Schema (JSON)
             </button>
@@ -597,6 +614,7 @@
             <button class="btn-primary" onclick="app.openAdminAddProductModal()">➕ Add New Product</button>
             <button class="btn-primary" style="background:#0f172a;" onclick="app.switchAdminTab('csv')">📁 Bulk CSV Import</button>
             <button class="btn-primary" style="background:#0284c7;" onclick="app.exportProductsToCSV()">📤 Export CSV</button>
+            <button class="btn-primary" style="background:#d97706; color:#fff;" onclick="app.handleForceSyncCatalog(); return false;">⚡ Force Sync Catalog</button>
           </div>
         </div>
 
@@ -775,6 +793,9 @@
           <div>
             <h3 style="font-family:'Outfit'; font-size:18px; color:#222733;">🏪 Multi-Vendor Stores & Inventory Control</h3>
             <p style="font-size:12px; color:#666;">View, verify, suspend, edit seller profiles, configure commission fees %, and manage seller inventories directly</p>
+          </div>
+          <div>
+            <button class="btn-primary" style="background:#d97706; color:#fff;" onclick="app.handleForceSyncCatalog(); return false;">⚡ Force Sync Catalog</button>
           </div>
         </div>
 
@@ -2083,6 +2104,6 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=3.2"></script>
+  <script src="app-bundle.js?v=3.3"></script>
 </body>
 </html>

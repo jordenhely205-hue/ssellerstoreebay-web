@@ -3,16 +3,10 @@
  * Multi-Vendor Marketplace Engine (Dokan-Compatible Architecture)
  */
 
-// --- AUTO-PURGE LEGACY STORAGE UPGRADE ROUTINE ---
-const APP_VERSION = 'v3.1_reactive_storefront';
+// --- PERSISTENCE & VERSION INITIALIZATION ---
+const APP_VERSION = 'v3.3_live_master_sync';
 try {
-  if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
-    localStorage.clear();
-    if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
-    if (typeof window !== 'undefined' && window.indexedDB) {
-      try { indexedDB.deleteDatabase('esellerstore_db'); } catch (e) {}
-      try { indexedDB.deleteDatabase('dokan_store_db'); } catch (e) {}
-    }
+  if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
   }
 } catch (e) {}
@@ -8160,15 +8154,9 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.2_reactive_storefront';
+    const APP_VERSION = 'v3.3_live_master_sync';
     try {
-      if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
-        localStorage.clear();
-        if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
-        if (typeof window !== 'undefined' && window.indexedDB) {
-          try { indexedDB.deleteDatabase('esellerstore_db'); } catch (e) {}
-          try { indexedDB.deleteDatabase('dokan_store_db'); } catch (e) {}
-        }
+      if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
       }
     } catch (e) {}
@@ -8181,11 +8169,17 @@ class DokanEngine {
           lastUpdated: 'Initial Provisioning'
         }));
       }
-      if (!localStorage.getItem(this.storageKeyProducts)) {
-        localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
-      }
-      if (!localStorage.getItem(this.storageKeyMasterCatalog)) {
+
+      const existingMaster = localStorage.getItem(this.storageKeyMasterCatalog);
+      const existingProds = localStorage.getItem(this.storageKeyProducts);
+
+      if (!existingMaster && !existingProds) {
         localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(INITIAL_PRODUCTS));
+        localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
+      } else if (existingMaster && !existingProds) {
+        localStorage.setItem(this.storageKeyProducts, existingMaster);
+      } else if (existingProds && !existingMaster) {
+        localStorage.setItem(this.storageKeyMasterCatalog, existingProds);
       }
       if (!localStorage.getItem(this.storageKeyVendors)) {
         localStorage.setItem(this.storageKeyVendors, JSON.stringify(INITIAL_VENDORS));
@@ -8484,6 +8478,39 @@ class DokanEngine {
         localStorage.setItem('esellerstore_cache_bust', Date.now().toString());
       } catch (e) {}
     }
+  }
+
+  forceSyncCatalog() {
+    let products = [];
+    try {
+      const rawMaster = localStorage.getItem(this.storageKeyMasterCatalog);
+      const rawProds = localStorage.getItem(this.storageKeyProducts);
+
+      let parsedMaster = rawMaster ? JSON.parse(rawMaster) : [];
+      let parsedProds = rawProds ? JSON.parse(rawProds) : [];
+
+      if (!Array.isArray(parsedMaster)) parsedMaster = [];
+      if (!Array.isArray(parsedProds)) parsedProds = [];
+
+      const map = new Map();
+      [...parsedMaster, ...parsedProds].forEach(p => {
+        if (p && (p.id || p.sku || p.name)) {
+          const key = p.id || p.sku || p.name;
+          map.set(key, { ...p, published: p.published !== false });
+        }
+      });
+
+      products = Array.from(map.values());
+      if (products.length === 0) {
+        products = [...INITIAL_PRODUCTS];
+      }
+
+      this.saveProducts(products);
+      this.logActivity('Force Catalog Sync', `Super Admin re-indexed ${products.length} live products`, 'success');
+    } catch (e) {
+      products = this.getProducts();
+    }
+    return products;
   }
 
   addProduct(productData) {
@@ -11253,76 +11280,45 @@ class ESellerStoreApp {
   renderFeaturedProducts() {
     const products = engine.getProducts().filter(p => p.published !== false);
     const featuredProducts = products.filter(p => p.isFeatured);
-    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
+    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products);
   }
 
   renderBestSelling() {
     const products = engine.getProducts().filter(p => p.published !== false);
     const bestSellingProducts = products.filter(p => p.isBestSelling);
-    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
+    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products);
   }
 
   renderNewArrivals() {
     const products = engine.getProducts().filter(p => p.published !== false);
     const newProducts = products.filter(p => p.isNew);
-    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
+    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products);
   }
 
   renderCatalog() {
     const products = engine.getProducts().filter(p => p.published !== false);
+    const countEl = document.getElementById('storefrontCatalogCount');
+    if (countEl) countEl.textContent = products.length;
+
     this.renderProductGrid('catalogGrid', products);
     this.renderProductGrid('catalogProductsGrid', products);
     this.renderProductGrid('allProductsGrid', products);
   }
 
-  renderFeaturedProducts() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const featuredProducts = products.filter(p => p.isFeatured);
-    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
-  }
-
-  renderBestSelling() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const bestSellingProducts = products.filter(p => p.isBestSelling);
-    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
-  }
-
-  renderNewArrivals() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const newProducts = products.filter(p => p.isNew);
-    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
-  }
-
-  renderCatalog() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    this.renderProductGrid('catalogGrid', products);
-    this.renderProductGrid('catalogProductsGrid', products);
-    this.renderProductGrid('allProductsGrid', products);
-  }
-
-  renderFeaturedProducts() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const featuredProducts = products.filter(p => p.isFeatured);
-    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
-  }
-
-  renderBestSelling() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const bestSellingProducts = products.filter(p => p.isBestSelling);
-    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
-  }
-
-  renderNewArrivals() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const newProducts = products.filter(p => p.isNew);
-    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
-  }
-
-  renderCatalog() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    this.renderProductGrid('catalogGrid', products);
-    this.renderProductGrid('catalogProductsGrid', products);
-    this.renderProductGrid('allProductsGrid', products);
+  handleForceSyncCatalog() {
+    try {
+      const products = engine.forceSyncCatalog();
+      this.renderHomepageSections();
+      this.renderCatalog();
+      this.renderAdminProductsTable();
+      this.renderAdminVendorsTable();
+      this.renderVendorDashboard();
+      this.updateCounters();
+      this.showToast(`⚡ Re-indexed ${products.length} live products across storefront!`);
+      alert(`🎉 FORCE CATALOG SYNC COMPLETE!\n\nRe-indexed ${products.length} live products.\nAll imported, assigned, and edited items are synchronized across the storefront, Admin, and Vendor dashboards.`);
+    } catch (err) {
+      alert('Sync Error: ' + err.message);
+    }
   }
 
   renderHomepageSections() {
@@ -12631,6 +12627,7 @@ window.handleAdminApproveApplication = function(id) { if (window.app) window.app
 window.handleAdminRejectApplication = function(id) { if (window.app) window.app.handleAdminRejectApplication(id); };
 window.filterByCategory = function(c) { if (window.app) window.app.filterByCategory(c); };
 window.filterByBrand = function(b) { if (window.app) window.app.filterByBrand(b); };
+window.handleForceSyncCatalog = function() { if (window.app) window.app.handleForceSyncCatalog(); };
 window.selectCheckoutPaymentMethod = function(m) { if (window.app) window.app.selectCheckoutPaymentMethod(m); };
 window.handleImageFileSelect = function(e, t) { if (window.app) window.app.handleImageFileSelect(e, t); };
 window.updateImagePreview = function(t, u) { if (window.app) window.app.updateImagePreview(t, u); };

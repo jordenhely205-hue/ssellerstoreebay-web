@@ -51,76 +51,45 @@ class E Seller StoreApp {
   renderFeaturedProducts() {
     const products = engine.getProducts().filter(p => p.published !== false);
     const featuredProducts = products.filter(p => p.isFeatured);
-    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
+    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products);
   }
 
   renderBestSelling() {
     const products = engine.getProducts().filter(p => p.published !== false);
     const bestSellingProducts = products.filter(p => p.isBestSelling);
-    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
+    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products);
   }
 
   renderNewArrivals() {
     const products = engine.getProducts().filter(p => p.published !== false);
     const newProducts = products.filter(p => p.isNew);
-    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
+    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products);
   }
 
   renderCatalog() {
     const products = engine.getProducts().filter(p => p.published !== false);
+    const countEl = document.getElementById('storefrontCatalogCount');
+    if (countEl) countEl.textContent = products.length;
+
     this.renderProductGrid('catalogGrid', products);
     this.renderProductGrid('catalogProductsGrid', products);
     this.renderProductGrid('allProductsGrid', products);
   }
 
-  renderFeaturedProducts() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const featuredProducts = products.filter(p => p.isFeatured);
-    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
-  }
-
-  renderBestSelling() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const bestSellingProducts = products.filter(p => p.isBestSelling);
-    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
-  }
-
-  renderNewArrivals() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const newProducts = products.filter(p => p.isNew);
-    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
-  }
-
-  renderCatalog() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    this.renderProductGrid('catalogGrid', products);
-    this.renderProductGrid('catalogProductsGrid', products);
-    this.renderProductGrid('allProductsGrid', products);
-  }
-
-  renderFeaturedProducts() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const featuredProducts = products.filter(p => p.isFeatured);
-    this.renderProductGrid('featuredSliderGrid', featuredProducts.length > 0 ? featuredProducts : products.slice(0, 4));
-  }
-
-  renderBestSelling() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const bestSellingProducts = products.filter(p => p.isBestSelling);
-    this.renderProductGrid('bestSellingSliderGrid', bestSellingProducts.length > 0 ? bestSellingProducts : products.slice(4, 8));
-  }
-
-  renderNewArrivals() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    const newProducts = products.filter(p => p.isNew);
-    this.renderProductGrid('newArrivalsSliderGrid', newProducts.length > 0 ? newProducts : products.slice(2, 6));
-  }
-
-  renderCatalog() {
-    const products = engine.getProducts().filter(p => p.published !== false);
-    this.renderProductGrid('catalogGrid', products);
-    this.renderProductGrid('catalogProductsGrid', products);
-    this.renderProductGrid('allProductsGrid', products);
+  handleForceSyncCatalog() {
+    try {
+      const products = engine.forceSyncCatalog();
+      this.renderHomepageSections();
+      this.renderCatalog();
+      this.renderAdminProductsTable();
+      this.renderAdminVendorsTable();
+      this.renderVendorDashboard();
+      this.updateCounters();
+      this.showToast(`⚡ Re-indexed ${products.length} live products across storefront!`);
+      alert(`🎉 FORCE CATALOG SYNC COMPLETE!\n\nRe-indexed ${products.length} live products.\nAll imported, assigned, and edited items are synchronized across the storefront, Admin, and Vendor dashboards.`);
+    } catch (err) {
+      alert('Sync Error: ' + err.message);
+    }
   }
 
   renderHomepageSections() {

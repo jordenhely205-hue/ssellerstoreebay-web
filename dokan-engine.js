@@ -27,32 +27,33 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.2_reactive_storefront';
+    const APP_VERSION = 'v3.3_live_master_sync';
     try {
-      if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
-        localStorage.clear();
-        if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
-        if (typeof window !== 'undefined' && window.indexedDB) {
-          try { indexedDB.deleteDatabase('esellerstore_db'); } catch (e) {}
-          try { indexedDB.deleteDatabase('dokan_store_db'); } catch (e) {}
-        }
+      if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
       }
     } catch (e) {}
 
-    if (!localStorage.getItem(this.storageKeyAdminAuth)) {
-      localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify({
-        email: 'admin@esellerstore.com',
-        password: 'Abbas@123',
-        lastUpdated: 'Initial Provisioning'
-      }));
-    }
-    if (!localStorage.getItem(this.storageKeyProducts)) {
-      localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
-    }
-    if (!localStorage.getItem(this.storageKeyMasterCatalog)) {
-      localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(INITIAL_PRODUCTS));
-    }
+    try {
+      if (!localStorage.getItem(this.storageKeyAdminAuth)) {
+        localStorage.setItem(this.storageKeyAdminAuth, JSON.stringify({
+          email: 'admin@esellerstore.com',
+          password: 'Abbas@123',
+          lastUpdated: 'Initial Provisioning'
+        }));
+      }
+
+      const existingMaster = localStorage.getItem(this.storageKeyMasterCatalog);
+      const existingProds = localStorage.getItem(this.storageKeyProducts);
+
+      if (!existingMaster && !existingProds) {
+        localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(INITIAL_PRODUCTS));
+        localStorage.setItem(this.storageKeyProducts, JSON.stringify(INITIAL_PRODUCTS));
+      } else if (existingMaster && !existingProds) {
+        localStorage.setItem(this.storageKeyProducts, existingMaster);
+      } else if (existingProds && !existingMaster) {
+        localStorage.setItem(this.storageKeyMasterCatalog, existingProds);
+      }
     if (!localStorage.getItem(this.storageKeyVendors)) {
       localStorage.setItem(this.storageKeyVendors, JSON.stringify(INITIAL_VENDORS));
     }
@@ -384,6 +385,39 @@ class DokanEngine {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('products_updated'));
     }
+  }
+
+  forceSyncCatalog() {
+    let products = [];
+    try {
+      const rawMaster = localStorage.getItem(this.storageKeyMasterCatalog);
+      const rawProds = localStorage.getItem(this.storageKeyProducts);
+
+      let parsedMaster = rawMaster ? JSON.parse(rawMaster) : [];
+      let parsedProds = rawProds ? JSON.parse(rawProds) : [];
+
+      if (!Array.isArray(parsedMaster)) parsedMaster = [];
+      if (!Array.isArray(parsedProds)) parsedProds = [];
+
+      const map = new Map();
+      [...parsedMaster, ...parsedProds].forEach(p => {
+        if (p && (p.id || p.sku || p.name)) {
+          const key = p.id || p.sku || p.name;
+          map.set(key, { ...p, published: p.published !== false });
+        }
+      });
+
+      products = Array.from(map.values());
+      if (products.length === 0) {
+        products = [...INITIAL_PRODUCTS];
+      }
+
+      this.saveProducts(products);
+      this.logActivity('Force Catalog Sync', `Super Admin re-indexed ${products.length} live products`, 'success');
+    } catch (e) {
+      products = this.getProducts();
+    }
+    return products;
   }
 
   syncProductsToCloudBackend(products) {
