@@ -21,12 +21,13 @@ class DokanEngine {
     this.storageKeyAds = 'esellerstore_ads';
     this.storageKeyChat = 'esellerstore_chat_messages';
     this.storageKeyAdminAuth = 'esellerstore_admin_auth';
+    this.storageKeyVendorApplications = 'esellerstore_vendor_applications';
 
     this.init();
   }
 
   init() {
-    const APP_VERSION = 'v3.1_reactive_storefront';
+    const APP_VERSION = 'v3.2_reactive_storefront';
     try {
       if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
         localStorage.clear();
@@ -88,6 +89,9 @@ class DokanEngine {
       localStorage.setItem(this.storageKeyActivityLogs, JSON.stringify([
         { id: 'act_1', title: 'Visitor Session Started', detail: 'New client landed on E Seller Store storefront', time: 'Just now', type: 'info' }
       ]));
+    }
+    if (!localStorage.getItem(this.storageKeyVendorApplications)) {
+      localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify([]));
     }
   }
 
@@ -318,18 +322,10 @@ class DokanEngine {
   }
 
   async fetchServerProducts() {
-    const localMaster = localStorage.getItem(this.storageKeyMasterCatalog);
-    if (localMaster) {
-      try {
-        const parsed = JSON.parse(localMaster);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Strictly use local edits, DO NOT fetch products.json
-          return parsed;
-        }
-      } catch (e) {}
-    }
-
     const localProducts = this.getProducts();
+    if (localProducts && Array.isArray(localProducts) && localProducts.length > 0) {
+      return localProducts;
+    }
     if (typeof fetch === 'undefined') return localProducts;
 
     try {
@@ -348,8 +344,11 @@ class DokanEngine {
         const serverProducts = await response.json();
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
           try {
-            localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(serverProducts));
-            localStorage.setItem(this.storageKeyProducts, JSON.stringify(serverProducts));
+            const currentLocal = this.getProducts();
+            if (!currentLocal || currentLocal.length === 0) {
+              localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(serverProducts));
+              localStorage.setItem(this.storageKeyProducts, JSON.stringify(serverProducts));
+            }
           } catch (e) {}
 
           if (typeof window !== 'undefined') {
@@ -359,7 +358,7 @@ class DokanEngine {
         }
       }
     } catch (err) {
-      console.warn('Server products fetch fallback to bundled seed:', err);
+      console.warn('Server products fetch fallback to local master:', err);
     }
     return localProducts;
   }
@@ -612,31 +611,73 @@ class DokanEngine {
     return this.getVendors().find(v => v.id === id);
   }
 
-  registerVendor({ ownerName, cnic, email, password, storeName, mobile, description }) {
+  // --- VENDOR REGISTRATION & APPLICATION PIPELINE ---
+  getVendorApplications() {
+    try {
+      const data = JSON.parse(localStorage.getItem(this.storageKeyVendorApplications));
+      return (data && Array.isArray(data)) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  saveVendorApplications(apps) {
+    try {
+      localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify(apps));
+    } catch (e) {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('vendor_applications_updated'));
+      window.dispatchEvent(new CustomEvent('vendors_updated'));
+    }
+  }
+
+  submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description }) {
     if (!ownerName || !email || !password || !storeName || !mobile) {
       throw new Error('Please fill in all mandatory fields (Full Name, Store Name, Mobile, Email, and Password).');
     }
-    const vendors = this.getVendors();
 
-    const existing = vendors.find(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase());
-    if (existing) {
-      throw new Error('A seller account with this email address already exists on E Seller Store.');
+    const vendors = this.getVendors();
+    const existingActive = vendors.find(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase() && v.status === 'verified');
+    if (existingActive) {
+      throw new Error('An active verified seller account with this email address already exists on E Seller Store.');
     }
 
+    const applications = this.getVendorApplications();
     const cleanCnic = (cnic && typeof cnic === 'string' && cnic.trim()) ? cnic.trim() : 'N/A';
-    const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller on E Seller Store marketplace.';
+    const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller application.';
 
-    const newVendor = {
-      id: 'v_' + Date.now(),
-      name: storeName.trim(),
-      storeName: storeName.trim(),
+    const newApp = {
+      id: 'app_' + Date.now(),
+      status: 'pending',
+      createdAt: new Date().toISOString(),
       ownerName: ownerName.trim(),
-      cnic: cleanCnic,
+      storeName: storeName.trim(),
+      name: storeName.trim(),
       email: email.trim(),
       mobile: mobile.trim(),
       phone: mobile.trim(),
+      cnic: cleanCnic,
       password: password.trim(),
-      description: cleanDesc,
+      description: cleanDesc
+    };
+
+    // Remove any existing rejected or stale pending application for same email to avoid duplicates
+    const filteredApps = applications.filter(a => a.email && a.email.toLowerCase() !== email.trim().toLowerCase());
+    filteredApps.unshift(newApp);
+    this.saveVendorApplications(filteredApps);
+
+    // Also register in vendors as pending
+    const newVendorRecord = {
+      id: 'v_' + newApp.id.replace('app_', ''),
+      name: newApp.storeName,
+      storeName: newApp.storeName,
+      ownerName: newApp.ownerName,
+      cnic: newApp.cnic,
+      email: newApp.email,
+      mobile: newApp.mobile,
+      phone: newApp.mobile,
+      password: newApp.password,
+      description: newApp.description,
       status: 'pending_verification',
       balance: 0.00,
       profitEarned: 0.00,
@@ -649,10 +690,85 @@ class DokanEngine {
       joinedDate: new Date().toISOString().split('T')[0]
     };
 
-    vendors.push(newVendor);
+    const existingVendorIdx = vendors.findIndex(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase());
+    if (existingVendorIdx >= 0) {
+      vendors[existingVendorIdx] = newVendorRecord;
+    } else {
+      vendors.push(newVendorRecord);
+    }
     this.saveVendors(vendors);
-    this.logActivity('New Vendor Registration', `Store '${storeName}' (CNIC: ${cnic}) submitted application`, 'warning');
-    return newVendor;
+
+    this.logActivity('New Vendor Registration', `Store '${storeName}' submitted application [PENDING APPROVAL]`, 'warning');
+    return newApp;
+  }
+
+  registerVendor(data) {
+    return this.submitVendorApplication(data);
+  }
+
+  approveVendorApplication(applicationId) {
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.id === applicationId || a.id === ('app_' + applicationId) || (a.email && a.email.toLowerCase() === applicationId.toLowerCase()));
+    if (!app) throw new Error('Vendor application not found.');
+
+    app.status = 'approved';
+    this.saveVendorApplications(apps);
+
+    const vendors = this.getVendors();
+    const vendorIdx = vendors.findIndex(v => (v.email && v.email.toLowerCase() === app.email.toLowerCase()) || v.id === ('v_' + app.id.replace('app_', '')));
+    
+    let vendorObj;
+    if (vendorIdx >= 0) {
+      vendors[vendorIdx].status = 'verified';
+      vendorObj = vendors[vendorIdx];
+    } else {
+      vendorObj = {
+        id: 'v_' + app.id.replace('app_', ''),
+        name: app.storeName,
+        storeName: app.storeName,
+        ownerName: app.ownerName,
+        cnic: app.cnic || 'N/A',
+        email: app.email,
+        mobile: app.mobile,
+        phone: app.mobile,
+        password: app.password,
+        description: app.description || 'Verified Seller on E Seller Store marketplace.',
+        status: 'verified',
+        balance: 0.00,
+        profitEarned: 0.00,
+        profitMarginPercent: 25,
+        productsSold: 0,
+        commissionRate: 15,
+        storeLogo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80',
+        rating: 5.0,
+        joinedDate: new Date().toISOString().split('T')[0]
+      };
+      vendors.push(vendorObj);
+    }
+
+    this.saveVendors(vendors);
+    this.logActivity('Vendor Store Approved', `Super Admin approved and activated store: ${app.storeName}`, 'success');
+    return vendorObj;
+  }
+
+  rejectVendorApplication(applicationId) {
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.id === applicationId || a.id === ('app_' + applicationId) || (a.email && a.email.toLowerCase() === applicationId.toLowerCase()));
+    if (!app) throw new Error('Vendor application not found.');
+
+    app.status = 'rejected';
+    this.saveVendorApplications(apps);
+
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => (v.email && v.email.toLowerCase() === app.email.toLowerCase()) || v.id === ('v_' + app.id.replace('app_', '')));
+    if (vendor) {
+      vendor.status = 'rejected';
+      this.saveVendors(vendors);
+    }
+
+    this.logActivity('Vendor Application Rejected', `Super Admin declined store application: ${app.storeName}`, 'warning');
+    return app;
   }
 
   approveVendor(vendorId) {
@@ -662,6 +778,14 @@ class DokanEngine {
 
     vendor.status = 'verified';
     this.saveVendors(vendors);
+
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.email && a.email.toLowerCase() === (vendor.email || '').toLowerCase());
+    if (app) {
+      app.status = 'approved';
+      this.saveVendorApplications(apps);
+    }
+
     this.logActivity('Vendor Approved & Unlocked', `Super Admin verified credentials for store: ${vendor.name}`, 'success');
     return vendor;
   }
@@ -673,6 +797,14 @@ class DokanEngine {
 
     vendor.status = 'rejected';
     this.saveVendors(vendors);
+
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.email && a.email.toLowerCase() === (vendor.email || '').toLowerCase());
+    if (app) {
+      app.status = 'rejected';
+      this.saveVendorApplications(apps);
+    }
+
     this.logActivity('Vendor Application Rejected', `Store '${vendor.name}' application rejected`, 'warning');
     return vendor;
   }
@@ -684,6 +816,14 @@ class DokanEngine {
 
     vendor.status = newStatus;
     this.saveVendors(vendors);
+
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.email && a.email.toLowerCase() === (vendor.email || '').toLowerCase());
+    if (app) {
+      app.status = newStatus === 'verified' ? 'approved' : (newStatus === 'rejected' ? 'rejected' : 'pending');
+      this.saveVendorApplications(apps);
+    }
+
     this.logActivity('Vendor Status Updated', `Store '${vendor.name}' status set to ${newStatus.toUpperCase()}`, 'success');
     return vendor;
   }

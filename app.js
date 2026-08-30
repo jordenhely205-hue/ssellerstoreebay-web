@@ -1052,24 +1052,67 @@ window.app = new E Seller StoreApp();
   /**
    * Requirement #1: Advanced User Onboarding (Registration with CNIC, Email, Description)
    */
+  /**
+   * Requirement #1: Advanced User Onboarding (Registration with CNIC, Email, Description)
+   */
   handleVendorRegistration(event) {
-    event.preventDefault();
-    const form = event.target;
-    const ownerName = form.ownerName.value;
-    const cnic = form.cnic.value;
-    const email = form.email.value;
-    const password = form.password.value;
-    const storeName = form.storeName.value;
-    const mobile = form.mobile.value;
-    const description = form.description.value;
+    if (event && event.preventDefault) event.preventDefault();
+    const form = event.target || document.querySelector('#sellerRegModalOverlay form');
+    if (!form) return;
+
+    const ownerName = form.ownerName ? form.ownerName.value.trim() : '';
+    const cnic = form.cnic ? form.cnic.value.trim() : '';
+    const email = form.email ? form.email.value.trim() : '';
+    const password = form.password ? form.password.value.trim() : '';
+    const storeName = form.storeName ? form.storeName.value.trim() : '';
+    const mobile = form.mobile ? form.mobile.value.trim() : '';
+    const description = form.description ? form.description.value.trim() : '';
+
+    if (!ownerName || !email || !password || !storeName || !mobile) {
+      alert('Please fill in all mandatory fields: Full Owner Name, Store Name, Mobile, Email, and Password.');
+      return;
+    }
 
     try {
-      const vendor = engine.registerVendor({ ownerName, cnic, email, password, storeName, mobile, description });
+      const appRecord = engine.submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description });
       this.closeModals();
-      alert(`✅ E Seller Store ADVANCED ONBOARDING SUCCESSFUL!\n\nStore Name: ${vendor.name}\nCNIC Verified: ${vendor.cnic}\nEmail: ${vendor.email}\nStatus: PENDING ADMIN VERIFICATION\n\nAdmin notification sent for manual approval.`);
-      this.setPersona('admin');
+      form.reset();
+      this.renderAdminDashboard();
+      this.renderAdminVendorsTable();
+      this.updateCounters();
+      const cnicDisplay = (appRecord.cnic && appRecord.cnic !== 'N/A') ? '\nCNIC: ' + appRecord.cnic : '';
+      alert(`🎉 APPLICATION SUBMITTED SUCCESSFULLY!\n\nStore Name: ${appRecord.storeName}\nOwner: ${appRecord.ownerName}${cnicDisplay}\nEmail: ${appRecord.email}\nStatus: PENDING ADMIN APPROVAL\n\nYour application has been placed in the Super Admin Pending Queue for verification.`);
+      this.showToast('📋 Vendor registration submitted for review');
     } catch (err) {
       alert('Registration Error: ' + err.message);
+    }
+  }
+
+  handleAdminApproveApplication(applicationId) {
+    try {
+      const vendor = engine.approveVendorApplication(applicationId);
+      this.renderAdminDashboard();
+      this.renderAdminVendorsTable();
+      this.renderVendorDashboard();
+      this.updateCounters();
+      this.showToast(`✅ Store '${vendor.name}' approved & activated!`);
+      alert(`🎉 VENDOR APPLICATION APPROVED!\n\nStore "${vendor.name}" (${vendor.ownerName}) is now an active verified seller.\nThe vendor can immediately log in via the Seller Portal with email: ${vendor.email}`);
+    } catch (err) {
+      alert('Approval Error: ' + err.message);
+    }
+  }
+
+  handleAdminRejectApplication(applicationId) {
+    if (!confirm('Are you sure you want to decline and remove this vendor registration application?')) return;
+    try {
+      const appRecord = engine.rejectVendorApplication(applicationId);
+      this.renderAdminDashboard();
+      this.renderAdminVendorsTable();
+      this.updateCounters();
+      this.showToast('❌ Vendor application declined');
+      alert(`⚠️ VENDOR APPLICATION DECLINED\n\nApplication for "${appRecord.storeName || appRecord.name}" has been rejected.`);
+    } catch (err) {
+      alert('Rejection Error: ' + err.message);
     }
   }
 
@@ -1077,6 +1120,7 @@ window.app = new E Seller StoreApp();
     try {
       const vendor = engine.updateVendorVerificationStatus(vendorId, newStatus);
       this.renderAdminDashboard();
+      this.renderAdminVendorsTable();
       this.renderVendorDashboard();
       this.showToast(`Vendor '${vendor.name}' status set to: ${newStatus.toUpperCase()}`);
     } catch (err) {
@@ -1102,6 +1146,97 @@ window.app = new E Seller StoreApp();
     }
   }
 
+  renderAdminPendingApplicationsTable() {
+    const pendingTbody = document.getElementById('adminPendingApplicationsTableBody');
+    const overviewTbody = document.getElementById('adminPendingVendorsOverviewTableBody');
+    const tabCountEl = document.getElementById('adminPendingApplicationsTabCount');
+    const overviewCountEl = document.getElementById('adminPendingVendorsCount');
+    const alertSection = document.getElementById('adminPendingVendorsAlertSection');
+
+    const applications = engine.getVendorApplications ? engine.getVendorApplications() : [];
+    const pendingApps = applications.filter(a => a.status === 'pending');
+
+    const count = pendingApps.length;
+    if (tabCountEl) tabCountEl.textContent = count;
+    if (overviewCountEl) overviewCountEl.textContent = count;
+    if (alertSection) alertSection.style.display = count > 0 ? 'block' : 'none';
+
+    const rowsHtml = count === 0
+      ? `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:16px;">No pending vendor applications awaiting review.</td></tr>`
+      : pendingApps.map(appRecord => `
+        <tr style="background:#fffdf5;">
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">🏪</span>
+              <div>
+                <strong style="font-size:13px; color:#1e293b;">${appRecord.storeName || appRecord.name}</strong><br>
+                <small style="color:#64748b;">ID: <code>${appRecord.id}</code></small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <strong>${appRecord.ownerName}</strong><br>
+            <small style="color:var(--nav-red); font-weight:700;">CNIC: ${appRecord.cnic || 'N/A'}</small>
+          </td>
+          <td>
+            ${appRecord.email}<br>
+            <small style="color:#64748b;">${appRecord.mobile || appRecord.phone || 'N/A'}</small>
+          </td>
+          <td>
+            <small style="color:#475569;">${appRecord.createdAt ? new Date(appRecord.createdAt).toLocaleDateString() : 'Today'}</small>
+          </td>
+          <td>
+            <small style="color:#64748b; display:inline-block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${appRecord.description || ''}">${appRecord.description || 'Registered Seller application.'}</small>
+          </td>
+          <td>
+            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING</span>
+          </td>
+          <td style="text-align:right;">
+            <div style="display:inline-flex; gap:6px;">
+              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981; color:#fff;" onclick="app.handleAdminApproveApplication('${appRecord.id}')">✅ Approve Store</button>
+              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${appRecord.id}')">❌ Reject / Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+    if (pendingTbody) pendingTbody.innerHTML = rowsHtml;
+    if (overviewTbody) overviewTbody.innerHTML = rowsHtml;
+  }
+
+  renderAdminVendorsTable() {
+    this.renderAdminPendingApplicationsTable();
+    const tableBody = document.getElementById('adminFullVendorsTableBody') || document.getElementById('adminVendorsTableBody');
+    if (!tableBody) return;
+
+    const vendors = engine.getVendors();
+    const activeVendors = vendors.filter(v => v.status !== 'pending' && v.status !== 'pending_verification');
+    const displayVendors = activeVendors.length > 0 ? activeVendors : vendors;
+
+    tableBody.innerHTML = displayVendors.map(v => `
+      <tr>
+        <td>
+          <strong>${v.name}</strong><br>
+          <small style="color:#666;">Owner: ${v.ownerName}</small><br>
+          <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
+        </td>
+        <td>${v.email}<br><small style="color:#666;">${v.mobile || ''}</small></td>
+        <td><span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span></td>
+        <td><strong>$${parseFloat(v.balance).toFixed(2)}</strong></td>
+        <td>
+          <span style="color:#137333; font-weight:700;">${v.profitMarginPercent || 25}% Profit Margin</span><br>
+          <small style="color:#666;">(${v.commissionRate}% Admin Fee)</small>
+        </td>
+        <td style="text-align:right;">
+          <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn-primary" style="padding:4px 8px; font-size:11px; background:#0284c7;" onclick="app.openAdminMasterCatalogImporter('${v.id}')">⚡ List Master Catalog</button>
+            <button class="btn-primary" style="padding:4px 8px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">📦 Inventory</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
   /**
    * Requirement #5: Real-Time Admin Dashboard Notifications Feed
    */
@@ -1119,6 +1254,9 @@ window.app = new E Seller StoreApp();
     if (totalCommEl) totalCommEl.textContent = `$${parseFloat(metrics.totalPlatformCommissionCollected || 0).toFixed(2)}`;
     if (brandCountEl) brandCountEl.textContent = INITIAL_BRANDS.length;
 
+    this.renderAdminPendingApplicationsTable();
+    this.renderAdminVendorsTable();
+
     // Render Admin Live Activity Notification Feed
     const feedContainer = document.getElementById('adminLiveActivityFeedBox');
     if (feedContainer) {
@@ -1131,32 +1269,6 @@ window.app = new E Seller StoreApp();
           </div>
           <small style="color:#94a3b8;">${log.time}</small>
         </div>
-      `).join('');
-    }
-
-    const tableBody = document.getElementById('adminVendorsTableBody');
-    if (tableBody) {
-      tableBody.innerHTML = vendors.map(v => `
-        <tr>
-          <td>
-            <strong>${v.name}</strong><br>
-            <small style="color:#666;">Owner: ${v.ownerName}</small><br>
-            <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
-          </td>
-          <td>${v.email}<br><small style="color:#666;">${v.mobile || ''}</small></td>
-          <td><span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span></td>
-          <td><strong>$${parseFloat(v.balance).toFixed(2)}</strong></td>
-          <td>
-            <span style="color:#137333; font-weight:700;">${v.profitMarginPercent || 25}% Profit Margin</span><br>
-            <small style="color:#666;">(${v.commissionRate}% Admin Fee)</small>
-          </td>
-          <td>
-            ${v.status === 'pending_verification' ? `
-              <button class="btn-primary" style="padding:2px 8px; font-size:11px; background:#137333;" onclick="app.adminApproveVendor('${v.id}', 'verified')">Approve</button>
-              <button class="btn-primary" style="padding:2px 8px; font-size:11px; background:#b91c1c;" onclick="app.adminApproveVendor('${v.id}', 'rejected')">Reject</button>
-            ` : `Verified Seller`}
-          </td>
-        </tr>
       `).join('');
     }
 
@@ -1337,6 +1449,34 @@ window.app = new E Seller StoreApp();
     if (persona === 'vendor') this.renderVendorDashboard();
 
     this.showToast(`Switched to: ${persona.toUpperCase()}`);
+  }
+
+  filterByCategory(categoryKey) {
+    if (this.currentPersona !== 'customer') {
+      this.setPersona('customer');
+    }
+    const cat = (categoryKey || '').trim().toLowerCase();
+    const products = engine.getProducts().filter(p => {
+      if (p.published === false) return false;
+      const pCat = (p.category || '').toLowerCase();
+      return pCat === cat || pCat.includes(cat) || cat.includes(pCat);
+    });
+
+    if (products.length > 0) {
+      this.renderProductGrid('featuredSliderGrid', products);
+      this.renderProductGrid('catalogGrid', products);
+      this.showToast(`Filtered catalog by category: ${categoryKey}`);
+    } else {
+      this.renderProductGrid('featuredSliderGrid', products);
+      this.showToast(`No products in category: ${categoryKey}`);
+    }
+
+    const grid = document.getElementById('featuredSliderGrid');
+    if (grid) {
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 750, behavior: 'smooth' });
+    }
   }
 
   filterByBrand(brandName) {

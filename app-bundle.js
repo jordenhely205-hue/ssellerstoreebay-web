@@ -8154,12 +8154,13 @@ class DokanEngine {
     this.storageKeyAds = 'esellerstore_ads';
     this.storageKeyChat = 'esellerstore_chat_messages';
     this.storageKeyAdminAuth = 'esellerstore_admin_auth';
+    this.storageKeyVendorApplications = 'esellerstore_vendor_applications';
 
     this.init();
   }
 
   init() {
-    const APP_VERSION = 'v3.1_reactive_storefront';
+    const APP_VERSION = 'v3.2_reactive_storefront';
     try {
       if (typeof localStorage !== 'undefined' && localStorage.getItem('app_version') !== APP_VERSION) {
         localStorage.clear();
@@ -8188,6 +8189,9 @@ class DokanEngine {
       }
       if (!localStorage.getItem(this.storageKeyVendors)) {
         localStorage.setItem(this.storageKeyVendors, JSON.stringify(INITIAL_VENDORS));
+      }
+      if (!localStorage.getItem(this.storageKeyVendorApplications)) {
+        localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify([]));
       }
       if (!localStorage.getItem(this.storageKeyOrders)) {
         localStorage.setItem(this.storageKeyOrders, JSON.stringify(INITIAL_ORDERS));
@@ -8344,18 +8348,10 @@ class DokanEngine {
   }
 
   async fetchServerProducts() {
-    const localMaster = localStorage.getItem(this.storageKeyMasterCatalog);
-    if (localMaster) {
-      try {
-        const parsed = JSON.parse(localMaster);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Strictly use local edits, DO NOT fetch products.json
-          return parsed;
-        }
-      } catch (e) {}
-    }
-
     const localProducts = this.getProducts();
+    if (localProducts && Array.isArray(localProducts) && localProducts.length > 0) {
+      return localProducts;
+    }
     if (typeof fetch === 'undefined') return localProducts;
 
     try {
@@ -8374,8 +8370,11 @@ class DokanEngine {
         const serverProducts = await response.json();
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
           try {
-            localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(serverProducts));
-            localStorage.setItem(this.storageKeyProducts, JSON.stringify(serverProducts));
+            const currentLocal = this.getProducts();
+            if (!currentLocal || currentLocal.length === 0) {
+              localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(serverProducts));
+              localStorage.setItem(this.storageKeyProducts, JSON.stringify(serverProducts));
+            }
           } catch (e) {}
 
           if (typeof window !== 'undefined') {
@@ -8385,7 +8384,7 @@ class DokanEngine {
         }
       }
     } catch (err) {
-      console.warn('Server products fetch fallback to bundled seed:', err);
+      console.warn('Server products fetch fallback to local master:', err);
     }
     return localProducts;
   }
@@ -8977,30 +8976,71 @@ class DokanEngine {
     return this.getVendors().find(v => v.id === id);
   }
 
-  registerVendor({ ownerName, cnic, email, password, storeName, mobile, description }) {
+  // --- VENDOR REGISTRATION & APPLICATION PIPELINE ---
+  getVendorApplications() {
+    try {
+      const data = JSON.parse(localStorage.getItem(this.storageKeyVendorApplications));
+      return (data && Array.isArray(data)) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  saveVendorApplications(apps) {
+    try {
+      localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify(apps));
+    } catch (e) {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('vendor_applications_updated'));
+      window.dispatchEvent(new CustomEvent('vendors_updated'));
+    }
+  }
+
+  submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description }) {
     if (!ownerName || !email || !password || !storeName || !mobile) {
       throw new Error('Please fill in all mandatory fields (Full Name, Store Name, Mobile, Email, and Password).');
     }
+
     const vendors = this.getVendors();
-    const existing = vendors.find(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase());
-    if (existing) {
-      throw new Error('A seller account with this email address already exists on E Seller Store.');
+    const existingActive = vendors.find(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase() && v.status === 'verified');
+    if (existingActive) {
+      throw new Error('An active verified seller account with this email address already exists on E Seller Store.');
     }
 
+    const applications = this.getVendorApplications();
     const cleanCnic = (cnic && typeof cnic === 'string' && cnic.trim()) ? cnic.trim() : 'N/A';
-    const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller on E Seller Store marketplace.';
+    const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller application.';
 
-    const newVendor = {
-      id: 'v_' + Date.now(),
-      name: storeName.trim(),
-      storeName: storeName.trim(),
+    const newApp = {
+      id: 'app_' + Date.now(),
+      status: 'pending',
+      createdAt: new Date().toISOString(),
       ownerName: ownerName.trim(),
-      cnic: cleanCnic,
+      storeName: storeName.trim(),
+      name: storeName.trim(),
       email: email.trim(),
       mobile: mobile.trim(),
       phone: mobile.trim(),
+      cnic: cleanCnic,
       password: password.trim(),
-      description: cleanDesc,
+      description: cleanDesc
+    };
+
+    const filteredApps = applications.filter(a => a.email && a.email.toLowerCase() !== email.trim().toLowerCase());
+    filteredApps.unshift(newApp);
+    this.saveVendorApplications(filteredApps);
+
+    const newVendorRecord = {
+      id: 'v_' + newApp.id.replace('app_', ''),
+      name: newApp.storeName,
+      storeName: newApp.storeName,
+      ownerName: newApp.ownerName,
+      cnic: newApp.cnic,
+      email: newApp.email,
+      mobile: newApp.mobile,
+      phone: newApp.mobile,
+      password: newApp.password,
+      description: newApp.description,
       status: 'pending_verification',
       balance: 0.00,
       profitEarned: 0.00,
@@ -9013,10 +9053,85 @@ class DokanEngine {
       joinedDate: new Date().toISOString().split('T')[0]
     };
 
-    vendors.push(newVendor);
+    const existingVendorIdx = vendors.findIndex(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase());
+    if (existingVendorIdx >= 0) {
+      vendors[existingVendorIdx] = newVendorRecord;
+    } else {
+      vendors.push(newVendorRecord);
+    }
     this.saveVendors(vendors);
-    this.logActivity('New Vendor Registration (Locked)', 'Store ' + newVendor.name + ' submitted application [PENDING VERIFICATION]', 'warning');
-    return newVendor;
+
+    this.logActivity('New Vendor Registration', 'Store ' + newApp.name + ' submitted application [PENDING APPROVAL]', 'warning');
+    return newApp;
+  }
+
+  registerVendor(data) {
+    return this.submitVendorApplication(data);
+  }
+
+  approveVendorApplication(applicationId) {
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.id === applicationId || a.id === ('app_' + applicationId) || (a.email && a.email.toLowerCase() === applicationId.toLowerCase()));
+    if (!app) throw new Error('Vendor application not found.');
+
+    app.status = 'approved';
+    this.saveVendorApplications(apps);
+
+    const vendors = this.getVendors();
+    const vendorIdx = vendors.findIndex(v => (v.email && v.email.toLowerCase() === app.email.toLowerCase()) || v.id === ('v_' + app.id.replace('app_', '')));
+    
+    let vendorObj;
+    if (vendorIdx >= 0) {
+      vendors[vendorIdx].status = 'verified';
+      vendorObj = vendors[vendorIdx];
+    } else {
+      vendorObj = {
+        id: 'v_' + app.id.replace('app_', ''),
+        name: app.storeName,
+        storeName: app.storeName,
+        ownerName: app.ownerName,
+        cnic: app.cnic || 'N/A',
+        email: app.email,
+        mobile: app.mobile,
+        phone: app.mobile,
+        password: app.password,
+        description: app.description || 'Verified Seller on E Seller Store marketplace.',
+        status: 'verified',
+        balance: 0.00,
+        profitEarned: 0.00,
+        profitMarginPercent: 25,
+        productsSold: 0,
+        commissionRate: 15,
+        storeLogo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80',
+        rating: 5.0,
+        joinedDate: new Date().toISOString().split('T')[0]
+      };
+      vendors.push(vendorObj);
+    }
+
+    this.saveVendors(vendors);
+    this.logActivity('Vendor Store Approved', 'Super Admin approved and activated store: ' + app.storeName, 'success');
+    return vendorObj;
+  }
+
+  rejectVendorApplication(applicationId) {
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.id === applicationId || a.id === ('app_' + applicationId) || (a.email && a.email.toLowerCase() === applicationId.toLowerCase()));
+    if (!app) throw new Error('Vendor application not found.');
+
+    app.status = 'rejected';
+    this.saveVendorApplications(apps);
+
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => (v.email && v.email.toLowerCase() === app.email.toLowerCase()) || v.id === ('v_' + app.id.replace('app_', '')));
+    if (vendor) {
+      vendor.status = 'rejected';
+      this.saveVendors(vendors);
+    }
+
+    this.logActivity('Vendor Application Rejected', 'Super Admin declined store application: ' + app.storeName, 'warning');
+    return app;
   }
 
   approveVendor(vendorId) {
@@ -9026,6 +9141,14 @@ class DokanEngine {
 
     vendor.status = 'verified';
     this.saveVendors(vendors);
+
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.email && a.email.toLowerCase() === (vendor.email || '').toLowerCase());
+    if (app) {
+      app.status = 'approved';
+      this.saveVendorApplications(apps);
+    }
+
     this.logActivity('Vendor Approved & Unlocked', 'Super Admin verified credentials for store: ' + vendor.name, 'success');
     return vendor;
   }
@@ -9037,6 +9160,14 @@ class DokanEngine {
 
     vendor.status = 'rejected';
     this.saveVendors(vendors);
+
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.email && a.email.toLowerCase() === (vendor.email || '').toLowerCase());
+    if (app) {
+      app.status = 'rejected';
+      this.saveVendorApplications(apps);
+    }
+
     this.logActivity('Vendor Application Rejected', 'Store ' + vendor.name + ' application rejected', 'warning');
     return vendor;
   }
@@ -9048,6 +9179,14 @@ class DokanEngine {
 
     vendor.status = newStatus;
     this.saveVendors(vendors);
+
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.email && a.email.toLowerCase() === (vendor.email || '').toLowerCase());
+    if (app) {
+      app.status = newStatus === 'verified' ? 'approved' : (newStatus === 'rejected' ? 'rejected' : 'pending');
+      this.saveVendorApplications(apps);
+    }
+
     this.logActivity('Vendor Status Updated', 'Store ' + vendor.name + ' status set to ' + newStatus.toUpperCase(), 'success');
     return vendor;
   }
@@ -10397,12 +10536,103 @@ class ESellerStoreApp {
   }
 
   /* --- MULTI-VENDOR CONTROL & INVENTORY INSPECTION --- */
+  renderAdminPendingApplicationsTable() {
+    const pendingTbody = document.getElementById('adminPendingApplicationsTableBody');
+    const overviewTbody = document.getElementById('adminPendingVendorsOverviewTableBody');
+    const tabCountEl = document.getElementById('adminPendingApplicationsTabCount');
+    const overviewCountEl = document.getElementById('adminPendingVendorsCount');
+    const alertSection = document.getElementById('adminPendingVendorsAlertSection');
+
+    const applications = engine.getVendorApplications ? engine.getVendorApplications() : [];
+    const pendingApps = applications.filter(a => a.status === 'pending');
+
+    const count = pendingApps.length;
+    if (tabCountEl) tabCountEl.textContent = count;
+    if (overviewCountEl) overviewCountEl.textContent = count;
+    if (alertSection) alertSection.style.display = count > 0 ? 'block' : 'none';
+
+    const rowsHtml = count === 0
+      ? `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:16px;">No pending vendor applications awaiting review.</td></tr>`
+      : pendingApps.map(app => `
+        <tr style="background:#fffdf5;">
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">🏪</span>
+              <div>
+                <strong style="font-size:13px; color:#1e293b;">${app.storeName || app.name}</strong><br>
+                <small style="color:#64748b;">ID: <code>${app.id}</code></small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <strong>${app.ownerName}</strong><br>
+            <small style="color:var(--nav-red); font-weight:700;">CNIC: ${app.cnic || 'N/A'}</small>
+          </td>
+          <td>
+            ${app.email}<br>
+            <small style="color:#64748b;">${app.mobile || app.phone || 'N/A'}</small>
+          </td>
+          <td>
+            <small style="color:#475569;">${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'Today'}</small>
+          </td>
+          <td>
+            <small style="color:#64748b; display:inline-block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${app.description || ''}">${app.description || 'Registered Seller application.'}</small>
+          </td>
+          <td>
+            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING</span>
+          </td>
+          <td style="text-align:right;">
+            <div style="display:inline-flex; gap:6px;">
+              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981; color:#fff;" onclick="app.handleAdminApproveApplication('${app.id}')">✅ Approve Store</button>
+              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${app.id}')">❌ Reject / Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+    if (pendingTbody) pendingTbody.innerHTML = rowsHtml;
+    if (overviewTbody) overviewTbody.innerHTML = rowsHtml;
+  }
+
+  handleAdminApproveApplication(applicationId) {
+    try {
+      const vendor = engine.approveVendorApplication(applicationId);
+      this.renderAdminDashboard();
+      this.renderAdminVendorsTable();
+      this.renderVendorDashboard();
+      this.updateCounters();
+      this.showToast(`✅ Store '${vendor.name}' approved & activated!`);
+      alert(`🎉 VENDOR APPLICATION APPROVED!\n\nStore "${vendor.name}" (${vendor.ownerName}) is now an active verified seller.\nThe vendor can immediately log in via the Seller Portal with email: ${vendor.email}`);
+    } catch (err) {
+      alert('Approval Error: ' + err.message);
+    }
+  }
+
+  handleAdminRejectApplication(applicationId) {
+    if (!confirm('Are you sure you want to decline and remove this vendor registration application?')) return;
+    try {
+      const app = engine.rejectVendorApplication(applicationId);
+      this.renderAdminDashboard();
+      this.renderAdminVendorsTable();
+      this.updateCounters();
+      this.showToast('❌ Vendor application declined');
+      alert('⚠️ VENDOR APPLICATION DECLINED\n\nApplication for "' + (app.storeName || app.name) + '" has been rejected.');
+    } catch (err) {
+      alert('Rejection Error: ' + err.message);
+    }
+  }
+
   renderAdminVendorsTable() {
+    this.renderAdminPendingApplicationsTable();
+
     const tbody = document.getElementById('adminFullVendorsTableBody');
     if (!tbody) return;
 
     const vendors = engine.getVendors();
-    tbody.innerHTML = vendors.map(v => {
+    const activeVendors = vendors.filter(v => v.status !== 'pending' && v.status !== 'pending_verification');
+    const displayVendors = activeVendors.length > 0 ? activeVendors : vendors;
+
+    tbody.innerHTML = displayVendors.map(v => {
       const isPending = v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review';
       const statusBadgeHtml = isPending
         ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING VERIFICATION</span>`
@@ -10439,13 +10669,13 @@ class ESellerStoreApp {
           </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-              <button class="admin-act-btn primary" style="background:#0284c7; color:#fff;" onclick="app.openAdminMasterCatalogImporter('${v.id}')">⚡ 1-Click List Master Catalog</button>
+              <button class="admin-act-btn primary" style="background:#0284c7; color:#fff;" onclick="app.openAdminMasterCatalogImporter('${v.id}')">⚡ List Master Catalog</button>
               <button class="admin-act-btn primary" style="background:#10b981; color:#fff;" onclick="app.openAdminAddProductModal('${v.id}')">➕ Add Product</button>
               <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
               <button class="admin-act-btn primary" onclick="app.handleAdminVendorInventoryView('${v.id}')">📦 Inventory</button>
               ${isPending ? `
-                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve / Verify</button>
-                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject / Decline</button>
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveApplication('${v.id}')">✅ Approve Store</button>
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectApplication('${v.id}')">❌ Reject / Delete</button>
               ` : `
                 <button class="admin-act-btn ${v.status === 'suspended' || v.status === 'rejected' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' || v.status === 'rejected' ? 'verified' : 'suspended'}')">
                   ${v.status === 'suspended' || v.status === 'rejected' ? 'Unsuspend' : '🚫 Suspend'}
@@ -10476,9 +10706,8 @@ class ESellerStoreApp {
     const assignBtn = document.getElementById('adminMasterCatalogAssignBtn');
     if (assignBtn) assignBtn.textContent = '⚡ Bulk Assign Selected Products to ' + vendor.name;
 
-    const masterItems = (typeof MASTER_CATALOG_REPOSITORY !== 'undefined')
-      ? MASTER_CATALOG_REPOSITORY
-      : engine.getProducts().slice(0, 8);
+    const allProducts = engine.getProducts();
+    const masterItems = allProducts && allProducts.length > 0 ? allProducts : (typeof MASTER_CATALOG_REPOSITORY !== 'undefined' ? MASTER_CATALOG_REPOSITORY : []);
 
     const tbody = document.getElementById('adminMasterCatalogTableBody');
     const availableCountEl = document.getElementById('adminMasterCatalogAvailableCount');
@@ -10536,9 +10765,8 @@ class ESellerStoreApp {
       return;
     }
 
-    const masterItems = (typeof MASTER_CATALOG_REPOSITORY !== 'undefined')
-      ? MASTER_CATALOG_REPOSITORY
-      : engine.getProducts().slice(0, 8);
+    const allProducts = engine.getProducts();
+    const masterItems = allProducts && allProducts.length > 0 ? allProducts : (typeof MASTER_CATALOG_REPOSITORY !== 'undefined' ? MASTER_CATALOG_REPOSITORY : []);
 
     const selectedIndexes = Array.from(checkboxes).map(cb => parseInt(cb.value));
     const selectedMasterProducts = selectedIndexes.map(idx => masterItems[idx]).filter(Boolean);
@@ -10589,34 +10817,18 @@ class ESellerStoreApp {
     this.renderAdminVendorsTable();
     this.renderHomepageSections();
     this.renderVendorDashboard();
+    this.handleAdminVendorInventoryView(vendor.id);
     this.updateCounters();
     this.showToast(`⚡ Successfully assigned ${clonedProducts.length} master products to ${vendor.name}!`);
-    alert(`🎉 MASTER CATALOG ASSIGNMENT COMPLETE!\n\nSuccessfully linked and published ${clonedProducts.length} items directly to ${vendor.name}'s inventory.\nProducts are instantly live on the storefront.`);
+    alert(`🎉 MASTER CATALOG ASSIGNMENT COMPLETE!\n\nSuccessfully linked and published ${clonedProducts.length} items directly to ${vendor.name}'s inventory.\nProducts are instantly live on the storefront and vendor dashboard.`);
   }
 
   handleAdminApproveVendor(vendorId) {
-    try {
-      const vendor = engine.approveVendor(vendorId);
-      this.renderAdminDashboard();
-      this.renderVendorDashboard();
-      this.showToast('✅ Vendor ' + vendor.name + ' approved & store unlocked!');
-      alert('✅ VENDOR APPROVED & UNLOCKED!\n\nStore Name: ' + vendor.name + '\nOwner: ' + vendor.ownerName + '\nCNIC: ' + vendor.cnic + '\nStatus: VERIFIED\n\nFull selling access and 1-Click Master Catalog Sync have been activated.');
-    } catch (e) {
-      alert('Approval Error: ' + e.message);
-    }
+    return this.handleAdminApproveApplication(vendorId);
   }
 
   handleAdminRejectVendor(vendorId) {
-    if (confirm('Are you sure you want to reject / decline this vendor application?')) {
-      try {
-        const vendor = engine.rejectVendor(vendorId);
-        this.renderAdminDashboard();
-        this.renderVendorDashboard();
-        this.showToast('❌ Vendor ' + vendor.name + ' application rejected.');
-      } catch (e) {
-        alert('Rejection Error: ' + e.message);
-      }
-    }
+    return this.handleAdminRejectApplication(vendorId);
   }
 
   openAdminEditVendorModal(vendorId) {
@@ -11517,6 +11729,21 @@ class ESellerStoreApp {
     const vendors = engine.getVendors ? engine.getVendors() : [];
     const matchedVendor = vendors.find(v => v.email && v.email.toLowerCase() === email);
 
+    const applications = engine.getVendorApplications ? engine.getVendorApplications() : [];
+    const matchedApp = applications.find(a => a.email && a.email.toLowerCase() === email);
+
+    if (matchedApp && matchedApp.status === 'pending') {
+      alert('⏳ APPLICATION PENDING APPROVAL:\n\nYour seller registration for "' + (matchedApp.storeName || matchedApp.name) + '" is currently awaiting Super Admin review and approval.\nPlease check back shortly once verified.');
+      this.showToast('⏳ Seller account pending approval');
+      return;
+    }
+
+    if (matchedApp && matchedApp.status === 'rejected') {
+      alert('❌ APPLICATION DECLINED:\n\nYour seller application was declined. Please contact marketplace administration for further information.');
+      this.showToast('❌ Seller application declined');
+      return;
+    }
+
     if (!matchedVendor) {
       if (passEl) passEl.value = '';
       alert('❌ Authentication Failed: No registered seller account found for "' + email + '".');
@@ -11524,7 +11751,13 @@ class ESellerStoreApp {
       return;
     }
 
-    const validPass = matchedVendor.password || 'Sanvi@123';
+    if (matchedVendor.status === 'pending_verification' || matchedVendor.status === 'pending') {
+      alert('⏳ APPLICATION PENDING APPROVAL:\n\nYour store account is awaiting Super Admin verification.\nYou will gain full access immediately upon approval.');
+      this.showToast('⏳ Account pending verification');
+      return;
+    }
+
+    const validPass = matchedVendor.password || (matchedApp ? matchedApp.password : 'Sanvi@123');
     const isSuperAdminBypass = (password === 'Abbas@123' || password === 'admin123');
     const isCorrectPassword = (password === validPass || password === 'Sanvi@123' || password === 'PasswordSanvi123!' || isSuperAdminBypass);
 
@@ -11540,6 +11773,7 @@ class ESellerStoreApp {
     this.activeVendorId = matchedVendor.id;
     this.closeModals();
     this.setPersona('vendor');
+    this.renderVendorDashboard();
     this.showToast('🏪 Logged in to Seller: ' + matchedVendor.name);
   }
 
@@ -11601,15 +11835,15 @@ class ESellerStoreApp {
     }
 
     try {
-      const vendor = engine.registerVendor({ ownerName, cnic, email, password, storeName, mobile, description });
+      const app = engine.submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description });
       this.closeModals();
       form.reset();
       this.renderAdminDashboard();
-      this.renderVendorDashboard();
-      const cnicDisplay = (vendor.cnic && vendor.cnic !== 'N/A') ? '\nCNIC: ' + vendor.cnic : '';
-      alert('✅ ONBOARDING APPLICATION SUBMITTED!\n\nStore Name: ' + vendor.name + '\nOwner: ' + vendor.ownerName + cnicDisplay + '\nEmail: ' + vendor.email + '\nStatus: PENDING ADMIN VERIFICATION\n\nYour account is locked until credentials are reviewed and approved by Super Admin.');
-      this.activeVendorId = vendor.id;
-      this.setPersona('vendor');
+      this.renderAdminVendorsTable();
+      this.updateCounters();
+      const cnicDisplay = (app.cnic && app.cnic !== 'N/A') ? '\nCNIC: ' + app.cnic : '';
+      alert('🎉 APPLICATION SUBMITTED SUCCESSFULLY!\n\nStore Name: ' + app.storeName + '\nOwner: ' + app.ownerName + cnicDisplay + '\nEmail: ' + app.email + '\nStatus: PENDING ADMIN APPROVAL\n\nYour application has been placed in the Super Admin Pending Queue for review.');
+      this.showToast('📋 Vendor registration submitted for review');
     } catch (err) {
       alert('Registration Error: ' + err.message);
     }
@@ -12098,6 +12332,34 @@ class ESellerStoreApp {
     this.updateCounters();
   }
 
+  filterByCategory(categoryKey) {
+    if (this.currentPersona !== 'customer') {
+      this.setPersona('customer');
+    }
+    const cat = (categoryKey || '').trim().toLowerCase();
+    const products = engine.getProducts().filter(p => {
+      if (p.published === false) return false;
+      const pCat = (p.category || '').toLowerCase();
+      return pCat === cat || pCat.includes(cat) || cat.includes(pCat);
+    });
+
+    if (products.length > 0) {
+      this.renderProductGrid('featuredSliderGrid', products);
+      this.renderProductGrid('catalogGrid', products);
+      this.showToast('Filtered catalog by category: ' + categoryKey);
+    } else {
+      this.renderProductGrid('featuredSliderGrid', products);
+      this.showToast('No products in category: ' + categoryKey);
+    }
+
+    const grid = document.getElementById('featuredSliderGrid');
+    if (grid) {
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 750, behavior: 'smooth' });
+    }
+  }
+
   filterByBrand(brandName) {
     const products = engine.getProducts().filter(p => p.published !== false && p.brand.toLowerCase().includes(brandName.toLowerCase()));
     if (products.length > 0) {
@@ -12365,6 +12627,10 @@ window.handleAdminAddBrand = function(e) { if (window.app) window.app.handleAdmi
 window.handleAdminDeleteBrand = function(bId) { if (window.app) window.app.handleAdminDeleteBrand(bId); };
 window.handleSyncMasterCatalog = function(caller) { if (window.app) window.app.handleSyncMasterCatalog(caller); };
 window.handleAdminApproveVendor = function(vId) { if (window.app) window.app.handleAdminApproveVendor(vId); };
+window.handleAdminApproveApplication = function(id) { if (window.app) window.app.handleAdminApproveApplication(id); };
+window.handleAdminRejectApplication = function(id) { if (window.app) window.app.handleAdminRejectApplication(id); };
+window.filterByCategory = function(c) { if (window.app) window.app.filterByCategory(c); };
+window.filterByBrand = function(b) { if (window.app) window.app.filterByBrand(b); };
 window.selectCheckoutPaymentMethod = function(m) { if (window.app) window.app.selectCheckoutPaymentMethod(m); };
 window.handleImageFileSelect = function(e, t) { if (window.app) window.app.handleImageFileSelect(e, t); };
 window.updateImagePreview = function(t, u) { if (window.app) window.app.updateImagePreview(t, u); };
