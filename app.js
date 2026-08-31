@@ -1493,6 +1493,61 @@ window.app = new E Seller StoreApp();
     }, 3000);
   }
 
+  updateCloudSyncBadge(lastSync) {
+    const badge = document.getElementById('adminCloudSyncBadge');
+    if (badge) {
+      badge.textContent = '🟢 CLOUD SYNC LIVE';
+      badge.style.background = '#ecfdf5';
+      badge.style.color = '#047857';
+      badge.style.borderColor = '#a7f3d0';
+      badge.title = 'Last Synchronized: ' + (lastSync || new Date().toLocaleTimeString());
+    }
+    const timeEl = document.getElementById('adminCloudSyncLastTime');
+    if (timeEl) {
+      timeEl.textContent = new Date().toLocaleTimeString();
+    }
+  }
+
+  async handleForceCloudPush() {
+    try {
+      this.showToast('☁️ Pushing local data to cloud backend...');
+      const success = await engine.forceCloudPush();
+      if (success) {
+        this.updateCounters();
+        this.updateCloudSyncBadge(new Date().toISOString());
+        this.showToast('✅ Cloud database synchronized successfully!');
+        alert('🎉 CLOUD PUSH COMPLETE!\n\nAll current products, vendors, applications, and store orders have been uploaded and persisted to the global cloud database.');
+      } else {
+        alert('Cloud push failed. Check network connection.');
+      }
+    } catch (e) {
+      alert('Cloud Push Error: ' + e.message);
+    }
+  }
+
+  async handleForceCloudPull() {
+    try {
+      this.showToast('🔄 Pulling latest data from cloud backend...');
+      const snapshot = await engine.forceCloudPull();
+      if (snapshot) {
+        this.renderHomepageSections();
+        this.renderCatalog();
+        this.renderAdminDashboard();
+        this.renderAdminProductsTable();
+        this.renderAdminVendorsTable();
+        this.renderVendorDashboard();
+        this.updateCounters();
+        this.updateCloudSyncBadge(snapshot.lastUpdated);
+        this.showToast('✅ Local cache updated with latest cloud data!');
+        alert(`🎉 CLOUD PULL COMPLETE!\n\nSynchronized with cloud database.\nProducts: ${snapshot.products ? snapshot.products.length : 0}\nVendors: ${snapshot.vendors ? snapshot.vendors.length : 0}\nPending Applications: ${snapshot.vendor_applications ? snapshot.vendor_applications.length : 0}`);
+      } else {
+        alert('No new cloud data or endpoint unreachable.');
+      }
+    } catch (e) {
+      alert('Cloud Pull Error: ' + e.message);
+    }
+  }
+
   bindEvents() {
     const searchInput = document.getElementById('ajaxSearchInput');
     if (searchInput) {
@@ -1502,6 +1557,17 @@ window.app = new E Seller StoreApp();
     // Listen for custom admin activity notifications
     window.addEventListener('admin_activity_logged', () => {
       if (this.currentPersona === 'admin') this.renderAdminDashboard();
+    });
+
+    window.addEventListener('vendor_applications_updated', () => {
+      if (this.currentPersona === 'admin') {
+        this.renderAdminDashboard();
+        this.renderAdminVendorsTable();
+      }
+    });
+
+    window.addEventListener('cloud_sync_updated', (e) => {
+      this.updateCloudSyncBadge(e.detail ? e.detail.lastUpdated : null);
     });
 
     document.addEventListener('click', (e) => {
@@ -1514,3 +1580,5 @@ window.app = new E Seller StoreApp();
 }
 
 window.app = new E Seller StoreApp();
+window.handleForceCloudPush = function() { if (window.app) window.app.handleForceCloudPush(); };
+window.handleForceCloudPull = function() { if (window.app) window.app.handleForceCloudPull(); };

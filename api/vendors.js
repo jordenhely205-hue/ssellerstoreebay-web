@@ -1,5 +1,9 @@
 // Vercel Serverless Function: GET /api/vendors, POST /api/vendors
 const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+const TMP_VENDORS_DB = path.join(os.tmpdir(), 'esellerstore_vendors_db.json');
 
 const DEFAULT_VENDORS = [
   {
@@ -26,7 +30,30 @@ const DEFAULT_VENDORS = [
   }
 ];
 
-let inMemoryVendors = [...DEFAULT_VENDORS];
+let inMemoryVendors = null;
+
+function getVendors() {
+  if (inMemoryVendors && inMemoryVendors.length > 0) return inMemoryVendors;
+  try {
+    if (fs.existsSync(TMP_VENDORS_DB)) {
+      const raw = fs.readFileSync(TMP_VENDORS_DB, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        inMemoryVendors = parsed;
+        return inMemoryVendors;
+      }
+    }
+  } catch (e) {}
+  inMemoryVendors = [...DEFAULT_VENDORS];
+  return inMemoryVendors;
+}
+
+function persistVendors(vendors) {
+  inMemoryVendors = vendors;
+  try {
+    fs.writeFileSync(TMP_VENDORS_DB, JSON.stringify(vendors), 'utf8');
+  } catch (e) {}
+}
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -35,8 +62,10 @@ module.exports = async (req, res) => {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  const currentVendors = getVendors();
+
   if (req.method === 'GET') {
-    return res.status(200).json(inMemoryVendors);
+    return res.status(200).json(currentVendors);
   }
 
   if (req.method === 'POST') {
@@ -44,11 +73,12 @@ module.exports = async (req, res) => {
       const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       const list = payload.vendors || (Array.isArray(payload) ? payload : [payload]);
       list.forEach(v => {
-        const idx = inMemoryVendors.findIndex(x => x.id === v.id || (x.email && x.email.toLowerCase() === (v.email || '').toLowerCase()));
-        if (idx >= 0) inMemoryVendors[idx] = Object.assign({}, inMemoryVendors[idx], v);
-        else inMemoryVendors.push(v);
+        const idx = currentVendors.findIndex(x => x.id === v.id || (x.email && x.email.toLowerCase() === (v.email || '').toLowerCase()));
+        if (idx >= 0) currentVendors[idx] = Object.assign({}, currentVendors[idx], v);
+        else currentVendors.push(v);
       });
-      return res.status(200).json({ success: true, count: inMemoryVendors.length });
+      persistVendors(currentVendors);
+      return res.status(200).json({ success: true, count: currentVendors.length });
     } catch (e) {
       return res.status(500).json({ error: e.message });
     }

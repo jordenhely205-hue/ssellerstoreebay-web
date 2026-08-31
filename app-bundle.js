@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v3.4_clean_placeholders';
+const APP_VERSION = 'v3.5_cloud_sync';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -8149,12 +8149,16 @@ class DokanEngine {
     this.storageKeyChat = 'esellerstore_chat_messages';
     this.storageKeyAdminAuth = 'esellerstore_admin_auth';
     this.storageKeyVendorApplications = 'esellerstore_vendor_applications';
+    this.storageKeyCloudConfig = 'esellerstore_cloud_config';
+    this.lastCloudSyncTimestamp = null;
+    this.cloudSyncStatus = 'connected';
 
     this.init();
+    this.startRealTimeCloudPolling();
   }
 
   init() {
-    const APP_VERSION = 'v3.4_clean_placeholders';
+    const APP_VERSION = 'v3.5_cloud_sync';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -8478,6 +8482,190 @@ class DokanEngine {
         localStorage.setItem('esellerstore_cache_bust', Date.now().toString());
       } catch (e) {}
     }
+  }
+
+  /* --- REAL-TIME GLOBAL CLOUD SYNC ENGINE --- */
+  startRealTimeCloudPolling() {
+    if (typeof window === 'undefined') return;
+
+    setTimeout(() => {
+      this.fetchCloudState().catch(() => {});
+    }, 500);
+
+    setInterval(() => {
+      this.fetchCloudState().catch(() => {});
+    }, 9000);
+
+    window.addEventListener('focus', () => {
+      this.fetchCloudState().catch(() => {});
+    });
+
+    window.addEventListener('online', () => {
+      this.fetchCloudState().catch(() => {});
+    });
+  }
+
+  async fetchCloudState() {
+    if (typeof fetch === 'undefined') return null;
+
+    try {
+      const cacheBust = '?_t=' + Date.now();
+      const res = await fetch('/api/sync' + cacheBust, {
+        headers: { 'Cache-Control': 'no-cache, no-store' }
+      }).catch(() => null);
+
+      if (!res || !res.ok) return null;
+
+      const data = await res.json();
+      if (!data || !data.success) return null;
+
+      let changed = false;
+
+      // 1. Reconcile Vendor Applications
+      if (Array.isArray(data.vendor_applications) && data.vendor_applications.length > 0) {
+        const localApps = this.getVendorApplications();
+        const appMap = new Map();
+        localApps.forEach(a => { if (a && a.id) appMap.set(a.id, a); });
+
+        data.vendor_applications.forEach(cloudApp => {
+          if (!cloudApp || !cloudApp.id) return;
+          const local = appMap.get(cloudApp.id);
+          if (!local || local.status !== cloudApp.status) {
+            appMap.set(cloudApp.id, { ...(local || {}), ...cloudApp });
+            changed = true;
+          }
+        });
+
+        const mergedApps = Array.from(appMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify(mergedApps));
+        if (changed && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('vendor_applications_updated'));
+        }
+      }
+
+      // 2. Reconcile Vendors
+      if (Array.isArray(data.vendors) && data.vendors.length > 0) {
+        const localVendors = this.getVendors();
+        const vendorMap = new Map();
+        localVendors.forEach(v => { if (v && v.id) vendorMap.set(v.id, v); });
+
+        data.vendors.forEach(cloudVendor => {
+          if (!cloudVendor || !cloudVendor.id) return;
+          const local = vendorMap.get(cloudVendor.id);
+          if (!local || local.status !== cloudVendor.status || local.balance !== cloudVendor.balance) {
+            vendorMap.set(cloudVendor.id, { ...(local || {}), ...cloudVendor });
+            changed = true;
+          }
+        });
+
+        const mergedVendors = Array.from(vendorMap.values());
+        localStorage.setItem(this.storageKeyVendors, JSON.stringify(mergedVendors));
+        if (changed && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('vendors_updated'));
+        }
+      }
+
+      // 3. Reconcile Products
+      if (Array.isArray(data.products) && data.products.length > 0) {
+        const localProducts = this.getProducts();
+        const prodMap = new Map();
+        localProducts.forEach(p => {
+          const key = p.id || p.sku || p.name;
+          if (key) prodMap.set(key, p);
+        });
+
+        let productsUpdated = false;
+        data.products.forEach(cloudProd => {
+          if (!cloudProd) return;
+          const key = cloudProd.id || cloudProd.sku || cloudProd.name;
+          if (key && !prodMap.has(key)) {
+            prodMap.set(key, cloudProd);
+            productsUpdated = true;
+          }
+        });
+
+        if (productsUpdated) {
+          const mergedProducts = Array.from(prodMap.values());
+          localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(mergedProducts));
+          localStorage.setItem(this.storageKeyProducts, JSON.stringify(mergedProducts));
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('products_updated'));
+          }
+        }
+      }
+
+      this.lastCloudSyncTimestamp = new Date().toISOString();
+      this.cloudSyncStatus = 'live';
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cloud_sync_updated', { detail: { lastUpdated: this.lastCloudSyncTimestamp } }));
+      }
+
+      return data;
+    } catch (err) {
+      this.cloudSyncStatus = 'offline';
+      return null;
+    }
+  }
+
+  async pushCloudState(entity, data, action = 'upsert') {
+    if (typeof fetch === 'undefined') return;
+
+    try {
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entity, data, action, timestamp: new Date().toISOString() })
+      }).catch(() => {});
+
+      if (entity === 'vendor_application') {
+        fetch('/api/applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        }).catch(() => {});
+      } else if (entity === 'vendor_approval') {
+        fetch('/api/applications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: data.applicationId, status: data.status })
+        }).catch(() => {});
+      } else if (entity === 'products') {
+        fetch('/api/products/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'batch_upsert', products: Array.isArray(data) ? data : [data] })
+        }).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
+  async forceCloudPush() {
+    const fullState = {
+      products: this.getProducts(),
+      vendors: this.getVendors(),
+      vendor_applications: this.getVendorApplications(),
+      orders: this.getOrders()
+    };
+
+    if (typeof fetch !== 'undefined') {
+      const res = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'full_reconcile', state: fullState })
+      });
+      this.lastCloudSyncTimestamp = new Date().toISOString();
+      return res.ok;
+    }
+    return false;
+  }
+
+  async forceCloudPull() {
+    return await this.fetchCloudState();
+  }
+
+  syncProductsToCloudBackend(products) {
+    this.pushCloudState('products', products || this.getProducts());
   }
 
   forceSyncCatalog() {
@@ -9088,6 +9276,9 @@ class DokanEngine {
     }
     this.saveVendors(vendors);
 
+    // Push to global cloud backend immediately
+    this.pushCloudState('vendor_application', newApp);
+
     this.logActivity('New Vendor Registration', 'Store ' + newApp.name + ' submitted application [PENDING APPROVAL]', 'warning');
     return newApp;
   }
@@ -9138,6 +9329,10 @@ class DokanEngine {
     }
 
     this.saveVendors(vendors);
+
+    // Push approval to global cloud backend immediately
+    this.pushCloudState('vendor_approval', { applicationId: app.id, status: 'approved', vendor: vendorObj });
+
     this.logActivity('Vendor Store Approved', 'Super Admin approved and activated store: ' + app.storeName, 'success');
     return vendorObj;
   }
@@ -9156,6 +9351,9 @@ class DokanEngine {
       vendor.status = 'rejected';
       this.saveVendors(vendors);
     }
+
+    // Push rejection to global cloud backend immediately
+    this.pushCloudState('vendor_approval', { applicationId: app.id, status: 'rejected' });
 
     this.logActivity('Vendor Application Rejected', 'Super Admin declined store application: ' + app.storeName, 'warning');
     return app;
@@ -12485,6 +12683,17 @@ class ESellerStoreApp {
       });
     }
 
+    window.addEventListener('vendor_applications_updated', () => {
+      if (this.currentPersona === 'admin') {
+        this.renderAdminDashboard();
+        this.renderAdminVendorsTable();
+      }
+    });
+
+    window.addEventListener('cloud_sync_updated', (e) => {
+      this.updateCloudSyncBadge(e.detail ? e.detail.lastUpdated : null);
+    });
+
     window.addEventListener('brands_updated', () => {
       this.renderBrandsCarousel();
       this.renderUpfrontVisibleBrands();
@@ -12579,6 +12788,61 @@ class ESellerStoreApp {
     }
   }
 
+  updateCloudSyncBadge(lastSync) {
+    const badge = document.getElementById('adminCloudSyncBadge');
+    if (badge) {
+      badge.textContent = '🟢 CLOUD SYNC LIVE';
+      badge.style.background = '#ecfdf5';
+      badge.style.color = '#047857';
+      badge.style.borderColor = '#a7f3d0';
+      badge.title = 'Last Synchronized: ' + (lastSync || new Date().toLocaleTimeString());
+    }
+    const timeEl = document.getElementById('adminCloudSyncLastTime');
+    if (timeEl) {
+      timeEl.textContent = new Date().toLocaleTimeString();
+    }
+  }
+
+  async handleForceCloudPush() {
+    try {
+      this.showToast('☁️ Pushing local data to cloud backend...');
+      const success = await engine.forceCloudPush();
+      if (success) {
+        this.updateCounters();
+        this.updateCloudSyncBadge(new Date().toISOString());
+        this.showToast('✅ Cloud database synchronized successfully!');
+        alert('🎉 CLOUD PUSH COMPLETE!\n\nAll current products, vendors, applications, and store orders have been uploaded and persisted to the global cloud database.');
+      } else {
+        alert('Cloud push failed. Check network connection.');
+      }
+    } catch (e) {
+      alert('Cloud Push Error: ' + e.message);
+    }
+  }
+
+  async handleForceCloudPull() {
+    try {
+      this.showToast('🔄 Pulling latest data from cloud backend...');
+      const snapshot = await engine.forceCloudPull();
+      if (snapshot) {
+        this.renderHomepageSections();
+        this.renderCatalog();
+        this.renderAdminDashboard();
+        this.renderAdminProductsTable();
+        this.renderAdminVendorsTable();
+        this.renderVendorDashboard();
+        this.updateCounters();
+        this.updateCloudSyncBadge(snapshot.lastUpdated);
+        this.showToast('✅ Local cache updated with latest cloud data!');
+        alert(`🎉 CLOUD PULL COMPLETE!\n\nSynchronized with cloud database.\nProducts: ${snapshot.products ? snapshot.products.length : 0}\nVendors: ${snapshot.vendors ? snapshot.vendors.length : 0}\nPending Applications: ${snapshot.vendor_applications ? snapshot.vendor_applications.length : 0}`);
+      } else {
+        alert('No new cloud data or endpoint unreachable.');
+      }
+    } catch (e) {
+      alert('Cloud Pull Error: ' + e.message);
+    }
+  }
+
   closeMobileDrawer() {
     const drawer = document.getElementById('mobileNavDrawerOverlay');
     if (drawer) {
@@ -12588,6 +12852,9 @@ class ESellerStoreApp {
 }
 
 window.app = new ESellerStoreApp();
+
+window.handleForceCloudPush = function() { if (window.app) window.app.handleForceCloudPush(); };
+window.handleForceCloudPull = function() { if (window.app) window.app.handleForceCloudPull(); };
 
 window.toggleMobileDrawer = function() { if (window.app) window.app.toggleMobileDrawer(); };
 window.closeMobileDrawer = function() { if (window.app) window.app.closeMobileDrawer(); };

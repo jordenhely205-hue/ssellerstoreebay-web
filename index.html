@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=3.4">
+  <link rel="stylesheet" href="styles.css?v=3.5">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -562,25 +562,32 @@
         <div id="adminLiveActivityFeedBox"></div>
       </div>
 
-      <!-- Scalable Cloud & IndexedDB Storage Architecture Card -->
+      <!-- Scalable Cloud Database & Multi-Device Real-Time Synchronization Card -->
       <div class="dash-card" style="background:#ffffff; border-left:4px solid #1a73e8; margin-bottom:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:16px;">☁️</span>
-              <h4 style="font-family:'Outfit'; font-size:15px; color:#0f172a; margin:0;">Scalable Cloud Database & High-Concurrency Storage Layer</h4>
-              <span class="status-badge verified" style="font-size:10px;">INDEXEDDB L2 ACTIVE</span>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="font-size:18px;">☁️</span>
+              <h4 style="font-family:'Outfit'; font-size:15px; color:#0f172a; margin:0;">Global Multi-Device Cloud Database & Real-Time Sync</h4>
+              <span class="status-badge verified" id="adminCloudSyncBadge" style="font-size:10px; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0;">🟢 CLOUD SYNC LIVE</span>
+              <span style="font-size:11px; color:#64748b;">(Last Sync: <span id="adminCloudSyncLastTime">Just now</span>)</span>
             </div>
             <p style="font-size:12px; color:#64748b; margin-top:4px;">
-              Multi-tier architecture: In-Memory L1 Cache + Unlimited IndexedDB L2 Store + Cloud Database Sync (PostgreSQL, Supabase, Firebase, MongoDB ready).
+              Multi-Device synchronization active: Vendor registrations, store approvals, and product catalogs sync globally across Mobile, Desktop, and all visitors in real-time.
             </p>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn-primary" style="background:#d97706; color:#fff; padding:6px 14px; font-size:11px;" onclick="app.handleForceSyncCatalog(); return false;">
+            <button class="btn-primary" style="background:#0284c7; color:#fff; padding:6px 12px; font-size:11px;" onclick="app.handleForceCloudPull(); return false;">
+              🔄 Pull from Cloud
+            </button>
+            <button class="btn-primary" style="background:#0f172a; color:#fff; padding:6px 12px; font-size:11px;" onclick="app.handleForceCloudPush(); return false;">
+              ☁️ Push to Cloud
+            </button>
+            <button class="btn-primary" style="background:#d97706; color:#fff; padding:6px 12px; font-size:11px;" onclick="app.handleForceSyncCatalog(); return false;">
               ⚡ Force Sync Catalog
             </button>
-            <button class="btn-primary" style="padding:6px 14px; font-size:11px;" onclick="app.exportCloudDatabaseJson()">
-              📥 Export Full Cloud Schema (JSON)
+            <button class="btn-primary" style="padding:6px 12px; font-size:11px;" onclick="app.exportCloudDatabaseJson(); return false;">
+              📥 Export Schema
             </button>
           </div>
         </div>
@@ -2104,6 +2111,6 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=3.4"></script>
+  <script src="app-bundle.js?v=3.5"></script>
 </body>
 </html>

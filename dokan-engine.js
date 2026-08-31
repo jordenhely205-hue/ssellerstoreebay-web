@@ -22,12 +22,16 @@ class DokanEngine {
     this.storageKeyChat = 'esellerstore_chat_messages';
     this.storageKeyAdminAuth = 'esellerstore_admin_auth';
     this.storageKeyVendorApplications = 'esellerstore_vendor_applications';
+    this.storageKeyCloudConfig = 'esellerstore_cloud_config';
+    this.lastCloudSyncTimestamp = null;
+    this.cloudSyncStatus = 'connected';
 
     this.init();
+    this.startRealTimeCloudPolling();
   }
 
   init() {
-    const APP_VERSION = 'v3.4_clean_placeholders';
+    const APP_VERSION = 'v3.5_cloud_sync';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -420,35 +424,191 @@ class DokanEngine {
     return products;
   }
 
-  syncProductsToCloudBackend(products) {
-    const payload = {
-      action: 'batch_upsert',
-      products: products || this.getProducts(),
-      timestamp: new Date().toISOString(),
-      source: 'csv_bulk_import_sync'
+  /* --- REAL-TIME GLOBAL CLOUD SYNC ENGINE --- */
+  startRealTimeCloudPolling() {
+    if (typeof window === 'undefined') return;
+
+    // Initial fetch on boot
+    setTimeout(() => {
+      this.fetchCloudState().catch(() => {});
+    }, 500);
+
+    // Continuous polling every 8-10 seconds
+    setInterval(() => {
+      this.fetchCloudState().catch(() => {});
+    }, 9000);
+
+    // Instant sync when tab gains focus or device goes online
+    window.addEventListener('focus', () => {
+      this.fetchCloudState().catch(() => {});
+    });
+
+    window.addEventListener('online', () => {
+      this.fetchCloudState().catch(() => {});
+    });
+  }
+
+  async fetchCloudState() {
+    if (typeof fetch === 'undefined') return null;
+
+    try {
+      const cacheBust = '?_t=' + Date.now();
+      const res = await fetch('/api/sync' + cacheBust, {
+        headers: { 'Cache-Control': 'no-cache, no-store' }
+      }).catch(() => null);
+
+      if (!res || !res.ok) return null;
+
+      const data = await res.json();
+      if (!data || !data.success) return null;
+
+      let changed = false;
+
+      // 1. Reconcile Vendor Applications
+      if (Array.isArray(data.vendor_applications) && data.vendor_applications.length > 0) {
+        const localApps = this.getVendorApplications();
+        const appMap = new Map();
+        localApps.forEach(a => { if (a && a.id) appMap.set(a.id, a); });
+
+        data.vendor_applications.forEach(cloudApp => {
+          if (!cloudApp || !cloudApp.id) return;
+          const local = appMap.get(cloudApp.id);
+          if (!local || local.status !== cloudApp.status) {
+            appMap.set(cloudApp.id, { ...(local || {}), ...cloudApp });
+            changed = true;
+          }
+        });
+
+        const mergedApps = Array.from(appMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify(mergedApps));
+        if (changed && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('vendor_applications_updated'));
+        }
+      }
+
+      // 2. Reconcile Vendors
+      if (Array.isArray(data.vendors) && data.vendors.length > 0) {
+        const localVendors = this.getVendors();
+        const vendorMap = new Map();
+        localVendors.forEach(v => { if (v && v.id) vendorMap.set(v.id, v); });
+
+        data.vendors.forEach(cloudVendor => {
+          if (!cloudVendor || !cloudVendor.id) return;
+          const local = vendorMap.get(cloudVendor.id);
+          if (!local || local.status !== cloudVendor.status || local.balance !== cloudVendor.balance) {
+            vendorMap.set(cloudVendor.id, { ...(local || {}), ...cloudVendor });
+            changed = true;
+          }
+        });
+
+        const mergedVendors = Array.from(vendorMap.values());
+        localStorage.setItem(this.storageKeyVendors, JSON.stringify(mergedVendors));
+        if (changed && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('vendors_updated'));
+        }
+      }
+
+      // 3. Reconcile Products
+      if (Array.isArray(data.products) && data.products.length > 0) {
+        const localProducts = this.getProducts();
+        const prodMap = new Map();
+        localProducts.forEach(p => {
+          const key = p.id || p.sku || p.name;
+          if (key) prodMap.set(key, p);
+        });
+
+        let productsUpdated = false;
+        data.products.forEach(cloudProd => {
+          if (!cloudProd) return;
+          const key = cloudProd.id || cloudProd.sku || cloudProd.name;
+          if (key && !prodMap.has(key)) {
+            prodMap.set(key, cloudProd);
+            productsUpdated = true;
+          }
+        });
+
+        if (productsUpdated) {
+          const mergedProducts = Array.from(prodMap.values());
+          localStorage.setItem(this.storageKeyMasterCatalog, JSON.stringify(mergedProducts));
+          localStorage.setItem(this.storageKeyProducts, JSON.stringify(mergedProducts));
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('products_updated'));
+          }
+        }
+      }
+
+      this.lastCloudSyncTimestamp = new Date().toISOString();
+      this.cloudSyncStatus = 'live';
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cloud_sync_updated', { detail: { lastUpdated: this.lastCloudSyncTimestamp } }));
+      }
+
+      return data;
+    } catch (err) {
+      this.cloudSyncStatus = 'offline';
+      return null;
+    }
+  }
+
+  async pushCloudState(entity, data, action = 'upsert') {
+    if (typeof fetch === 'undefined') return;
+
+    try {
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entity, data, action, timestamp: new Date().toISOString() })
+      }).catch(() => {});
+
+      if (entity === 'vendor_application') {
+        fetch('/api/applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        }).catch(() => {});
+      } else if (entity === 'vendor_approval') {
+        fetch('/api/applications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: data.applicationId, status: data.status })
+        }).catch(() => {});
+      } else if (entity === 'products') {
+        fetch('/api/products/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'batch_upsert', products: Array.isArray(data) ? data : [data] })
+        }).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
+  async forceCloudPush() {
+    const fullState = {
+      products: this.getProducts(),
+      vendors: this.getVendors(),
+      vendor_applications: this.getVendorApplications(),
+      orders: this.getOrders()
     };
 
     if (typeof fetch !== 'undefined') {
-      try {
-        fetch('/api/products/batch', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate'
-          },
-          body: JSON.stringify(payload)
-        }).catch(() => {});
-
-        fetch('/api/products', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate'
-          },
-          body: JSON.stringify(payload)
-        }).catch(() => {});
-      } catch (err) {}
+      const res = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'full_reconcile', state: fullState })
+      });
+      this.lastCloudSyncTimestamp = new Date().toISOString();
+      return res.ok;
     }
+    return false;
+  }
+
+  async forceCloudPull() {
+    return await this.fetchCloudState();
+  }
+
+  syncProductsToCloudBackend(products) {
+    this.pushCloudState('products', products || this.getProducts());
   }
 
   addProduct(productData) {
@@ -732,6 +892,9 @@ class DokanEngine {
     }
     this.saveVendors(vendors);
 
+    // Push to global cloud backend immediately
+    this.pushCloudState('vendor_application', newApp);
+
     this.logActivity('New Vendor Registration', `Store '${storeName}' submitted application [PENDING APPROVAL]`, 'warning');
     return newApp;
   }
@@ -782,6 +945,10 @@ class DokanEngine {
     }
 
     this.saveVendors(vendors);
+
+    // Push approval to global cloud backend immediately
+    this.pushCloudState('vendor_approval', { applicationId: app.id, status: 'approved', vendor: vendorObj });
+
     this.logActivity('Vendor Store Approved', `Super Admin approved and activated store: ${app.storeName}`, 'success');
     return vendorObj;
   }
@@ -801,7 +968,10 @@ class DokanEngine {
       this.saveVendors(vendors);
     }
 
-    this.logActivity('Vendor Application Rejected', `Super Admin declined store application: ${app.storeName}`, 'warning');
+    // Push rejection to global cloud backend immediately
+    this.pushCloudState('vendor_approval', { applicationId: app.id, status: 'rejected' });
+
+    this.logActivity('Vendor Application Rejected', `Super Admin rejected application for: ${app.storeName}`, 'info');
     return app;
   }
 
