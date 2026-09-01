@@ -11447,13 +11447,8 @@ class ESellerStoreApp {
   }
 
   toggleAIChat() {
-    const drawer = document.getElementById('aiChatDrawer');
-    if (drawer) {
-      drawer.classList.toggle('active');
-      if (drawer.classList.contains('active')) {
-        engine.markChatRead();
-        this.updateCounters();
-      }
+    if (typeof window !== 'undefined' && window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
+      window.Tawk_API.maximize();
     }
   }
 

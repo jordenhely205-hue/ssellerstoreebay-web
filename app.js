@@ -626,44 +626,12 @@ class E Seller StoreApp {
   }
 
   /**
-   * Requirement #4: Interactive AI Chatbot Assistant Logic
+   * Live Chat Support Integration (Tawk.to)
    */
   toggleAIChat() {
-    const drawer = document.getElementById('aiChatDrawer');
-    if (drawer) drawer.classList.toggle('active');
-  }
-
-  sendAIMessage(userText = '') {
-    const input = document.getElementById('aiChatInput');
-    const query = userText || (input ? input.value.trim() : '');
-    if (!query) return;
-
-    const body = document.getElementById('aiChatBody');
-    if (!body) return;
-
-    // User Message
-    body.innerHTML += `<div class="ai-msg user">${query}</div>`;
-    if (input) input.value = '';
-    body.scrollTop = body.scrollHeight;
-
-    // Simulated Smart AI Processing
-    setTimeout(() => {
-      let reply = 'Welcome to E Seller Store! How can I assist you today with products or vendor onboarding?';
-      const q = query.toLowerCase();
-
-      if (q.includes('register') || q.includes('seller') || q.includes('cnic')) {
-        reply = '🏪 To register as a verified seller on E Seller Store, click "Become a Seller" at the top. Be sure to provide your CNIC (e.g. 42101-9876543-1), Store Name, and Profile Description for instant Admin verification!';
-      } else if (q.includes('profit') || q.includes('margin') || q.includes('commission')) {
-        reply = '💰 E Seller Store vendors enjoy a high profit margin between 18% and 30% per product sale! Net profit breakdown is displayed automatically on your Seller Dashboard.';
-      } else if (q.includes('iphone') || q.includes('dell') || q.includes('nike') || q.includes('hp')) {
-        reply = '🏷️ We have official flagship items from Apple iPhone, Dell, Nike, HP, Sony, and Rolex in stock. Check out our Upfront Brands section on the homepage!';
-      } else if (q.includes('track') || q.includes('order') || q.includes('status')) {
-        reply = '📦 All orders are tracked in real-time. Admin and Vendors receive immediate notification alerts upon customer checkout!';
-      }
-
-      body.innerHTML += `<div class="ai-msg bot">⚡ <strong>E Seller Store AI:</strong> ${reply}</div>`;
-      body.scrollTop = body.scrollHeight;
-    }, 400);
+    if (typeof window !== 'undefined' && window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
+      window.Tawk_API.maximize();
+    }
   }
 
   handleAjaxSearch(query) {
@@ -1324,46 +1292,7 @@ window.app = new E Seller StoreApp();
     reader.readAsText(file);
   }
 
-  /**
-   * Requirement #4: Interactive AI Chatbot Assistant Logic
-   */
-  toggleAIChat() {
-    const drawer = document.getElementById('aiChatDrawer');
-    if (drawer) drawer.classList.toggle('active');
-  }
 
-  sendAIMessage(userText = '') {
-    const input = document.getElementById('aiChatInput');
-    const query = userText || (input ? input.value.trim() : '');
-    if (!query) return;
-
-    const body = document.getElementById('aiChatBody');
-    if (!body) return;
-
-    // User Message
-    body.innerHTML += `<div class="ai-msg user">${query}</div>`;
-    if (input) input.value = '';
-    body.scrollTop = body.scrollHeight;
-
-    // Simulated Smart AI Processing
-    setTimeout(() => {
-      let reply = 'Welcome to E Seller Store! How can I assist you today with products or vendor onboarding?';
-      const q = query.toLowerCase();
-
-      if (q.includes('register') || q.includes('seller') || q.includes('cnic')) {
-        reply = '🏪 To register as a verified seller on E Seller Store, click "Become a Seller" at the top. Be sure to provide your CNIC (e.g. 42101-9876543-1), Store Name, and Profile Description for instant Admin verification!';
-      } else if (q.includes('profit') || q.includes('margin') || q.includes('commission')) {
-        reply = '💰 E Seller Store vendors enjoy a high profit margin between 18% and 30% per product sale! Net profit breakdown is displayed automatically on your Seller Dashboard.';
-      } else if (q.includes('iphone') || q.includes('dell') || q.includes('nike') || q.includes('hp')) {
-        reply = '🏷️ We have official flagship items from Apple iPhone, Dell, Nike, HP, Sony, and Rolex in stock. Check out our Upfront Brands section on the homepage!';
-      } else if (q.includes('track') || q.includes('order') || q.includes('status')) {
-        reply = '📦 All orders are tracked in real-time. Admin and Vendors receive immediate notification alerts upon customer checkout!';
-      }
-
-      body.innerHTML += `<div class="ai-msg bot">⚡ <strong>E Seller Store AI:</strong> ${reply}</div>`;
-      body.scrollTop = body.scrollHeight;
-    }, 400);
-  }
 
   handleAjaxSearch(query) {
     const dropdown = document.getElementById('ajaxSearchDropdown');

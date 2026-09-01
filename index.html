@@ -126,7 +126,7 @@
         <span style="color:#cbd5e1;">|</span>
         <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" class="seller-login-btn">Seller Portal</a>
         <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="app.toggleAIChat(); return false;">Help &amp; Support</a>
+        <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} return false;">Help &amp; Support</a>
       </div>
     </div>
   </div>
@@ -1588,40 +1588,7 @@
     </div>
   </div>
 
-  <!-- MANUAL LIVE CHAT WIDGET DRAWER WITH SCREENSHOT & RECEIPT ATTACHMENTS -->
-  <div class="ai-chat-trigger-btn" onclick="app.toggleAIChat()" title="E Seller Store Live Admin Support">💬</div>
 
-  <div class="ai-chat-drawer" id="aiChatDrawer">
-    <div class="ai-chat-header">
-      <h4>🛡️ Live Admin Support & Payment Chat</h4>
-      <button onclick="app.toggleAIChat()" style="color:#fff; font-size:18px;">&times;</button>
-    </div>
-
-    <div style="padding:6px 12px; background:#f1f5f9; border-bottom:1px solid #e2e8f0; font-size:11px; color:#0284c7; font-weight:600;">
-      ⚡ Direct Real-Time Chat & Payment Proof Attachment Console
-    </div>
-
-    <div class="ai-chat-body" id="aiChatBody"></div>
-
-    <!-- Client Chat Attachment Preview (when an image is selected) -->
-    <div id="clientChatAttachmentPreviewBox" style="display:none;" class="chat-attachment-preview-box">
-      <img id="clientChatAttachmentThumb" src="" style="width:36px; height:36px; object-fit:cover; border-radius:4px;">
-      <div style="flex:1;">
-        <strong>Receipt Attached</strong><br>
-        <small style="color:#64748b;">Ready to send with message</small>
-      </div>
-      <button type="button" onclick="app.clearClientChatAttachment()" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer;">&times;</button>
-    </div>
-
-    <div class="ai-chat-footer">
-      <label class="chat-attach-btn" title="Attach Payment Receipt / Screenshot">
-        📎
-        <input type="file" id="clientChatAttachmentInput" accept="image/*" style="display:none;" onchange="app.handleChatAttachmentSelect(event, 'client')">
-      </label>
-      <input type="text" id="aiChatInput" class="ai-chat-input" placeholder="Type message or attach receipt..." onkeypress="if(event.key==='Enter') app.sendClientLiveChatMessage()">
-      <button class="ai-send-btn" onclick="app.sendClientLiveChatMessage()">&rarr;</button>
-    </div>
-  </div>
 
   <!-- ADMIN TO VENDOR SEND MAIL MODAL -->
   <div class="modal-overlay" id="adminSendMailModalOverlay">
@@ -2047,7 +2014,7 @@
           <a href="#" onclick="app.openModal('sellerRegModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">🏪 Become a Seller (Apply Now)</a>
           <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">🔑 Seller Portal Login</a>
           <a href="#" onclick="app.openModal('adminLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">⚙️ Super Admin Portal</a>
-          <a href="#" onclick="app.toggleAIChat(); app.closeMobileDrawer(); return false;" class="drawer-link">💬 Live Support &amp; Chat</a>
+          <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} app.closeMobileDrawer(); return false;" class="drawer-link">💬 Live Support &amp; Chat</a>
         </div>
         <div class="mobile-drawer-section">
           <h5>Top Categories</h5>
