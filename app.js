@@ -1,4 +1,4 @@
-const APP_VERSION = 'v5.5_sanitized_cart_auth';
+const APP_VERSION = 'v6.0_official_ess_ebay_logo';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
