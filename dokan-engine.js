@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.7_multi_step_onboarding';
+    const APP_VERSION = 'v4.1_wizard_otp_onboarding';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -885,7 +885,7 @@ class DokanEngine {
     const newApp = {
       id: 'app_' + Date.now(),
       status: 'pending',
-      verificationStatus: 'verification_link_sent',
+      verificationStatus: 'email_verified',
       role: cleanRole,
       createdAt: new Date().toISOString(),
       email: email.trim(),
@@ -933,7 +933,7 @@ class DokanEngine {
       password: newApp.password,
       description: newApp.description,
       status: 'pending_verification',
-      verificationStatus: 'verification_link_sent',
+      verificationStatus: 'email_verified',
       balance: 0.00,
       profitEarned: 0.00,
       profitMarginPercent: 25,

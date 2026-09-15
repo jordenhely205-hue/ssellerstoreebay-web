@@ -2031,8 +2031,87 @@ html, body {
 }
 
 /* ==========================================================================
-   MULTI-STEP ONBOARDING & VERTICAL VENDOR FORM STYLES
+   3-STEP WIZARD ONBOARDING & VERTICAL FORM STYLES
    ========================================================================== */
+.wizard-modal-card {
+  max-width: 580px !important;
+  padding: 28px 24px !important;
+  max-height: 92vh !important;
+  overflow-y: auto !important;
+}
+
+.wizard-stepper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.wizard-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.wizard-step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.25s ease;
+}
+
+.wizard-step-item.active .wizard-step-circle {
+  background: #1a73e8;
+  color: #ffffff;
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+}
+
+.wizard-step-item.completed .wizard-step-circle {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.wizard-step-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-align: center;
+}
+
+.wizard-step-item.active .wizard-step-label {
+  color: #1a73e8;
+}
+
+.wizard-step-item.completed .wizard-step-label {
+  color: #16a34a;
+}
+
+.wizard-step-line {
+  height: 2px;
+  background: #e2e8f0;
+  flex: 1;
+  margin: 0 6px 16px 6px;
+  transition: background 0.25s ease;
+}
+
+.wizard-step-line.active {
+  background: #16a34a;
+}
+
 .onboarding-radio-card {
   border: 2px solid #e2e8f0;
   border-radius: 12px;

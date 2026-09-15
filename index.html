@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=3.7">
+  <link rel="stylesheet" href="styles.css?v=4.1">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -1920,173 +1920,244 @@
     </div>
   </div>
 
-  <!-- ROLE-SELECTION INTERMEDIATE MODAL (STEP 1: SELECT ROLE & CONTINUE) -->
-  <div class="modal-overlay" id="onboardingSelectModalOverlay">
-    <div class="modal-card" style="max-width:560px; padding:30px 26px;">
+  <!-- UNIFIED 3-STEP ONBOARDING WIZARD MODAL (ROLE -> OTP & PASSWORD -> PROFILE) -->
+  <div class="modal-overlay" id="onboardingWizardModalOverlay">
+    <div class="modal-card wizard-modal-card">
       <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
-      <div style="text-align:center; margin-bottom:20px;">
-        <span style="font-size:11px; font-weight:800; color:#1a73e8; letter-spacing:1px; text-transform:uppercase; background:#eff6ff; padding:4px 10px; border-radius:12px; display:inline-block; margin-bottom:8px;">STEP 1 OF 2</span>
-        <h2 style="font-family:'Outfit', sans-serif; font-size:24px; color:#0f172a; margin-bottom:6px;">Select Your Marketplace Role</h2>
-        <p style="font-size:13px; color:#64748b; margin:0;">Choose how you want to partner and sell products on E Seller Store</p>
+
+      <!-- Stepper Progress Header -->
+      <div class="wizard-stepper-header">
+        <div class="wizard-step-item active" id="wizardStepIndicator1">
+          <div class="wizard-step-circle" id="wizardStepCircle1">1</div>
+          <span class="wizard-step-label">Role</span>
+        </div>
+        <div class="wizard-step-line" id="wizardStepLine1"></div>
+        <div class="wizard-step-item" id="wizardStepIndicator2">
+          <div class="wizard-step-circle" id="wizardStepCircle2">2</div>
+          <span class="wizard-step-label">Email &amp; Password</span>
+        </div>
+        <div class="wizard-step-line" id="wizardStepLine2"></div>
+        <div class="wizard-step-item" id="wizardStepIndicator3">
+          <div class="wizard-step-circle" id="wizardStepCircle3">3</div>
+          <span class="wizard-step-label">Store Profile</span>
+        </div>
       </div>
 
-      <div style="margin-bottom:20px;">
-        <!-- Option 1: Become a Seller -->
-        <label class="onboarding-radio-card" id="cardRoleSeller" onclick="app.selectOnboardingRole('seller')">
-          <input type="radio" name="onboardingRoleChoice" id="radioRoleSeller" value="seller" onchange="app.selectOnboardingRole('seller')">
-          <div class="onboarding-radio-icon" style="background:#fef2f2; color:#dc2626;">🛍️</div>
-          <div class="onboarding-radio-card-body">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">Become a Seller</strong>
-              <span class="onboarding-card-tag" style="background:#fee2e2; color:#b91c1c;">Retail Merchant</span>
+      <!-- STEP 1: Role Selection Screen -->
+      <div id="wizardStepPanel1" class="wizard-step-panel">
+        <div style="text-align:center; margin-bottom:20px;">
+          <span style="font-size:11px; font-weight:800; color:#1a73e8; letter-spacing:1px; text-transform:uppercase; background:#eff6ff; padding:4px 10px; border-radius:12px; display:inline-block; margin-bottom:8px;">STEP 1 OF 3</span>
+          <h2 style="font-family:'Outfit', sans-serif; font-size:24px; color:#0f172a; margin-bottom:6px;">Select Your Marketplace Role</h2>
+          <p style="font-size:13px; color:#64748b; margin:0;">Choose how you want to partner and sell products on E Seller Store</p>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <!-- Option 1: Become a Seller -->
+          <label class="onboarding-radio-card" id="cardRoleSeller" onclick="app.wizardSelectRole('seller')">
+            <input type="radio" name="wizardRoleChoice" id="radioRoleSeller" value="seller" onchange="app.wizardSelectRole('seller')">
+            <div class="onboarding-radio-icon" style="background:#fef2f2; color:#dc2626;">🛍️</div>
+            <div class="onboarding-radio-card-body">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">Become a Seller</strong>
+                <span class="onboarding-card-tag" style="background:#fee2e2; color:#b91c1c;">Retail Merchant</span>
+              </div>
+              <p style="font-size:12px; color:#64748b; margin:0; line-height:1.45;">
+                Sell retail items directly with guaranteed <strong>18% to 30% profit margin</strong>, zero setup fees, and automated fast payouts.
+              </p>
             </div>
-            <p style="font-size:12px; color:#64748b; margin:0; line-height:1.45;">
-              Sell retail items directly with guaranteed <strong>18% to 30% profit margin</strong>, zero setup fees, and automated fast payouts.
-            </p>
-          </div>
-        </label>
+          </label>
 
-        <!-- Option 2: Become a Vendor -->
-        <label class="onboarding-radio-card active" id="cardRoleVendor" onclick="app.selectOnboardingRole('vendor')">
-          <input type="radio" name="onboardingRoleChoice" id="radioRoleVendor" value="vendor" checked onchange="app.selectOnboardingRole('vendor')">
-          <div class="onboarding-radio-icon" style="background:#eff6ff; color:#1d4ed8;">🏢</div>
-          <div class="onboarding-radio-card-body">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">Become a Vendor</strong>
-              <span class="onboarding-card-tag" style="background:#dbeafe; color:#1e40af;">Wholesale / Brand</span>
+          <!-- Option 2: Become a Vendor -->
+          <label class="onboarding-radio-card active" id="cardRoleVendor" onclick="app.wizardSelectRole('vendor')">
+            <input type="radio" name="wizardRoleChoice" id="radioRoleVendor" value="vendor" checked onchange="app.wizardSelectRole('vendor')">
+            <div class="onboarding-radio-icon" style="background:#eff6ff; color:#1d4ed8;">🏢</div>
+            <div class="onboarding-radio-card-body">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">Become a Vendor</strong>
+                <span class="onboarding-card-tag" style="background:#dbeafe; color:#1e40af;">Wholesale / Brand</span>
+              </div>
+              <p style="font-size:12px; color:#64748b; margin:0; line-height:1.45;">
+                Supply wholesale inventories, multi-category brand catalogs, and bulk products into our global marketplace distribution.
+              </p>
             </div>
-            <p style="font-size:12px; color:#64748b; margin:0; line-height:1.45;">
-              Supply wholesale inventories, multi-category brand catalogs, and bulk products into our global marketplace distribution.
-            </p>
-          </div>
-        </label>
-      </div>
+          </label>
+        </div>
 
-      <button type="button" class="btn-primary" id="btnContinueOnboardingRole" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; border-radius:8px;" onclick="app.proceedSelectedOnboardingRole()">
-        Continue / Next &rsaquo;
-      </button>
-
-      <div style="text-align:center; margin-top:16px; font-size:12px; color:#64748b; border-top:1px solid #f1f5f9; padding-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-        <span>Already registered? <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="color:#0284c7; font-weight:700;">Seller Login</a></span>
-        <button type="button" onclick="app.closeModals()" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; font-weight:600; text-decoration:underline;">Back to Homepage</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADVANCED USER ONBOARDING VERTICAL APPLICATION MODAL (STEP 2) -->
-  <div class="modal-overlay" id="sellerRegModalOverlay">
-    <div class="modal-card" style="max-width:540px; padding:28px 24px; max-height:92vh; overflow-y:auto;">
-      <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
-      
-      <div style="margin-bottom:16px;">
-        <button type="button" onclick="app.openOnboardingSelection()" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:4px; font-weight:600; margin-bottom:8px;">
-          &larr; Back to Role Selection
+        <button type="button" class="btn-primary" id="btnContinueToVerification" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; border-radius:8px;" onclick="app.wizardGoToStep(2)">
+          Continue to Verification &rsaquo;
         </button>
-        <div style="text-align:center;">
-          <span id="sellerRegStepBadge" style="font-size:10.5px; font-weight:800; color:#166534; letter-spacing:1px; text-transform:uppercase; background:#dcfce7; padding:3px 10px; border-radius:12px; display:inline-block; margin-bottom:6px;">STEP 2: APPLICATION DETAILS</span>
-          <h2 id="sellerRegModalTitle" style="font-family:'Outfit', sans-serif; font-size:22px; color:#0f172a; margin-bottom:4px;">Vendor & Supplier Registration</h2>
-          <p id="sellerRegModalSubtitle" style="font-size:12.5px; color:#64748b; margin:0;">Complete the verification form to partner with E Seller Store</p>
+
+        <div style="text-align:center; margin-top:16px; font-size:12px; color:#64748b; border-top:1px solid #f1f5f9; padding-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:gap:8px;">
+          <span>Already registered? <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="color:#0284c7; font-weight:700;">Seller Login</a></span>
+          <button type="button" onclick="app.closeModals()" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; font-weight:600; text-decoration:underline;">Back to Homepage</button>
         </div>
       </div>
 
-      <form id="vendorRegistrationForm" onsubmit="app.handleVendorRegistration(event)" autocomplete="off">
-        <input type="hidden" name="onboardingRole" id="vendorRegRole" value="vendor">
+      <!-- STEP 2: Email Verification & Store Password Creation -->
+      <div id="wizardStepPanel2" class="wizard-step-panel" style="display:none;">
+        <div style="margin-bottom:16px;">
+          <button type="button" onclick="app.wizardGoToStep(1)" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:4px; font-weight:600; margin-bottom:8px;">
+            &larr; Back to Role Selection
+          </button>
+          <div style="text-align:center;">
+            <span id="wizardStep2Badge" style="font-size:10.5px; font-weight:800; color:#1e40af; letter-spacing:1px; text-transform:uppercase; background:#dbeafe; padding:3px 10px; border-radius:12px; display:inline-block; margin-bottom:6px;">STEP 2: EMAIL OTP &amp; PASSWORD</span>
+            <h2 style="font-family:'Outfit', sans-serif; font-size:22px; color:#0f172a; margin-bottom:4px;">Email Verification &amp; Security</h2>
+            <p style="font-size:12.5px; color:#64748b; margin:0;">Verify your official email address and establish store login credentials</p>
+          </div>
+        </div>
 
-        <!-- 1. Email & Account Setup (Step 2A) -->
-        <div class="vertical-form-group">
-          <label for="vendorRegEmail">Email Address *</label>
-          <input type="email" name="email" id="vendorRegEmail" placeholder="e.g. owner@brandstore.com" autocomplete="email" required>
-          
-          <div class="verification-notice-box">
-            <span style="font-size:16px;">ℹ️</span>
-            <div>
-              <strong style="display:block; color:#166534; margin-bottom:2px;">Email Verification &amp; Password Setup</strong>
-              <span style="font-size:11.5px; color:#15803d; line-height:1.4; display:block;">
-                A secure verification link will be sent to your email to set your account password upon submission.
-              </span>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
+          <div class="vertical-form-group">
+            <label for="wizardEmailInput">Email Address *</label>
+            <div style="display:flex; gap:8px;">
+              <input type="email" id="wizardEmailInput" placeholder="e.g. owner@brandstore.com" autocomplete="email" style="flex:1;">
+              <button type="button" id="btnWizardSendOtp" class="btn-primary" style="padding:8px 14px; font-size:12px; white-space:nowrap; border-radius:6px; background:#1a73e8;" onclick="app.wizardSendOtp()">
+                Send OTP Code
+              </button>
+            </div>
+            <small id="wizardOtpStatusText" class="form-help-text" style="color:#64748b;">We will send a 6-digit verification code to this email.</small>
+          </div>
+
+          <!-- 6-digit OTP Code Input Container (shown when OTP sent) -->
+          <div id="wizardOtpInputContainer" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #cbd5e1;">
+            <label for="wizardOtpCodeInput" style="font-size:11.5px; font-weight:700; color:#1e293b; display:block; margin-bottom:4px;">Enter 6-Digit OTP Verification Code *</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="text" id="wizardOtpCodeInput" maxlength="6" placeholder="123456" style="font-size:18px; font-weight:800; letter-spacing:6px; text-align:center; flex:1; font-family:monospace;" oninput="app.wizardHandleOtpInput(this.value)">
+              <button type="button" id="btnWizardVerifyOtp" class="btn-primary" style="padding:9px 16px; font-size:12px; border-radius:6px; background:#16a34a;" onclick="app.wizardVerifyOtp()">
+                Verify OTP
+              </button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+              <span id="wizardOtpTimerText" style="font-size:11px; color:#64748b;">Code expires in: <strong id="wizardOtpCountdown">60s</strong></span>
+              <button type="button" id="btnWizardResendOtp" style="background:none; border:none; color:#1a73e8; font-size:11.5px; font-weight:700; cursor:pointer; display:none;" onclick="app.wizardSendOtp()">Resend OTP Code</button>
+            </div>
+            <div id="wizardOtpVerifiedBadge" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:8px 12px; border-radius:6px; font-size:12px; font-weight:700; margin-top:8px;">
+              ✅ Email verified successfully!
             </div>
           </div>
         </div>
 
-        <!-- 2. Personal & Store Information -->
-        <div class="vertical-form-group">
-          <label for="vendorRegOwnerName">Full Name *</label>
-          <input type="text" name="ownerName" id="vendorRegOwnerName" placeholder="e.g. John Doe" required>
-        </div>
-
-        <div class="vertical-form-group">
-          <label for="vendorRegFatherName">Father Name *</label>
-          <input type="text" name="fatherName" id="vendorRegFatherName" placeholder="e.g. Robert Doe" required>
-        </div>
-
-        <div class="vertical-form-group">
-          <label id="vendorRegStoreNameLabel" for="vendorRegStoreName">Shop Name *</label>
-          <input type="text" name="storeName" id="vendorRegStoreName" placeholder="e.g. Alpha Traders" oninput="app.handleShopNameInput(this.value)" required>
-        </div>
-
-        <div class="vertical-form-group">
-          <label for="vendorRegSlug">Shop URL Slug <span style="font-weight:normal; color:#64748b;">(Auto-generated)</span></label>
-          <div class="slug-preview-wrapper">
-            <span class="slug-prefix">ssellerstorebay.com/store/</span>
-            <input type="text" id="vendorRegSlug" name="slug" class="slug-input" placeholder="alpha-traders" readonly>
-          </div>
-          <small class="form-help-text">Live storefront permanent URL slug for your catalog.</small>
-        </div>
-
-        <div class="vertical-form-group">
-          <label for="vendorRegMobile">Mobile Number / WhatsApp *</label>
-          <input type="tel" name="mobile" id="vendorRegMobile" placeholder="+1 (555) 000-0000 / +92 300 1234567" required>
-        </div>
-
-        <!-- 3. Mandatory Referral Code Validation (00546) -->
-        <div class="vertical-form-group">
-          <label for="vendorRegReferralCode" style="color:#b91c1c;">Referral Code * <span style="font-weight:normal; color:#dc2626;">(Required - Sponsor Code)</span></label>
-          <input type="text" name="referralCode" id="vendorRegReferralCode" placeholder="Enter sponsor code (e.g. 00546)" oninput="app.handleReferralCodeInput(this.value)" required>
-          <div id="referralCodeErrorBox" class="referral-error-msg" style="display:none;">
-            ❌ Invalid referral code. Please enter an authorized sponsor code to proceed.
-          </div>
-          <div id="referralCodeSuccessBox" class="referral-success-msg" style="display:none;">
-            ✅ Authorized sponsor code verified (00546).
-          </div>
-          <small class="form-help-text">Mandatory authorized sponsor code required for onboarding.</small>
-        </div>
-
-        <!-- 4. Address & Regional Details -->
-        <div class="vertical-form-group">
-          <label for="vendorRegAddress">Full Address / City / Region *</label>
-          <textarea name="address" id="vendorRegAddress" rows="2" placeholder="Enter complete business street address, city, and region..." required></textarea>
-        </div>
-
-        <!-- 5. Optional Financial & Bank Details -->
-        <div class="optional-section-card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <strong style="font-size:12px; color:#1e293b;">💳 Bank Details / Payout Method</strong>
-            <span style="font-size:10px; color:#64748b; background:#e2e8f0; padding:2px 8px; border-radius:10px; font-weight:700;">OPTIONAL</span>
-          </div>
-          <div class="vertical-form-group" style="margin-bottom:10px;">
-            <label for="vendorRegBankName" style="font-size:11px;">Bank Name</label>
-            <input type="text" name="bankName" id="vendorRegBankName" placeholder="e.g. Chase Bank, HBL, Bank of America">
-          </div>
-          <div class="vertical-form-group" style="margin-bottom:10px;">
-            <label for="vendorRegAccountTitle" style="font-size:11px;">Account Title</label>
-            <input type="text" name="accountTitle" id="vendorRegAccountTitle" placeholder="e.g. John Doe / Alpha Traders LLC">
+        <!-- Password Creation Section -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
+          <h4 style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <span>🔑</span> Create Store Login Password
+          </h4>
+          <div class="vertical-form-group">
+            <label for="wizardPasswordInput">Create Password * <span style="font-weight:normal; color:#64748b;">(Min. 6 characters)</span></label>
+            <input type="password" id="wizardPasswordInput" placeholder="Enter secure password" autocomplete="new-password" minlength="6" oninput="app.wizardValidatePasswords()">
           </div>
           <div class="vertical-form-group" style="margin-bottom:0;">
-            <label for="vendorRegIban" style="font-size:11px;">IBAN / Account Number</label>
-            <input type="text" name="iban" id="vendorRegIban" placeholder="e.g. US12345678901234 / PK36HABB00000012345678">
+            <label for="wizardConfirmPasswordInput">Confirm Password *</label>
+            <input type="password" id="wizardConfirmPasswordInput" placeholder="Re-enter password to confirm" autocomplete="new-password" minlength="6" oninput="app.wizardValidatePasswords()">
+            <div id="wizardPasswordMatchFeedback" style="font-size:11.5px; font-weight:600; margin-top:4px; display:none;"></div>
           </div>
         </div>
 
-        <!-- 6. Optional Description -->
-        <div class="vertical-form-group">
-          <label for="vendorRegDescription">Profile Description / Business Overview <span style="font-weight:normal; color:#64748b;">(Optional)</span></label>
-          <textarea name="description" id="vendorRegDescription" rows="2" placeholder="Brief details about your products, catalog brands, and business background..."></textarea>
+        <button type="button" class="btn-primary" id="btnProceedToStoreProfile" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; border-radius:8px; opacity:0.6; cursor:not-allowed;" disabled onclick="app.wizardProceedToStep3()">
+          Proceed to Store Profile &rsaquo;
+        </button>
+      </div>
+
+      <!-- STEP 3: Store & Profile Details -->
+      <div id="wizardStepPanel3" class="wizard-step-panel" style="display:none;">
+        <div style="margin-bottom:16px;">
+          <button type="button" onclick="app.wizardGoToStep(2)" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:4px; font-weight:600; margin-bottom:8px;">
+            &larr; Back to Email &amp; Password
+          </button>
+          <div style="text-align:center;">
+            <span id="wizardStep3Badge" style="font-size:10.5px; font-weight:800; color:#166534; letter-spacing:1px; text-transform:uppercase; background:#dcfce7; padding:3px 10px; border-radius:12px; display:inline-block; margin-bottom:6px;">STEP 3: STORE PROFILE &amp; VERIFICATION</span>
+            <h2 id="wizardStep3Title" style="font-family:'Outfit', sans-serif; font-size:22px; color:#0f172a; margin-bottom:4px;">Vendor &amp; Supplier Registration</h2>
+            <p id="wizardStep3Subtitle" style="font-size:12.5px; color:#64748b; margin:0;">Complete your store identity and submission details</p>
+          </div>
         </div>
 
-        <button type="submit" class="btn-primary" id="btnSubmitVendorReg" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; margin-top:6px; border-radius:8px;">
-          🚀 Submit Verification Application
-        </button>
-      </form>
+        <form id="wizardFinalApplicationForm" onsubmit="app.handleWizardFinalSubmit(event)" autocomplete="off">
+          <!-- 1. Verified Email (Locked) -->
+          <div class="vertical-form-group">
+            <label for="wizardVerifiedEmailDisplay">Verified Email Address <span style="color:#16a34a; font-weight:800;">(Verified ✅)</span></label>
+            <input type="email" id="wizardVerifiedEmailDisplay" readonly style="background:#f1f5f9; color:#475569; font-weight:600; cursor:not-allowed;">
+          </div>
+
+          <!-- 2. Personal & Store Information -->
+          <div class="vertical-form-group">
+            <label for="wizardOwnerName">Full Name *</label>
+            <input type="text" id="wizardOwnerName" name="ownerName" placeholder="e.g. John Doe" required>
+          </div>
+
+          <div class="vertical-form-group">
+            <label for="wizardFatherName">Father Name *</label>
+            <input type="text" id="wizardFatherName" name="fatherName" placeholder="e.g. Robert Doe" required>
+          </div>
+
+          <div class="vertical-form-group">
+            <label id="wizardStoreNameLabel" for="wizardStoreName">Shop Name *</label>
+            <input type="text" id="wizardStoreName" name="storeName" placeholder="e.g. Alpha Traders" oninput="app.wizardHandleShopNameInput(this.value)" required>
+          </div>
+
+          <div class="vertical-form-group">
+            <label for="wizardSlug">Shop URL Slug <span style="font-weight:normal; color:#64748b;">(Auto-generated)</span></label>
+            <div class="slug-preview-wrapper">
+              <span class="slug-prefix">ssellerstorebay.com/store/</span>
+              <input type="text" id="wizardSlug" name="slug" class="slug-input" placeholder="alpha-traders" readonly>
+            </div>
+            <small class="form-help-text">Live storefront permanent URL slug for your catalog.</small>
+          </div>
+
+          <div class="vertical-form-group">
+            <label for="wizardMobile">Mobile Number / WhatsApp *</label>
+            <input type="tel" id="wizardMobile" name="mobile" placeholder="+1 (555) 000-0000 / +92 300 1234567" required>
+          </div>
+
+          <!-- 3. Mandatory Referral Code Validation (00546) -->
+          <div class="vertical-form-group">
+            <label for="wizardReferralCode" style="color:#b91c1c;">Referral Code * <span style="font-weight:normal; color:#dc2626;">(Required - Sponsor Code)</span></label>
+            <input type="text" id="wizardReferralCode" name="referralCode" placeholder="Enter sponsor code (e.g. 00546)" oninput="app.wizardHandleReferralInput(this.value)" required>
+            <div id="wizardReferralErrorBox" class="referral-error-msg" style="display:none;">
+              ❌ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.
+            </div>
+            <div id="wizardReferralSuccessBox" class="referral-success-msg" style="display:none;">
+              ✅ Authorized sponsor code verified (00546).
+            </div>
+            <small class="form-help-text">Mandatory authorized sponsor code required for onboarding.</small>
+          </div>
+
+          <!-- 4. Address & Regional Details -->
+          <div class="vertical-form-group">
+            <label for="wizardAddress">Full Address / City / Region *</label>
+            <textarea id="wizardAddress" name="address" rows="2" placeholder="Enter complete business street address, city, and region..." required></textarea>
+          </div>
+
+          <!-- 5. Optional Financial & Bank Details -->
+          <div class="optional-section-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <strong style="font-size:12px; color:#1e293b;">💳 Bank Details / Payout Method</strong>
+              <span style="font-size:10px; color:#64748b; background:#e2e8f0; padding:2px 8px; border-radius:10px; font-weight:700;">OPTIONAL</span>
+            </div>
+            <div class="vertical-form-group" style="margin-bottom:10px;">
+              <label for="wizardBankName" style="font-size:11px;">Bank Name</label>
+              <input type="text" id="wizardBankName" name="bankName" placeholder="e.g. Chase Bank, HBL, Bank of America">
+            </div>
+            <div class="vertical-form-group" style="margin-bottom:10px;">
+              <label for="wizardAccountTitle" style="font-size:11px;">Account Title</label>
+              <input type="text" id="wizardAccountTitle" name="accountTitle" placeholder="e.g. John Doe / Alpha Traders LLC">
+            </div>
+            <div class="vertical-form-group" style="margin-bottom:0;">
+              <label for="wizardIban" style="font-size:11px;">IBAN / Account Number</label>
+              <input type="text" id="wizardIban" name="iban" placeholder="e.g. US12345678901234 / PK36HABB00000012345678">
+            </div>
+          </div>
+
+          <!-- 6. Optional Description -->
+          <div class="vertical-form-group">
+            <label for="wizardDescription">Profile Description / Business Overview <span style="font-weight:normal; color:#64748b;">(Optional)</span></label>
+            <textarea id="wizardDescription" name="description" rows="2" placeholder="Brief details about your products, catalog brands, and business background..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btnSubmitWizardApplication" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; margin-top:6px; border-radius:8px;">
+            🚀 Submit Verification Application
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -2196,7 +2267,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=3.7"></script>
+  <script src="app-bundle.js?v=4.1"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
