@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v4.7_clean_encoding_marketplace_hero';
+const APP_VERSION = 'v5.0_split_auth_minimal_storefront';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -8158,7 +8158,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v4.7_clean_encoding_marketplace_hero';
+    const APP_VERSION = 'v5.0_split_auth_minimal_storefront';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -12400,12 +12400,93 @@ class ESellerStoreApp {
   // 3-STEP WIZARD ONBOARDING CONTROLLER (ROLE -> OTP & PASS -> STORE DETAILS)
   // =========================================================================
 
+    openDokanAuthModal(mode = 'register') {
+    this.closeModals();
+    this.closeMobileDrawer();
+    this.openModal('dokanAuthModalOverlay');
+    const userField = document.getElementById('dokanModalLoginUsername');
+    if (mode === 'login' && userField) {
+      setTimeout(() => userField.focus(), 150);
+    }
+  }
+
+  handleDokanLogin(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const usernameEl = document.getElementById('dokanModalLoginUsername') || document.getElementById('accountLoginUsername');
+    const passEl = document.getElementById('dokanModalLoginPassword') || document.getElementById('accountLoginPassword');
+    const login = (usernameEl ? usernameEl.value : '').trim().toLowerCase();
+    const pass = (passEl ? passEl.value : '').trim();
+
+    if (!login || !pass) {
+      alert('Please enter both your email/username and password.');
+      return;
+    }
+
+    // 1. Check Super Admin credentials
+    const adminAuth = engine.getAdminAuth ? engine.getAdminAuth() : { email: 'admin@esellerstore.com', password: 'Abbas@123' };
+    if (login === adminAuth.email.toLowerCase() && pass === adminAuth.password) {
+      this.closeModals();
+      this.setPersona('admin');
+      this.showToast('Super Admin Access Granted');
+      return;
+    }
+
+    // 2. Check Vendors
+    const vendors = engine.getVendors ? engine.getVendors() : [];
+    const vendor = vendors.find(v => (v.email && v.email.toLowerCase() === login) || (v.name && v.name.toLowerCase() === login) || (v.id && v.id.toLowerCase() === login));
+
+    if (vendor) {
+      if (vendor.password && vendor.password !== pass) {
+        alert('Incorrect password for this account.');
+        return;
+      }
+      if (vendor.status === 'pending' || vendor.status === 'pending_verification') {
+        alert(`ACCOUNT PENDING REVIEW\n\nYour merchant application for "${vendor.name}" is currently under review by Super Admin.\nYou will receive notification upon approval.`);
+        return;
+      }
+      this.activeVendorId = vendor.id;
+      this.closeModals();
+      this.setPersona('vendor');
+      this.showToast(`Logged in as ${vendor.name}`);
+      return;
+    }
+
+    // 3. Fallback: Generic Customer Login
+    this.closeModals();
+    this.setPersona('customer');
+    this.showToast(`Logged in as ${login}`);
+  }
+
   openOnboardingSelection() {
     this.openOnboardingWizard(1);
   }
 
-  openOnboardingWizard(step = 1) {
+    openOnboardingWizard(step = 1) {
     this.closeModals();
+    
+    // Ensure all Step 2 & 3 inputs remain completely blank by default (no hardcoded credentials)
+    if (step === 1) {
+      const emailInput = document.getElementById('wizardEmailInput');
+      const passInput = document.getElementById('wizardPasswordInput');
+      const confirmInput = document.getElementById('wizardConfirmPasswordInput');
+      const otpInput = document.getElementById('wizardOtpCodeInput');
+      const badge = document.getElementById('wizardOtpVerifiedBadge');
+      const otpContainer = document.getElementById('wizardOtpInputContainer');
+      const feedback = document.getElementById('wizardPasswordMatchFeedback');
+      const proceedBtn = document.getElementById('btnProceedToStoreProfile');
+
+      if (emailInput) { emailInput.value = ''; emailInput.readOnly = false; }
+      if (passInput) passInput.value = '';
+      if (confirmInput) confirmInput.value = '';
+      if (otpInput) { otpInput.value = ''; otpInput.readOnly = false; }
+      if (badge) badge.style.display = 'none';
+      if (otpContainer) otpContainer.style.display = 'none';
+      if (feedback) feedback.style.display = 'none';
+      if (proceedBtn) { proceedBtn.disabled = true; proceedBtn.style.opacity = '0.6'; proceedBtn.style.cursor = 'not-allowed'; }
+      this.wizardOtpVerified = false;
+      this.wizardVerifiedEmail = '';
+    }
+
     this.openModal('onboardingWizardModalOverlay');
     this.wizardGoToStep(step);
   }
@@ -12468,7 +12549,7 @@ class ESellerStoreApp {
         ind.classList.toggle('completed', i < step);
       }
       if (circ) {
-        circ.textContent = (i < step ? '[OK]' : i.toString());
+        circ.textContent = (i < step ? '&#10003;' : i.toString());
       }
     }
 
@@ -13477,10 +13558,10 @@ class ESellerStoreApp {
 
   startLivePlatformTicker() {
     const events = [
-      "[LIVE] Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow • 99.98% Global SLA Active",
-      "[LAUNCH] New Merchant 'Alpha Watch Vault' onboarded • Authorized Sponsor Code 00546 Verified",
+      "Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow • 99.98% Global SLA Active",
+      "New Merchant 'Alpha Watch Vault' onboarded • Authorized Sponsor Code 00546 Verified",
       "&#128737; Bank-grade 256-bit buyer escrow active • Automated 18%-30% vendor margin settlement",
-      "[PACKAGE] Global brand shipment verified: 15x Apple iPhone 15 Pro Max dispatched to verified buyers",
+      "Global brand shipment verified: 15x Apple iPhone 15 Pro Max dispatched to verified buyers",
       " 5.0 Star Merchant Milestone: 'Luxury Life Studio' completed 200+ verified customer orders"
     ];
     let idx = 0;
@@ -13757,14 +13838,7 @@ class ESellerStoreApp {
 
   // --- DOKAN MY ACCOUNT CONTROLLERS ---
   openMyAccount(mode = 'login', role = 'vendor') {
-    this.closeModals();
-    this.closeMobileDrawer();
-    this.setPersona('account');
-    this.switchAccountMode(mode);
-    if (mode === 'register') {
-      this.switchAccountRegisterRole(role);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.openDokanAuthModal(mode);
   }
 
   switchAccountMode(mode) {
@@ -14207,3 +14281,6 @@ window.handleSetPasswordSubmit = function(e) { if (window.app) window.app.handle
 window.handleLostPassword = function() { if (window.app) window.app.handleLostPassword(); };
 
 
+
+window.openDokanAuthModal = function(m) { if (window.app) window.app.openDokanAuthModal(m); };
+window.handleDokanLogin = function(e) { if (window.app) window.app.handleDokanLogin(e); };

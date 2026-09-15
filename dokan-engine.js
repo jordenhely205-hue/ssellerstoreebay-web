@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v4.7_clean_encoding_marketplace_hero';
+    const APP_VERSION = 'v5.0_split_auth_minimal_storefront';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);

@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=4.7">
+  <link rel="stylesheet" href="styles.css?v=5.0">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -101,9 +101,20 @@
         btn.classList.toggle('active', btn.dataset.persona === p);
       });
     };
+    window.openDokanAuthModal = function(m) {
+      if (window.app && window.app.openDokanAuthModal) { window.app.openDokanAuthModal(m); return; }
+      var el = document.getElementById('dokanAuthModalOverlay');
+      if (el) { el.style.display = 'flex'; el.classList.add('active'); }
+    };
+    window.openOnboardingWizard = function(s) {
+      if (window.app && window.app.openOnboardingWizard) { window.app.openOnboardingWizard(s); return; }
+      var el = document.getElementById('onboardingWizardModalOverlay');
+      if (el) { el.style.display = 'flex'; el.classList.add('active'); }
+    };
   </script>
 </head>
 <body>
+
 
   <!-- TOP UTILITY BAR (Enterprise Minimalist) -->
   <div class="ref-top-bar">
@@ -125,12 +136,10 @@
         </select>
       </div>
 
-      <div class="top-bar-links" style="display:flex; align-items:center; gap:14px;">
-        <a href="#" onclick="app.openMyAccount('register', 'vendor'); return false;" style="color:#4f46e5; font-weight:700;">Become a Vendor</a>
+      <div class="top-bar-links" style="display:flex; align-items:center; gap:16px;">
+        <a href="#" onclick="app.openDokanAuthModal('register'); return false;" style="color:#4f46e5; font-weight:700;">Become a Vendor</a>
         <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="app.openMyAccount('login'); return false;" style="font-weight:600;">My Account</a>
-        <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" class="seller-login-btn">Seller Portal</a>
+        <a href="#" onclick="app.openDokanAuthModal('login'); return false;" style="font-weight:600;">My Account</a>
         <span style="color:#cbd5e1;">|</span>
         <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;">Admin</a>
         <span style="color:#cbd5e1;">|</span>
@@ -141,7 +150,7 @@
 
   <!-- FROSTED STICKY NAVIGATION BAR -->
   <header class="enterprise-navbar-wrapper">
-    <div class="enterprise-navbar-container">
+    <div class="enterprise-navbar-container" style="justify-content: space-between;">
       <div style="display:flex; align-items:center; gap:12px;">
         <button class="mobile-hamburger-btn" onclick="app.toggleMobileDrawer()" aria-label="Open Navigation Menu">&#9776;</button>
         <!-- E Seller Store Official Logo -->
@@ -159,23 +168,10 @@
         </a>
       </div>
 
-      <!-- Command-Style Omni-Search Bar -->
-      <div class="omni-search-wrapper">
-        <div class="omni-search-input-box" onclick="document.getElementById('ajaxSearchInput').focus()">
-          <span style="font-size:15px; color:#64748B;">&#128269;</span>
-          <input type="text" id="ajaxSearchInput" placeholder="Search 40+ brands (Dell, Apple, Rolex, Nike) or categories..." autocomplete="off">
-          <kbd class="cmd-kbd-badge" id="cmdKbdShortcutHint">Ctrl K</kbd>
-        </div>
-        <div class="ajax-search-dropdown" id="ajaxSearchDropdown"></div>
-      </div>
-
-      <!-- Unified Utility Capsule -->
+      <!-- Clean Header Right Action (Cart Only) -->
       <div class="enterprise-utility-capsule">
-        <a href="#" onclick="app.openOnboardingSelection(); return false;" class="utility-cta-partner">
-          <span>[LIVE]</span> Apply Now &rsaquo;
-        </a>
         <div class="utility-cart-pill" onclick="app.openCartDrawer()" title="Shopping Cart">
-          <span>🛒</span>
+          <span style="font-size:16px;">🛒</span>
           <span id="navCartCountHeader" style="background:#4F46E5; color:#fff; font-size:11px; padding:2px 6px; border-radius:10px; font-weight:800;">0</span>
         </div>
       </div>
@@ -186,12 +182,11 @@
   <nav style="background:#FFFFFF; border-bottom:1px solid #E2E8F0; padding:8px 0;">
     <div class="container" style="display:flex; align-items:center; justify-content:space-between; gap:16px; overflow-x:auto;">
       <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
-        <button class="cat-pill-item" onclick="app.setPersona('customer')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:700; background:#0B0F17; color:#fff;">[LIVE] Featured</button>
+        <button class="cat-pill-item" onclick="app.setPersona('customer')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:700; background:#0B0F17; color:#fff;">Featured</button>
         <button class="cat-pill-item" onclick="app.filterByCategory('computers')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">&#128187; Computers &amp; Tech</button>
         <button class="cat-pill-item" onclick="app.filterByCategory('jewelry')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">&#9201; Luxury Watches (Rolex)</button>
-        <button class="cat-pill-item" onclick="app.filterByCategory('sneakers')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">[SNEAKER] Sneakers (Nike)</button>
-        <button class="cat-pill-item" onclick="app.filterByCategory('fashion')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">👤” Men &amp; Women Fashion</button>
-        <button class="cat-pill-item" onclick="app.openMyAccount('register', 'vendor')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:700; background:#EEF2FF; color:#4F46E5;"> Vendor Portal</button>
+        <button class="cat-pill-item" onclick="app.filterByCategory('sneakers')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">&#128095; Sneakers (Nike)</button>
+        <button class="cat-pill-item" onclick="app.filterByCategory('fashion')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">&#128087; Men &amp; Women Fashion</button>
       </div>
       <div style="font-size:12.5px; font-weight:700; color:#475569; white-space:nowrap;">
         Cart Total: <span id="navCartTotalHeader" style="color:#0B0F17;">$0.00</span>
@@ -210,7 +205,7 @@
           <span>LIVE PLATFORM NETWORK</span>
         </div>
         <div class="ticker-event-text" id="platformLiveTickerText">
-          [LIVE] Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow • 99.98% Global SLA Active
+          Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow • 99.98% Global SLA Active
         </div>
         <div style="font-size:11px; color:#94A3B8; white-space:nowrap;">
           &#128274; Bank-Grade Escrow Protection
@@ -218,96 +213,39 @@
       </div>
     </div>
 
-    <!-- Dual-Split Enterprise Hero Section -->
+    <!-- Minimalist Enterprise Hero Section -->
     <section class="enterprise-hero-section">
-      <div class="container enterprise-hero-grid">
-        <!-- Left Hero Column -->
-        <div>
-          <div class="hero-institution-badge">
-            <span style="color:#4F46E5;">&#9670;</span> INSTITUTIONAL MULTI-VENDOR COMMERCE
-          </div>
-          <h1 class="enterprise-hero-title">
-            Global Commerce,<br>
-            <span class="hero-gradient-text">Built for Scale.</span>
-          </h1>
-          <p class="enterprise-hero-subtitle">
-            Empowering verified global merchants and retail clients with certified tier-1 brands, guaranteed 18%-30% vendor profit margins, and automated real-time escrow settlement.
-          </p>
+      <div class="container enterprise-hero-container">
+        <div class="hero-institution-badge">
+          <span style="color:#4F46E5;">&#9670;</span> INSTITUTIONAL MULTI-VENDOR COMMERCE
+        </div>
+        <h1 class="enterprise-hero-title">
+          Global Commerce,<br>
+          <span class="hero-gradient-text">Built for Scale.</span>
+        </h1>
+        <p class="enterprise-hero-subtitle">
+          Empowering verified global merchants and retail clients with certified tier-1 brands, guaranteed 18%-30% vendor profit margins, and automated real-time escrow settlement.
+        </p>
 
-          <div class="hero-proof-chips">
-            <div class="proof-chip">
-              <span style="color:#10B981;">&#9679;</span> <strong>$12.8M+</strong> Distributed Payouts
-            </div>
-            <div class="proof-chip">
-              <span style="color:#4F46E5;">&#9679;</span> <strong>99.98%</strong> Fulfillment SLA
-            </div>
-            <div class="proof-chip">
-              <span style="color:#0EA5E9;">&#9679;</span> <strong>256-Bit</strong> Bank-Grade Escrow
-            </div>
+        <div class="hero-proof-chips">
+          <div class="proof-chip">
+            <span style="color:#10B981;">&#9679;</span> <strong>$12.8M+</strong> Distributed Payouts
           </div>
-
-          <div class="hero-cta-group">
-            <button class="btn-hero-primary" onclick="document.getElementById('catalogGridSection').scrollIntoView({behavior:'smooth'})">
-              Explore Marketplace &rsaquo;
-            </button>
-            <button class="btn-hero-secondary" id="heroPartnerBtn" onclick="app.openOnboardingSelection()">
-              Become an Authorized Partner &rsaquo;
-            </button>
+          <div class="proof-chip">
+            <span style="color:#4F46E5;">&#9679;</span> <strong>99.98%</strong> Fulfillment SLA
+          </div>
+          <div class="proof-chip">
+            <span style="color:#0EA5E9;">&#9679;</span> <strong>256-Bit</strong> Bank-Grade Escrow
           </div>
         </div>
 
-        <!-- Right Hero Column (Luxury Consumer Spotlight & Official Deal Card) -->
-        <div>
-          <div class="glass-analytics-hero-card" style="background: #ffffff; border: 1px solid #E2E8F0; box-shadow: 0 20px 40px -15px rgba(11, 15, 23, 0.08); padding: 24px; border-radius: 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <span style="font-size: 11px; font-weight: 800; color: #4F46E5; background: #EEF2FF; border: 1px solid #C7D2FE; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                &#9733; FEATURED SPOTLIGHT DEAL
-              </span>
-              <span style="font-size: 11.5px; color: #10B981; font-weight: 700; background: #ECFDF5; padding: 4px 10px; border-radius: 12px;">
-                &#10003; In Stock &bull; Official Warranty
-              </span>
-            </div>
-
-            <!-- Product Showcase Image & Title -->
-            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 18px; background: #F8FAFC; padding: 14px; border-radius: 12px; border: 1px solid #E2E8F0;">
-              <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=300&auto=format&fit=crop&q=80" alt="Apple iPhone 15 Pro Max" style="width: 85px; height: 85px; object-fit: cover; border-radius: 10px; border: 1px solid #CBD5E1;">
-              <div style="flex: 1;">
-                <div style="font-size: 11px; color: #64748B; font-weight: 700; text-transform: uppercase;">Apple Certified &bull; Titanium</div>
-                <h4 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 800; color: #0F172A; margin: 2px 0 4px 0;">Apple iPhone 15 Pro Max</h4>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 18px; font-weight: 800; color: #0F172A;">$1,199.00</span>
-                  <span style="font-size: 13px; color: #94A3B8; text-decoration: line-through;">$1,299.00</span>
-                  <span style="font-size: 11px; font-weight: 800; color: #10B981; background: #ECFDF5; padding: 2px 6px; border-radius: 6px;">SAVE $100</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Micro specs list -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 18px;">
-              <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px; text-align: center;">
-                <div style="font-size: 12px; font-weight: 800; color: #0F172A;">A17 Pro</div>
-                <div style="font-size: 10px; color: #64748B; text-transform: uppercase;">3nm Chip</div>
-              </div>
-              <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px; text-align: center;">
-                <div style="font-size: 12px; font-weight: 800; color: #0F172A;">48MP</div>
-                <div style="font-size: 10px; color: #64748B; text-transform: uppercase;">Pro Camera</div>
-              </div>
-              <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px; text-align: center;">
-                <div style="font-size: 12px; font-weight: 800; color: #10B981;">&#9733; 4.9/5</div>
-                <div style="font-size: 10px; color: #64748B; text-transform: uppercase;">150+ Reviews</div>
-              </div>
-            </div>
-
-            <!-- Shopper Action Buttons -->
-            <div style="display: flex; gap: 10px;">
-              <button onclick="app.directBuyNow('p1')" class="btn-hero-primary" style="flex: 1; justify-content: center; padding: 12px; font-size: 13.5px; border-radius: 8px;">
-                &#9889; Buy Now
-              </button>
-              <button onclick="app.addToCart('p1')" class="btn-hero-secondary" style="flex: 1; justify-content: center; padding: 12px; font-size: 13.5px; border-radius: 8px;">
-                &#128722; Add to Cart
-              </button>
-            </div>
-          </div>
+        <div class="hero-cta-group">
+          <button class="btn-hero-primary" onclick="document.getElementById('catalogGridSection').scrollIntoView({behavior:'smooth'})">
+            Explore Marketplace &rsaquo;
+          </button>
+          <button class="btn-hero-secondary" onclick="app.openDokanAuthModal('register')">
+            Become a Vendor &rsaquo;
+          </button>
         </div>
       </div>
     </section>
@@ -328,7 +266,7 @@
           <span>Rolex Official Horology</span>
         </div>
         <div class="trust-badge-item">
-          <span class="trust-badge-icon">[SNEAKER]</span>
+          <span class="trust-badge-icon">&#128095;</span>
           <span>Nike Retail Partner</span>
         </div>
         <div class="trust-badge-item">
@@ -336,7 +274,7 @@
           <span>256-Bit SSL Escrow</span>
         </div>
         <div class="trust-badge-item">
-          <span class="trust-badge-icon">[LIVE]</span>
+          <span class="trust-badge-icon">&#9889;</span>
           <span>Automated Fast Settlement</span>
         </div>
       </div>
@@ -346,7 +284,7 @@
     <section class="enterprise-bento-section">
       <div class="container">
         <div class="section-heading" style="margin-bottom:24px;">
-          <span>[STAR] Curated Enterprise Showcase</span>
+          <span>&#10024; Curated Enterprise Showcase</span>
           <small style="font-size:13px; color:#64748B;">High-yield multi-category brand divisions</small>
         </div>
 
@@ -421,11 +359,11 @@
           </div>
           <div class="product-card-body">
             <h4 class="product-title" title="Apple iPhone 15 Pro Max (256GB Natural Titanium)">Apple iPhone 15 Pro Max</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">[STORE] Seller: Sanvicollection</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">Seller: Sanvicollection</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ 4.9 (151)</div>
             <div class="product-price">$1199.00 <span class="original">$1299.00</span></div>
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('p1')">[LIVE] Buy Now</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('p1')">&#9889; Buy Now</button>
               <button class="btn-add-cart" onclick="app.addToCart('p1')">🛒 Add to Cart</button>
             </div>
           </div>
@@ -439,11 +377,11 @@
           </div>
           <div class="product-card-body">
             <h4 class="product-title" title="Apple MacBook Pro 16 M3 Max">Apple MacBook Pro 16 M3 Max</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">[STORE] Seller: Sanvicollection</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">Seller: Sanvicollection</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ 5.0 (340)</div>
             <div class="product-price">$2499.00 <span class="original">$2799.00</span></div>
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('p2')">[LIVE] Buy Now</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('p2')">&#9889; Buy Now</button>
               <button class="btn-add-cart" onclick="app.addToCart('p2')">🛒 Add to Cart</button>
             </div>
           </div>
@@ -457,11 +395,11 @@
           </div>
           <div class="product-card-body">
             <h4 class="product-title" title="Nike Air Max 270 React Running Shoes">Nike Air Max 270 React</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">[STORE] Seller: Luxury Life Studio</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">Seller: Luxury Life Studio</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ 4.9 (210)</div>
             <div class="product-price">$159.95 <span class="original">$180.00</span></div>
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('p3')">[LIVE] Buy Now</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('p3')">&#9889; Buy Now</button>
               <button class="btn-add-cart" onclick="app.addToCart('p3')">🛒 Add to Cart</button>
             </div>
           </div>
@@ -475,11 +413,11 @@
           </div>
           <div class="product-card-body">
             <h4 class="product-title" title="HP Spectre x360 14 2-in-1 Laptop">HP Spectre x360 14"</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">[STORE] Seller: Sanvicollection</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">Seller: Sanvicollection</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ 4.8 (64)</div>
             <div class="product-price">$1449.00 <span class="original">$1699.00</span></div>
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('p4')">[LIVE] Buy Now</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('p4')">&#9889; Buy Now</button>
               <button class="btn-add-cart" onclick="app.addToCart('p4')">🛒 Add to Cart</button>
             </div>
           </div>
@@ -496,11 +434,11 @@
           </div>
           <div class="product-card-body">
             <h4 class="product-title" title="Sony WH-1000XM5 Wireless Headphones">Sony WH-1000XM5 ANC</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">[STORE] Seller: Sanvicollection</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">Seller: Sanvicollection</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ 4.9 (312)</div>
             <div class="product-price">$349.99 <span class="original">$399.99</span></div>
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('p5')">[LIVE] Buy Now</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('p5')">&#9889; Buy Now</button>
               <button class="btn-add-cart" onclick="app.addToCart('p5')">🛒 Add to Cart</button>
             </div>
           </div>
@@ -514,11 +452,11 @@
           </div>
           <div class="product-card-body">
             <h4 class="product-title" title="Rolex Submariner Date Automatic Watch">Rolex Submariner Date</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">[STORE] Seller: Luxury Life Studio</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">Seller: Luxury Life Studio</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ 5.0 (42)</div>
             <div class="product-price">$12499.00 <span class="original">$13500.00</span></div>
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('p6')">[LIVE] Buy Now</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('p6')">&#9889; Buy Now</button>
               <button class="btn-add-cart" onclick="app.addToCart('p6')">🛒 Add to Cart</button>
             </div>
           </div>
@@ -535,11 +473,11 @@
           </div>
           <div class="product-card-body">
             <h4 class="product-title" title="Samsung Galaxy S24 Ultra 5G">Samsung Galaxy S24 Ultra</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">[STORE] Seller: Sanvicollection</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">Seller: Sanvicollection</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ 5.0 (95)</div>
             <div class="product-price">$1299.99 <span class="original">$1419.99</span></div>
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('p9')">[LIVE] Buy Now</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('p9')">&#9889; Buy Now</button>
               <button class="btn-add-cart" onclick="app.addToCart('p9')">🛒 Add to Cart</button>
             </div>
           </div>
@@ -548,7 +486,7 @@
 
       <!-- COMPLETE MARKETPLACE FULL CATALOG SECTION (ALL LIVE & IMPORTED PRODUCTS) -->
       <div class="section-heading" style="margin-top:36px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;" id="catalogSection">
-        <span>[PACKAGE] Marketplace Full Catalog (<span id="storefrontCatalogCount">0</span> Live Products)</span>
+        <span>&#128230; Marketplace Full Catalog (<span id="storefrontCatalogCount">0</span> Live Products)</span>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
           <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#0f172a;" onclick="app.renderCatalog(); return false;">All Items</button>
           <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#0284c7;" onclick="app.filterByCategory('computers'); return false;">Computers</button>
@@ -683,7 +621,7 @@
                     <span class="live-slug-prefix" style="padding:10px 12px; background:#f1f5f9; color:#64748b; font-weight:600; border-right:1px solid #cbd5e1; font-size:12px; white-space:nowrap;">https://ssellerstorebay.com/store/</span>
                     <input type="text" id="accountRegShopSlug" class="live-slug-input" style="flex:1; padding:10px 12px; border:none; background:transparent; font-size:13px; font-weight:600; color:#0f172a; outline:none;" readonly placeholder="your-shop-name">
                   </div>
-                  <small id="accountSlugAvailableBadge" style="display:block; margin-top:4px; font-size:11.5px; color:#15803d; font-weight:600;">[OK] Store slug generated automatically</small>
+                  <small id="accountSlugAvailableBadge" style="display:block; margin-top:4px; font-size:11.5px; color:#15803d; font-weight:600;">&#10003; Store slug generated automatically</small>
                 </div>
 
                 <!-- Referral Code (Strict 00546) -->
@@ -819,7 +757,7 @@
     <!-- ADMIN SUB-NAVIGATION TABS -->
     <div class="admin-nav-tabs">
       <button class="admin-tab-btn active" id="adminTabBtn-overview" onclick="app.switchAdminTab('overview')">📊 Overview & Approvals</button>
-      <button class="admin-tab-btn" id="adminTabBtn-products" onclick="app.switchAdminTab('products')">[PACKAGE] Manage Products (<span id="adminTabProductCount">0</span>)</button>
+      <button class="admin-tab-btn" id="adminTabBtn-products" onclick="app.switchAdminTab('products')">&#128230; Manage Products (<span id="adminTabProductCount">0</span>)</button>
       <button class="admin-tab-btn" id="adminTabBtn-csv" onclick="app.switchAdminTab('csv')">📁 Bulk CSV Import & Export</button>
       <button class="admin-tab-btn" id="adminTabBtn-vendors" onclick="app.switchAdminTab('vendors')">[STORE] Multi-Vendor Stores & Inventory</button>
       <button class="admin-tab-btn" id="adminTabBtn-storefront" onclick="app.switchAdminTab('storefront')">🎨 Global Storefront Config</button>
@@ -948,7 +886,7 @@
       <div class="dash-card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
           <div>
-            <h3 style="font-family:'Outfit'; font-size:18px; color:#222733;">[PACKAGE] Master Product Catalog Management</h3>
+            <h3 style="font-family:'Outfit'; font-size:18px; color:#222733;">&#128230; Master Product Catalog Management</h3>
             <p style="font-size:12px; color:#666;">Create, edit, unpublish/publish, feature, and delete products across all vendor stores</p>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -1075,7 +1013,7 @@
               [DOC] CSV Preview & Column Mapping (<span id="adminCsvParsedCount">0</span> rows detected)
             </h4>
             <div style="display:flex; gap:8px;">
-              <button class="btn-primary" style="padding:8px 18px;" onclick="app.handleExecuteCSVImport()">[LAUNCH] Import Products Now</button>
+              <button class="btn-primary" style="padding:8px 18px;" onclick="app.handleExecuteCSVImport()">&#128640; Import Products Now</button>
               <button class="btn-primary" style="background:#ef4444; padding:8px 14px;" onclick="app.clearCSVPreview()">Cancel</button>
             </div>
           </div>
@@ -1190,7 +1128,7 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div>
               <h4 style="font-family:'Outfit'; font-size:16px; color:#222733;">
-                [PACKAGE] Direct Seller Inventory: <span id="adminVendorInventoryTitle" style="color:var(--nav-red);"></span>
+                &#128230; Direct Seller Inventory: <span id="adminVendorInventoryTitle" style="color:var(--nav-red);"></span>
               </h4>
               <p style="font-size:12px; color:#666;">Add, update, or remove products directly on behalf of this vendor</p>
             </div>
@@ -1348,7 +1286,7 @@
           <div class="admin-chat-messages-box">
             <!-- Quick Order Verification Action Bar in Active Thread -->
             <div id="adminChatOrderActionBox" style="display:none; background:#ecfdf5; border-bottom:1px solid #a7f3d0; padding:8px 12px; font-size:11px; color:#065f46; display:flex; justify-content:space-between; align-items:center;">
-              <span id="adminChatOrderActionText">[PACKAGE] Order Associated with this Conversation</span>
+              <span id="adminChatOrderActionText">&#128230; Order Associated with this Conversation</span>
               <button class="btn-primary" id="adminChatVerifyPayBtn" style="background:#10b981; font-size:11px; padding:4px 10px;" onclick="app.handleAdminVerifyOrderFromChat()">
                 ✅ Verify Payment & Confirm Order
               </button>
@@ -1412,7 +1350,7 @@
         <!-- Change Password Form -->
         <div style="max-width:560px; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:24px; margin-bottom:24px; box-shadow:var(--shadow-sm);">
           <h4 style="font-family:'Outfit',sans-serif; font-size:16px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
-            [KEY] Update Super Admin Password
+            &#128273; Update Super Admin Password
           </h4>
           <form onsubmit="app.handleAdminChangePassword(event)">
             <div style="margin-bottom:14px;">
@@ -1474,7 +1412,7 @@
     <!-- VENDOR TAB NAVIGATION BAR -->
     <div class="vendor-nav-tabs">
       <button class="vendor-tab-btn active" onclick="app.switchVendorTab('overview')">📊 Overview & Analytics</button>
-      <button class="vendor-tab-btn" onclick="app.switchVendorTab('products')">[PACKAGE] Product Management</button>
+      <button class="vendor-tab-btn" onclick="app.switchVendorTab('products')">&#128230; Product Management</button>
       <button class="vendor-tab-btn" onclick="app.switchVendorTab('orders')">📑 Order Management</button>
       <button class="vendor-tab-btn" onclick="app.switchVendorTab('wallet')">[WALLET] Wallet & Profit Tracking</button>
       <button class="vendor-tab-btn" onclick="app.switchVendorTab('settings')">⚙️ Store Settings & Customization</button>
@@ -1538,7 +1476,7 @@
         </div>
 
         <div class="dash-card">
-          <h4 style="margin-bottom:14px; font-family:'Outfit';">[PACKAGE] Order Status Breakdown</h4>
+          <h4 style="margin-bottom:14px; font-family:'Outfit';">&#128230; Order Status Breakdown</h4>
           <div style="display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#fef3c7; border-radius:6px;">
               <span style="font-size:12px; font-weight:700; color:#b45309;">[...] Pending Orders</span>
@@ -1561,7 +1499,7 @@
     <div class="vendor-tab-content" id="vendorTabProducts">
       <div class="dash-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
         <div>
-          <h4 style="margin-bottom:4px;">[PACKAGE] Product Management & Catalog</h4>
+          <h4 style="margin-bottom:4px;">&#128230; Product Management & Catalog</h4>
           <p style="font-size:12px; color:#666;">Add items, upload CSV, or 1-click sync the master catalog</p>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -1895,14 +1833,14 @@
       <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
       
       <div style="text-align:center; margin-bottom:20px;">
-        <div style="width:52px; height:52px; border-radius:50%; background:#dcfce7; color:#15803d; font-size:26px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px;">[OK]</div>
+        <div style="width:52px; height:52px; border-radius:50%; background:#dcfce7; color:#15803d; font-size:26px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px;">&#10003;</div>
         <h2 style="font-family:'Outfit', sans-serif; font-size:22px; color:#0f172a; margin-bottom:4px;">Thank You! Your Order is Confirmed</h2>
         <p style="font-size:13px; color:#64748b;">Order <strong id="confirmOrderNumber" style="color:#0f172a;">#ORD-00000</strong> has been received.</p>
         <span class="status-badge verified" style="font-size:10px; margin-top:6px; display:inline-block;">PROCESSING &bull; PENDING VENDOR FULFILLMENT</span>
       </div>
 
       <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:16px;">
-        <h4 style="font-size:12px; color:#0f172a; margin-bottom:6px; font-weight:700;">[PACKAGE] Delivery Details</h4>
+        <h4 style="font-size:12px; color:#0f172a; margin-bottom:6px; font-weight:700;">&#128230; Delivery Details</h4>
         <div style="font-size:12px; color:#334155; line-height:1.6;" id="confirmCustomerDetails"></div>
       </div>
 
@@ -2012,7 +1950,7 @@
     <div class="modal-card" style="max-width:680px; padding:28px;">
       <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
       <div style="margin-bottom:16px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
-        <h3 style="font-family:'Outfit', sans-serif; font-size:20px; color:#222733;" id="adminProductModalTitle">[PACKAGE] Master Product Listing</h3>
+        <h3 style="font-family:'Outfit', sans-serif; font-size:20px; color:#222733;" id="adminProductModalTitle">&#128230; Master Product Listing</h3>
         <p style="font-size:12px; color:#666;">Create, configure or update catalog products across any multi-vendor store</p>
       </div>
 
@@ -2110,7 +2048,7 @@
           <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="adminProductIsPublished" checked> [LIVE] Published / Live</label>
           <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="adminProductIsFeatured"> ⭐ Featured on Home</label>
           <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="adminProductIsBestSelling"> 🔥 Best Seller</label>
-          <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="adminProductIsNew"> [LAUNCH] New Arrival</label>
+          <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="adminProductIsNew"> &#128640; New Arrival</label>
           <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="adminProductIsDeal"> [LIVE] Flash Deal</label>
         </div>
 
@@ -2216,7 +2154,7 @@
         </div>
 
         <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#222733;">
-          [KEY] Login to Admin Control Panel
+          &#128273; Login to Admin Control Panel
         </button>
       </form>
     </div>
@@ -2251,6 +2189,62 @@
           Don't have a store yet? <a href="#" onclick="app.openOnboardingSelection(); return false;" style="color:var(--nav-red); font-weight:700;">Become a Seller (Apply Now)</a>
         </div>
       </form>
+    </div>
+  </div>
+
+    <!-- DOKAN-STYLE SPLIT AUTHENTICATION MODAL (LOGIN & REGISTER) -->
+  <div class="modal-overlay" id="dokanAuthModalOverlay">
+    <div class="modal-card dokan-split-modal-card">
+      <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
+      <div class="dokan-split-modal-grid">
+        <!-- Left Side — Login -->
+        <div class="dokan-split-col dokan-login-col">
+          <h2 class="dokan-split-title">Login</h2>
+          <form id="dokanModalLoginForm" onsubmit="app.handleDokanLogin(event)" autocomplete="off">
+            <div class="dokan-form-group">
+              <label for="dokanModalLoginUsername">Username or email address <span class="required">*</span></label>
+              <input type="text" id="dokanModalLoginUsername" class="dokan-form-input" required autocomplete="username" placeholder="yourname@domain.com">
+            </div>
+
+            <div class="dokan-form-group">
+              <label for="dokanModalLoginPassword">Password <span class="required">*</span></label>
+              <div class="password-input-wrapper">
+                <input type="password" id="dokanModalLoginPassword" class="dokan-form-input" required autocomplete="current-password" placeholder="Enter account password">
+                <button type="button" class="password-eye-btn" onclick="app.togglePasswordVisibility('dokanModalLoginPassword', this)" title="Toggle password visibility">👁️</button>
+              </div>
+            </div>
+
+            <div class="dokan-remember-row" style="display:flex; justify-content:space-between; align-items:center; margin:12px 0 16px;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500; color:#475569; font-size:13px;">
+                <input type="checkbox" id="dokanModalRememberMe" style="accent-color:#4F46E5; width:16px; height:16px;">
+                Remember me
+              </label>
+              <a href="#" onclick="app.handleLostPassword(); return false;" style="font-size:13px; color:#4F46E5; font-weight:600;">Lost your password?</a>
+            </div>
+
+            <button type="submit" class="btn-dokan-auth-submit" id="btnDokanModalLoginSubmit">
+              Log In &rsaquo;
+            </button>
+          </form>
+        </div>
+
+        <!-- Right Side — Register -->
+        <div class="dokan-split-col dokan-register-col" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <h2 class="dokan-split-title">Register</h2>
+            <p class="dokan-info-text" style="font-size:13.5px; color:#64748b; line-height:1.65; margin-bottom:18px;">
+              Registering for this site allows you to access your order status and history, launch your digital storefront, or supply wholesale products with guaranteed <strong>18% to 30% profit margins</strong>. Just fill in the fields, and we'll get a new account set up for you in no time.
+            </p>
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:12px 14px; margin-bottom:18px;">
+              <div style="font-size:12px; color:#0F172A; font-weight:700; margin-bottom:4px;">&#10003; 100% Escrow Protection</div>
+              <div style="font-size:11.5px; color:#64748B;">Fast real-time verification and automated wallet settlement.</div>
+            </div>
+          </div>
+          <button type="button" class="btn-dokan-register-cta" onclick="app.openOnboardingWizard(1)">
+            Register &rsaquo;
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2375,7 +2369,7 @@
         <!-- Password Creation Section -->
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
           <h4 style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-            <span>[KEY]</span> Create Store Login Password
+            <span>&#128273;</span> Create Store Login Password
           </h4>
           <div class="vertical-form-group">
             <label for="wizardPasswordInput">Create Password * <span style="font-weight:normal; color:#64748b;">(Min. 6 characters)</span></label>
@@ -2494,7 +2488,7 @@
           </div>
 
           <button type="submit" class="btn-hero-primary" id="btnSubmitWizardApplication" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; margin-top:6px; border-radius:8px;">
-            [LAUNCH] Submit Verification Application
+            &#128640; Submit Verification Application
           </button>
         </form>
       </div>
@@ -2536,7 +2530,7 @@
         </div>
 
         <button type="submit" class="btn-dokan-auth-submit" id="btnSetPasswordSubmit" style="margin-top:8px;">
-          [LAUNCH] Set Password &amp; Activate Account
+          &#128640; Set Password &amp; Activate Account
         </button>
       </form>
     </div>
@@ -2582,7 +2576,7 @@
           <h5>Quick Portals</h5>
           <a href="#" onclick="app.setPersona('customer'); app.closeMobileDrawer(); return false;" class="drawer-link">[CART]️ Customer Storefront</a>
           <a href="#" onclick="app.openOnboardingSelection(); app.closeMobileDrawer(); return false;" class="drawer-link">[STORE] Apply Now (Seller / Vendor)</a>
-          <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">[KEY] Seller Portal Login</a>
+          <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">&#128273; Seller Portal Login</a>
           <a href="#" onclick="app.openModal('adminLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">⚙️ Super Admin Portal</a>
           <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} app.closeMobileDrawer(); return false;" class="drawer-link">💬 Help &amp; Support</a>
         </div>
@@ -2648,7 +2642,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=4.7"></script>
+  <script src="app-bundle.js?v=5.0"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
