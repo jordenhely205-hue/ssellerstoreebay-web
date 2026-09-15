@@ -127,8 +127,8 @@
 <body>
 
 
-  <!-- TOP UTILITY BAR (Dark Midnight Navy Theme) -->
-  <div class="ref-top-bar header-navy-theme">
+  <!-- TOP UTILITY BAR (Dark Midnight Navy Theme #0d0a1a) -->
+  <div class="ref-top-bar header-navy-theme desktop-only-flex">
     <div class="container top-bar-flex">
       <!-- Left Links -->
       <div class="top-bar-left-links">
@@ -153,26 +153,36 @@
   <!-- MAIN BRAND HEADER (Dark Midnight Navy Theme #0d0a1a) -->
   <header class="dokan-brand-header header-navy-theme">
     <div class="container dokan-brand-header-flex">
-      <!-- Official Brand Logo (Left) -->
-      <a href="#" class="dokan-logo-wrap" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
+      
+      <!-- Mobile Top Bar Controls (Visible on <= 768px) -->
+      <div class="mobile-header-top-row mobile-only-flex">
+        <!-- Left: Hamburger Icon -->
+        <button type="button" class="mobile-hamburger-btn" onclick="app.openMobileDrawer()" aria-label="Open Menu">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <!-- Center: Centered Brand Logo -->
+        <a href="#" class="dokan-logo-wrap mobile-centered-logo" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
+          <img src="logo.png?v=6.2" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+        </a>
+
+        <!-- Right: Become A Vendor CTA -->
+        <a href="#" onclick="app.openDokanAuthModal('register'); return false;" class="mobile-become-vendor-link">
+          Become A Vendor
+        </a>
+      </div>
+
+      <!-- Desktop Brand Logo (Left, hidden on mobile) -->
+      <a href="#" class="dokan-logo-wrap desktop-only-flex" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
         <img src="logo.png?v=6.2" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
       </a>
 
-      <!-- Central Pill Search Bar -->
-      <div class="header-center-search">
-        <form class="header-search-form" onsubmit="app.handleHeaderSearch(event)">
-          <input type="text" id="headerSearchInput" class="header-search-input" placeholder="Search for products" autocomplete="off">
-          <button type="submit" class="header-search-btn" title="Search">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </button>
-        </form>
-      </div>
-
-      <!-- Contact & Cart Widgets (Right) -->
-      <div class="header-right-widgets">
+      <!-- Desktop Contact & Cart Widgets (Right, hidden on mobile) -->
+      <div class="header-right-widgets desktop-only-flex">
         <!-- Hotline 24/7 Section -->
         <div class="header-widget-item header-hotline-widget">
           <div class="header-widget-icon">
@@ -204,10 +214,11 @@
     </div>
   </header>
 
-  <!-- FULL-WIDTH PRIMARY RED/CORAL NAVIGATION BAR (Dokan Reference) -->
+  <!-- RED SUB-BAR (#e54660) - Full Width Search Bar on Mobile -->
   <nav class="dokan-coral-navbar">
     <div class="container coral-nav-container">
-      <ul class="coral-nav-links-list">
+      <!-- Desktop Text Links (Hidden on Mobile) -->
+      <ul class="coral-nav-links-list desktop-only-flex">
         <li class="coral-nav-item">
           <a href="#" class="coral-nav-link active" id="navLinkHome" onclick="app.switchInfoPage('home'); return false;">Home</a>
         </li>
@@ -228,7 +239,21 @@
         </li>
       </ul>
 
-      <div style="display:flex; align-items:center;">
+      <!-- Central Search Bar (Full Width inside Red Bar on Mobile) -->
+      <div class="header-center-search coral-search-wrap">
+        <form class="header-search-form" onsubmit="app.handleHeaderSearch(event)">
+          <input type="text" id="headerSearchInput" class="header-search-input" placeholder="Search for products" autocomplete="off">
+          <button type="submit" class="header-search-btn" title="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- Desktop Become a Vendor CTA -->
+      <div class="desktop-only-flex" style="display:flex; align-items:center;">
         <a href="#" class="coral-nav-link coral-nav-cta" id="navLinkVendor" onclick="app.openDokanAuthModal('register'); return false;">
           Become A Vendor &rsaquo;
         </a>
@@ -3053,6 +3078,55 @@
   })();
   </script>
   <!--End of Tawk.to Script-->
+  <!-- STICKY BOTTOM MOBILE NAVIGATION BAR -->
+  <div class="sticky-mobile-bottom-bar mobile-only-flex">
+    <!-- Item 1: Menu -->
+    <a href="#" class="mobile-bottom-item" onclick="app.openMobileDrawer(); return false;">
+      <div class="mobile-bottom-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </div>
+      <span class="mobile-bottom-label">Menu</span>
+    </a>
+
+    <!-- Item 2: Wishlist -->
+    <a href="#" class="mobile-bottom-item" onclick="app.switchInfoPage('home'); window.scrollTo({top:700, behavior:'smooth'}); return false;">
+      <div class="mobile-bottom-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+      </div>
+      <span class="mobile-bottom-label">Wishlist</span>
+    </a>
+
+    <!-- Item 3: Cart -->
+    <a href="#" class="mobile-bottom-item" onclick="app.openCartDrawer(); return false;">
+      <div class="mobile-bottom-icon" style="position:relative;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <span class="mobile-bottom-cart-badge" id="mobileBottomCartBadge">0</span>
+      </div>
+      <span class="mobile-bottom-label">Cart</span>
+    </a>
+
+    <!-- Item 4: My Account -->
+    <a href="#" class="mobile-bottom-item" onclick="app.openDokanAuthModal('login'); return false;">
+      <div class="mobile-bottom-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <span class="mobile-bottom-label">My account</span>
+    </a>
+  </div>
+
 </body>
 </html>
 

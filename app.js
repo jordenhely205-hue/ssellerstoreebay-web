@@ -9,6 +9,22 @@ import { engine } from './dokan-engine.js';
 import { INITIAL_BRANDS, INITIAL_CATEGORIES } from './data.js';
 
 class ESellerStoreApp {
+  openMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawerOverlay');
+    if (drawer) {
+      drawer.style.display = 'flex';
+      drawer.classList.add('active');
+    }
+  }
+
+  closeMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawerOverlay');
+    if (drawer) {
+      drawer.style.display = 'none';
+      drawer.classList.remove('active');
+    }
+  }
+
   handleHeaderSearch(e) {
     if (e && e.preventDefault) e.preventDefault();
     const input = document.getElementById('headerSearchInput');

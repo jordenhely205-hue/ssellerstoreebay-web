@@ -4033,3 +4033,219 @@ html, body {
     max-height: 46px;
   }
 }
+
+
+/* Responsive Utility Helper Classes */
+.mobile-only-flex {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .desktop-only-flex {
+    display: none !important;
+  }
+  .mobile-only-flex {
+    display: flex !important;
+  }
+
+  body {
+    padding-bottom: 70px !important;
+  }
+
+  /* Mobile Top Header Control Row */
+  .mobile-header-top-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+
+  .mobile-hamburger-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+  }
+
+  .mobile-centered-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-become-vendor-link {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: background 0.2s ease;
+  }
+
+  .dokan-coral-navbar {
+    padding: 8px 12px !important;
+    background: #e54660 !important;
+  }
+
+  .coral-search-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Mobile Hero Slider Overhaul */
+  .woodmart-hero-section {
+    padding: 0 !important;
+  }
+
+  .woodmart-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    padding: 0 !important;
+  }
+
+  .woodmart-slider-container {
+    margin: 12px !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    background: #ece5dc !important;
+    min-height: 380px !important;
+    height: auto !important;
+    position: relative !important;
+  }
+
+  .woodmart-slide {
+    flex-direction: column !important;
+    min-height: 380px !important;
+    padding: 24px 20px !important;
+    justify-content: space-between !important;
+    background-size: cover !important;
+  }
+
+  .woodmart-slide .slide-content {
+    max-width: 100% !important;
+    z-index: 2;
+    text-align: left !important;
+  }
+
+  .woodmart-slide .slide-tagline {
+    font-size: 13px !important;
+    color: #475569 !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+  }
+
+  .woodmart-slide .slide-title {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    margin-bottom: 10px !important;
+    line-height: 1.2 !important;
+  }
+
+  .woodmart-slide .slide-sub {
+    font-size: 13px !important;
+    color: #334155 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .woodmart-slide .btn-slider-cta {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px 24px !important;
+    border-radius: 9999px !important;
+    background: #0f172a !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    border: none !important;
+  }
+
+  .woodmart-slide .slide-image-wrap {
+    width: 100% !important;
+    height: 180px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+    margin-top: 10px !important;
+  }
+
+  .woodmart-slide .slide-image-wrap img {
+    max-height: 175px !important;
+    width: auto !important;
+    object-fit: contain !important;
+  }
+
+  .woodmart-hot-categories-sidebar {
+    display: none !important;
+  }
+
+  /* Sticky Bottom Mobile Navigation Bar */
+  .sticky-mobile-bottom-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 62px !important;
+    background: #ffffff !important;
+    border-top: 1px solid #eeeeee !important;
+    z-index: 9999 !important;
+    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.06) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    padding: 4px 8px !important;
+  }
+
+  .mobile-bottom-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #475569;
+    flex: 1;
+    gap: 3px;
+    transition: color 0.2s ease;
+  }
+
+  .mobile-bottom-item:hover, .mobile-bottom-item:active {
+    color: #e54660;
+  }
+
+  .mobile-bottom-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-bottom-label {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .mobile-bottom-cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background: #e54660;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #ffffff;
+  }
+}
