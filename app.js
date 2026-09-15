@@ -1,4 +1,4 @@
-const APP_VERSION = 'v5.1_woodmart_ecommerce_slider';
+const APP_VERSION = 'v5.2_clean_login_credentials';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -540,11 +540,19 @@ class ESellerStoreApp {
   // 3-STEP WIZARD ONBOARDING CONTROLLER (ROLE -> OTP & PASS -> STORE DETAILS)
   // =========================================================================
 
-    openDokanAuthModal(mode = 'register') {
+      openDokanAuthModal(mode = 'register') {
     this.closeModals();
     this.closeMobileDrawer();
-    this.openModal('dokanAuthModalOverlay');
+    
+    // Explicitly reset login form and clear input values
+    const loginForm = document.getElementById('dokanModalLoginForm');
+    if (loginForm) loginForm.reset();
     const userField = document.getElementById('dokanModalLoginUsername');
+    const passField = document.getElementById('dokanModalLoginPassword');
+    if (userField) userField.value = '';
+    if (passField) passField.value = '';
+
+    this.openModal('dokanAuthModalOverlay');
     if (mode === 'login' && userField) {
       setTimeout(() => userField.focus(), 150);
     }

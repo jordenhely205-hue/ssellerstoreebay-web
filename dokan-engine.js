@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v5.1_woodmart_ecommerce_slider';
+    const APP_VERSION = 'v5.2_clean_login_credentials';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);

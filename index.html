@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=5.1">
+  <link rel="stylesheet" href="styles.css?v=5.2">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -81,7 +81,17 @@
     window.openModal = function(id) {
       if (window.app && window.app.openModal) { window.app.openModal(id); return; }
       var el = document.getElementById(id);
-      if (el) { el.style.display = 'flex'; el.classList.add('active'); }
+      if (el) {
+        var forms = el.querySelectorAll('form');
+        forms.forEach(function(f) {
+          f.reset();
+          f.querySelectorAll('input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):not([readonly])').forEach(function(inp) {
+            inp.value = '';
+          });
+        });
+        el.style.display = 'flex';
+        el.classList.add('active');
+      }
     };
     window.closeModals = function() {
       if (window.app && window.app.closeModals) { window.app.closeModals(); return; }
@@ -690,13 +700,13 @@
             <form id="dokanAccountLoginForm" onsubmit="app.handleAccountLogin(event)">
               <div class="dokan-form-group">
                 <label for="accountLoginUsername">Username or email address <span class="required">*</span></label>
-                <input type="text" id="accountLoginUsername" class="dokan-form-input" required autocomplete="username" placeholder="yourname@domain.com">
+                <input type="text" id="accountLoginUsername" class="dokan-form-input" required autocomplete="off" placeholder="Enter your username or email">
               </div>
 
               <div class="dokan-form-group">
                 <label for="accountLoginPassword">Password <span class="required">*</span></label>
                 <div class="password-input-wrapper">
-                  <input type="password" id="accountLoginPassword" class="dokan-form-input" required autocomplete="current-password" placeholder="Enter account password">
+                  <input type="password" id="accountLoginPassword" class="dokan-form-input" required autocomplete="off" placeholder="Enter your password">
                   <button type="button" class="password-eye-btn" onclick="app.togglePasswordVisibility('accountLoginPassword', this)" title="Toggle password visibility">👁️</button>
                 </div>
               </div>
@@ -2293,12 +2303,12 @@
       <form onsubmit="app.handleAdminLogin(event)" autocomplete="off">
         <div style="margin-bottom:14px;">
           <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Admin Email Address *</label>
-          <input type="email" id="adminLoginEmail" style="width:100%; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:13px;" placeholder="admin@esellerstore.com" autocomplete="username" required>
+          <input type="email" id="adminLoginEmail" style="width:100%; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:13px;" placeholder="Enter your username or email" autocomplete="off" required>
         </div>
 
         <div style="margin-bottom:20px;">
           <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Admin Password *</label>
-          <input type="password" id="adminLoginPassword" style="width:100%; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:13px;" placeholder="Enter admin password" autocomplete="current-password" required>
+          <input type="password" id="adminLoginPassword" style="width:100%; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:13px;" placeholder="Enter your password" autocomplete="off" required>
         </div>
 
         <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#222733;">
@@ -2321,12 +2331,12 @@
       <form onsubmit="app.handleSellerLogin(event)" autocomplete="off">
         <div style="margin-bottom:14px;">
           <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Seller Email Address *</label>
-          <input type="email" id="sellerLoginEmail" style="width:100%; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:13px;" placeholder="seller@esellerstore.com" autocomplete="username" required>
+          <input type="email" id="sellerLoginEmail" style="width:100%; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:13px;" placeholder="Enter your username or email" autocomplete="off" required>
         </div>
 
         <div style="margin-bottom:16px;">
           <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Seller Password *</label>
-          <input type="password" id="sellerLoginPassword" style="width:100%; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:13px;" placeholder="Enter seller password" autocomplete="current-password" required>
+          <input type="password" id="sellerLoginPassword" style="width:100%; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:13px;" placeholder="Enter your password" autocomplete="off" required>
         </div>
 
         <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:var(--nav-red); margin-bottom:12px;">
@@ -2351,13 +2361,13 @@
           <form id="dokanModalLoginForm" onsubmit="app.handleDokanLogin(event)" autocomplete="off">
             <div class="dokan-form-group">
               <label for="dokanModalLoginUsername">Username or email address <span class="required">*</span></label>
-              <input type="text" id="dokanModalLoginUsername" class="dokan-form-input" required autocomplete="username" placeholder="yourname@domain.com">
+              <input type="text" id="dokanModalLoginUsername" class="dokan-form-input" required autocomplete="off" placeholder="Enter your username or email">
             </div>
 
             <div class="dokan-form-group">
               <label for="dokanModalLoginPassword">Password <span class="required">*</span></label>
               <div class="password-input-wrapper">
-                <input type="password" id="dokanModalLoginPassword" class="dokan-form-input" required autocomplete="current-password" placeholder="Enter account password">
+                <input type="password" id="dokanModalLoginPassword" class="dokan-form-input" required autocomplete="off" placeholder="Enter your password">
                 <button type="button" class="password-eye-btn" onclick="app.togglePasswordVisibility('dokanModalLoginPassword', this)" title="Toggle password visibility">👁️</button>
               </div>
             </div>
@@ -2790,7 +2800,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=5.1"></script>
+  <script src="app-bundle.js?v=5.2"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
