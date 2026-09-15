@@ -35,9 +35,9 @@
   <meta name="twitter:image" content="https://sellerstoresbay.com/logo-preview.png">
 
   <!-- Favicon & Touch Icons -->
-  <link rel="icon" type="image/png" href="favicon.png?v=6.0">
+  <link rel="icon" type="image/png" href="favicon.png?v=6.1">
   <link rel="shortcut icon" type="image/png" href="favicon.png?v=6.0">
-  <link rel="apple-touch-icon" href="logo-preview.png?v=6.0">
+  <link rel="apple-touch-icon" href="logo-preview.png?v=6.1">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +45,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=6.0">
+  <link rel="stylesheet" href="styles.css?v=6.1">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -127,48 +127,78 @@
 <body>
 
 
-  <!-- TOP UTILITY BAR (Enterprise Minimalist) -->
-  <div class="ref-top-bar">
+  <!-- TOP UTILITY BAR (Dark Midnight Navy Theme) -->
+  <div class="ref-top-bar header-navy-theme">
     <div class="container top-bar-flex">
-      <div class="top-bar-dropdowns">
-        <select id="languageSwitcher" title="Language Selector">
-          <option value="EN">English</option>
-          <option value="ES">Espa&ntilde;ol</option>
-          <option value="FR">Fran&ccedil;ais</option>
-          <option value="DE">Deutsch</option>
-          <option value="AR">Arabic</option>
-        </select>
-        <select id="currencySwitcher" title="Currency Selector">
-          <option value="USD">USD ($)</option>
-          <option value="EUR">EUR (&euro;)</option>
-          <option value="GBP">GBP (&pound;)</option>
-          <option value="AED">AED (AED)</option>
-          <option value="PKR">PKR (Rs)</option>
-        </select>
+      <!-- Left Links -->
+      <div class="top-bar-left-links">
+        <a href="#" onclick="app.switchInfoPage('about'); return false;" class="top-bar-link">About Us</a>
+        <span class="top-bar-separator">|</span>
+        <a href="#" onclick="app.switchInfoPage('partners'); return false;" class="top-bar-link">Our Partners</a>
+        <span class="top-bar-separator">|</span>
+        <a href="#" onclick="app.switchInfoPage('work-with-us'); return false;" class="top-bar-link">Work With Us</a>
       </div>
 
-      <div class="top-bar-links" style="display:flex; align-items:center; gap:16px;">
-        <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;" style="font-weight:600;">Admin</a>
-        <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} return false;" style="font-weight:600;">Help Hub</a>
+      <!-- Right Links -->
+      <div class="top-bar-right-links">
+        <a href="#" onclick="app.switchInfoPage('faqs'); return false;" class="top-bar-link">Track Your Order</a>
+        <span class="top-bar-separator">|</span>
+        <a href="#" onclick="app.switchInfoPage('contact'); return false;" class="top-bar-link">Contact Us</a>
+        <span class="top-bar-separator">|</span>
+        <a href="#" onclick="app.switchInfoPage('faqs'); return false;" class="top-bar-link">FAQs</a>
       </div>
     </div>
   </div>
 
-  <!-- BRAND LOGO & CART ROW (Visual Depth Gradient) -->
-  <header class="dokan-brand-header">
+  <!-- MAIN BRAND HEADER (Dark Midnight Navy Theme #0d0a1a) -->
+  <header class="dokan-brand-header header-navy-theme">
     <div class="container dokan-brand-header-flex">
-      <!-- Official Brand Logo -->
+      <!-- Official Brand Logo (Left) -->
       <a href="#" class="dokan-logo-wrap" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-        <img src="logo.png?v=6.0" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:48px; max-height:48px; width:auto; object-fit:contain; display:block;">
+        <img src="logo.png?v=6.1" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
       </a>
 
-      <!-- Cart Total Capsule -->
-      <div style="display:flex; align-items:center; gap:16px;">
-        <div class="utility-cart-pill" onclick="app.openCartDrawer()" title="Shopping Cart" style="display:flex; align-items:center; gap:8px; background:#FFFFFF; border:1px solid #CBD5E1; padding:8px 16px; border-radius:30px; box-shadow:0 2px 6px rgba(0,0,0,0.04); cursor:pointer;">
-          <span style="font-size:16px;">🛒</span>
-          <span style="font-size:13px; font-weight:700; color:#0F172A;">Cart Total: <span id="navCartTotalHeader" style="color:#4F46E5;">$0.00</span></span>
-          <span id="navCartCountHeader" style="background:#e54660; color:#fff; font-size:11px; padding:2px 7px; border-radius:10px; font-weight:800;">0</span>
+      <!-- Central Pill Search Bar -->
+      <div class="header-center-search">
+        <form class="header-search-form" onsubmit="app.handleHeaderSearch(event)">
+          <input type="text" id="headerSearchInput" class="header-search-input" placeholder="Search for products" autocomplete="off">
+          <button type="submit" class="header-search-btn" title="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- Contact & Cart Widgets (Right) -->
+      <div class="header-right-widgets">
+        <!-- Hotline 24/7 Section -->
+        <div class="header-widget-item header-hotline-widget">
+          <div class="header-widget-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+          </div>
+          <div class="header-widget-text">
+            <span class="header-widget-title">Hotline 24/7</span>
+            <span class="header-widget-sub">(505) 285-5028</span>
+          </div>
+        </div>
+
+        <!-- Cart Section Widget -->
+        <div class="header-widget-item" onclick="app.openCartDrawer()" title="Shopping Cart" style="cursor:pointer;">
+          <div class="header-widget-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+          </div>
+          <div class="header-widget-text">
+            <span class="header-widget-title" style="color:#e54660;" id="navCartTotalHeader">$0.00</span>
+            <span class="header-widget-sub" id="navCartCountLabel"><span id="navCartCountHeader">0</span> items</span>
+          </div>
         </div>
       </div>
     </div>
@@ -3008,7 +3038,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=6.0"></script>
+  <script src="app-bundle.js?v=6.1"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">

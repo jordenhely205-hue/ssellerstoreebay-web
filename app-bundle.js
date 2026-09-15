@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v6.0_official_ess_ebay_logo';
+const APP_VERSION = 'v6.1_header_dark_navy_pill_search';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -10013,6 +10013,32 @@ class DokanEngine {
 const engine = new DokanEngine();
 
 class ESellerStoreApp {
+  handleHeaderSearch(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const input = document.getElementById('headerSearchInput');
+    if (!input) return;
+    const query = input.value.trim().toLowerCase();
+    if (!query) return;
+
+    try {
+      this.switchInfoPage('home');
+      const products = engine.getProducts().filter(p => p.published !== false);
+      const filtered = products.filter(p => 
+        (p.name && p.name.toLowerCase().includes(query)) ||
+        (p.brand && p.brand.toLowerCase().includes(query)) ||
+        (p.category && p.category.toLowerCase().includes(query)) ||
+        (p.description && p.description.toLowerCase().includes(query))
+      );
+
+      this.renderProductGrid('curatedProductGrid', filtered.length > 0 ? filtered : products);
+      const gridTitle = document.querySelector('#curatedCatalogSection h2');
+      if (gridTitle) gridTitle.textContent = `Search Results for "${input.value.trim()}" (${filtered.length} found)`;
+      window.scrollTo({ top: 700, behavior: 'smooth' });
+    } catch (err) {
+      console.error('handleHeaderSearch error:', err);
+    }
+  }
+
   switchInfoPage(pageKey = 'home') {
     try {
       const homeView = document.getElementById('homeView');
