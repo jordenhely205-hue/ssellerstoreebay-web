@@ -1,4 +1,4 @@
-const APP_VERSION = 'v5.4_coral_navbar_dokan_pages';
+const APP_VERSION = 'v5.5_sanitized_cart_auth';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -246,11 +246,16 @@ class ESellerStoreApp {
     const navCartCountEl = document.getElementById('navCartCountHeader');
     const navCartTotalEl = document.getElementById('navCartTotalHeader');
 
-    const totalQty = this.cart.reduce((sum, item) => sum + item.quantity, 0);
-    const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const cartList = (this.cart && Array.isArray(this.cart)) ? this.cart : [];
+    const totalQty = cartList.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
+    const subtotal = cartList.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 0);
 
-    if (navCartCountEl) navCartCountEl.textContent = totalQty;
-    if (navCartTotalEl) navCartTotalEl.textContent = `$${subtotal.toFixed(2)}`;
+    if (navCartCountEl) {
+      navCartCountEl.textContent = totalQty;
+    }
+    if (navCartTotalEl) {
+      navCartTotalEl.textContent = '$' + subtotal.toFixed(2);
+    }
   }
 
   renderFeaturedProducts() {
@@ -641,21 +646,34 @@ class ESellerStoreApp {
   // 3-STEP WIZARD ONBOARDING CONTROLLER (ROLE -> OTP & PASS -> STORE DETAILS)
   // =========================================================================
 
-      openDokanAuthModal(mode = 'register') {
+  openDokanAuthModal(mode = 'register') {
     this.closeModals();
     this.closeMobileDrawer();
     
-    // Explicitly reset login form and clear input values
-    const loginForm = document.getElementById('dokanModalLoginForm');
-    if (loginForm) loginForm.reset();
-    const userField = document.getElementById('dokanModalLoginUsername');
-    const passField = document.getElementById('dokanModalLoginPassword');
-    if (userField) userField.value = '';
-    if (passField) passField.value = '';
+    const clearAuthInputs = () => {
+      const loginForm = document.getElementById('dokanModalLoginForm');
+      if (loginForm) loginForm.reset();
+      const userField = document.getElementById('dokanModalLoginUsername');
+      const passField = document.getElementById('dokanModalLoginPassword');
+      if (userField) userField.value = '';
+      if (passField) passField.value = '';
+      const regEmail = document.getElementById('accountRegEmail');
+      if (regEmail) regEmail.value = '';
+      const accUser = document.getElementById('accountLoginUsername');
+      const accPass = document.getElementById('accountLoginPassword');
+      if (accUser) accUser.value = '';
+      if (accPass) accPass.value = '';
+    };
 
+    clearAuthInputs();
     this.openModal('dokanAuthModalOverlay');
-    if (mode === 'login' && userField) {
-      setTimeout(() => userField.focus(), 150);
+    clearAuthInputs();
+    setTimeout(clearAuthInputs, 50);
+    setTimeout(clearAuthInputs, 150);
+
+    if (mode === 'login') {
+      const userField = document.getElementById('dokanModalLoginUsername');
+      if (userField) setTimeout(() => userField.focus(), 160);
     }
   }
 
@@ -1614,7 +1632,22 @@ class ESellerStoreApp {
 
   openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.classList.add('active');
+      modal.style.display = 'flex';
+      const clearModalForms = () => {
+        const forms = modal.querySelectorAll('form');
+        forms.forEach(f => {
+          f.reset();
+          f.querySelectorAll('input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):not([readonly])').forEach(inp => {
+            inp.value = '';
+          });
+        });
+      };
+      clearModalForms();
+      setTimeout(clearModalForms, 50);
+      setTimeout(clearModalForms, 150);
+    }
   }
 
   closeModals() {
