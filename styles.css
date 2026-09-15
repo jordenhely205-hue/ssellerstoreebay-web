@@ -3690,3 +3690,142 @@ html, body {
     padding-bottom: 0;
   }
 }
+
+/* ==========================================================================
+   DOKAN CRIMSON-CORAL NAVIGATION BAR & BRAND HEADER (v5.4)
+   ========================================================================== */
+.dokan-brand-header {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  border-bottom: 1px solid #E2E8F0;
+  padding: 16px 0;
+  position: relative;
+}
+
+.dokan-brand-header-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dokan-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.dokan-logo-badge {
+  width: 42px;
+  height: 42px;
+  background: #0B0F17;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(11, 15, 23, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.dokan-logo-wrap:hover .dokan-logo-badge {
+  transform: scale(1.04);
+}
+
+.dokan-coral-navbar {
+  background: #e54660;
+  box-shadow: 0 4px 14px rgba(229, 70, 96, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.coral-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow-x: auto;
+}
+
+.coral-nav-links-list {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.coral-nav-item {
+  margin: 0;
+}
+
+.coral-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 18px;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.coral-nav-link:hover {
+  background: rgba(0, 0, 0, 0.12);
+  color: #FFFFFF;
+}
+
+.coral-nav-link.active {
+  background: rgba(0, 0, 0, 0.18);
+  border-bottom-color: #FFFFFF;
+  font-weight: 700;
+}
+
+.coral-nav-cta {
+  background: #0B0F17;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  margin-left: 8px;
+  border-radius: 6px;
+  padding: 8px 16px !important;
+}
+
+.coral-nav-cta:hover {
+  background: #1E293B !important;
+}
+
+/* Info Pages Sidebar & Layout */
+.info-side-link {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.info-side-link:hover {
+  background: #F1F5F9;
+  color: #e54660;
+}
+
+.info-side-link.active {
+  background: #e54660;
+  color: #FFFFFF;
+}
+
+@media (max-width: 900px) {
+  .info-layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=5.2.2">
+  <link rel="stylesheet" href="styles.css?v=5.4">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -147,59 +147,70 @@
       </div>
 
       <div class="top-bar-links" style="display:flex; align-items:center; gap:16px;">
-        <a href="#" onclick="app.openDokanAuthModal('register'); return false;" style="color:#4f46e5; font-weight:700;">Become a Vendor</a>
+        <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;" style="font-weight:600;">Admin</a>
         <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="app.openDokanAuthModal('login'); return false;" style="font-weight:600;">My Account</a>
-        <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;">Admin</a>
-        <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} return false;">Help Hub</a>
+        <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} return false;" style="font-weight:600;">Help Hub</a>
       </div>
     </div>
   </div>
 
-  <!-- FROSTED STICKY NAVIGATION BAR -->
-  <header class="enterprise-navbar-wrapper">
-    <div class="enterprise-navbar-container" style="justify-content: space-between;">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <button class="mobile-hamburger-btn" onclick="app.toggleMobileDrawer()" aria-label="Open Navigation Menu">&#9776;</button>
-        <!-- E Seller Store Official Logo -->
-        <a href="#" class="ref-logo" onclick="app.setPersona('customer'); return false;" style="display:flex; align-items:center; gap:10px;">
-          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-            <rect width="36" height="36" rx="10" fill="#0B0F17"/>
-            <path d="M7.5 9.5H10.5L13 22H24.5L27 12.5H11.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="14.5" cy="25.5" r="1.6" fill="#10B981"/>
-            <circle cx="23" cy="25.5" r="1.6" fill="#10B981"/>
-            <path d="M15.5 15H21C21.8 15 22.2 15.4 22.2 16.2C22.2 17 21.6 17.5 20.8 17.5H16.2C15.4 17.5 14.8 18 14.8 18.8C14.8 19.6 15.2 20 16 20H21.5" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- BRAND LOGO & CART ROW (Visual Depth Gradient) -->
+  <header class="dokan-brand-header">
+    <div class="container dokan-brand-header-flex">
+      <!-- Logo with Vibrant Accent -->
+      <a href="#" class="dokan-logo-wrap" onclick="app.switchInfoPage('home'); return false;">
+        <div class="dokan-logo-badge">
+          <svg width="24" height="24" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.5 9.5H10.5L13 22H24.5L27 12.5H11.5" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="14.5" cy="25.5" r="2.2" fill="#10B981"/>
+            <circle cx="23" cy="25.5" r="2.2" fill="#10B981"/>
+            <path d="M15.5 15H21C21.8 15 22.2 15.4 22.2 16.2C22.2 17 21.6 17.5 20.8 17.5H16.2C15.4 17.5 14.8 18 14.8 18.8C14.8 19.6 15.2 20 16 20H21.5" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span style="font-family:'Outfit','Inter',sans-serif; font-size:23px; font-weight:800; letter-spacing:-0.5px; color:#0B0F17;">
-            <span>E Seller </span><span style="color:#4F46E5;">Store</span>
-          </span>
-        </a>
-      </div>
+        </div>
+        <span style="font-family:'Outfit','Inter',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px; color:#0B0F17;">
+          <span>E Seller </span><span style="color:#4F46E5;">Store</span>
+        </span>
+      </a>
 
-      <!-- Clean Header Right Action (Cart Only) -->
-      <div class="enterprise-utility-capsule">
-        <div class="utility-cart-pill" onclick="app.openCartDrawer()" title="Shopping Cart">
+      <!-- Cart Total Capsule -->
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div class="utility-cart-pill" onclick="app.openCartDrawer()" title="Shopping Cart" style="display:flex; align-items:center; gap:8px; background:#FFFFFF; border:1px solid #CBD5E1; padding:8px 16px; border-radius:30px; box-shadow:0 2px 6px rgba(0,0,0,0.04); cursor:pointer;">
           <span style="font-size:16px;">🛒</span>
-          <span id="navCartCountHeader" style="background:#4F46E5; color:#fff; font-size:11px; padding:2px 6px; border-radius:10px; font-weight:800;">0</span>
+          <span style="font-size:13px; font-weight:700; color:#0F172A;">Cart Total: <span id="navCartTotalHeader" style="color:#4F46E5;">$0.00</span></span>
+          <span id="navCartCountHeader" style="background:#e54660; color:#fff; font-size:11px; padding:2px 7px; border-radius:10px; font-weight:800;">0</span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- SECONDARY CATEGORY PILL NAVIGATION -->
-  <nav style="background:#FFFFFF; border-bottom:1px solid #E2E8F0; padding:8px 0;">
-    <div class="container" style="display:flex; align-items:center; justify-content:space-between; gap:16px; overflow-x:auto;">
-      <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
-        <button class="cat-pill-item" onclick="app.setPersona('customer')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:700; background:#0B0F17; color:#fff;">Featured</button>
-        <button class="cat-pill-item" onclick="app.filterByCategory('computers')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">&#128187; Computers &amp; Tech</button>
-        <button class="cat-pill-item" onclick="app.filterByCategory('jewelry')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">&#9201; Luxury Watches (Rolex)</button>
-        <button class="cat-pill-item" onclick="app.filterByCategory('sneakers')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">&#128095; Sneakers (Nike)</button>
-        <button class="cat-pill-item" onclick="app.filterByCategory('fashion')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">&#128087; Men &amp; Women Fashion</button>
-      </div>
-      <div style="font-size:12.5px; font-weight:700; color:#475569; white-space:nowrap;">
-        Cart Total: <span id="navCartTotalHeader" style="color:#0B0F17;">$0.00</span>
+  <!-- FULL-WIDTH PRIMARY RED/CORAL NAVIGATION BAR (Dokan Reference) -->
+  <nav class="dokan-coral-navbar">
+    <div class="container coral-nav-container">
+      <ul class="coral-nav-links-list">
+        <li class="coral-nav-item">
+          <a href="#" class="coral-nav-link active" id="navLinkHome" onclick="app.switchInfoPage('home'); return false;">Home</a>
+        </li>
+        <li class="coral-nav-item">
+          <a href="#" class="coral-nav-link" id="navLinkAbout" onclick="app.switchInfoPage('about'); return false;">About Us</a>
+        </li>
+        <li class="coral-nav-item">
+          <a href="#" class="coral-nav-link" id="navLinkFaqs" onclick="app.switchInfoPage('faqs'); return false;">FAQs</a>
+        </li>
+        <li class="coral-nav-item">
+          <a href="#" class="coral-nav-link" id="navLinkPartners" onclick="app.switchInfoPage('partners'); return false;">Our Partners</a>
+        </li>
+        <li class="coral-nav-item">
+          <a href="#" class="coral-nav-link" id="navLinkWork" onclick="app.switchInfoPage('work-with-us'); return false;">Work With Us</a>
+        </li>
+        <li class="coral-nav-item">
+          <a href="#" class="coral-nav-link" id="navLinkContact" onclick="app.switchInfoPage('contact'); return false;">Contact Us</a>
+        </li>
+      </ul>
+
+      <div style="display:flex; align-items:center;">
+        <a href="#" class="coral-nav-link coral-nav-cta" id="navLinkVendor" onclick="app.openDokanAuthModal('register'); return false;">
+          Become A Vendor &rsaquo;
+        </a>
       </div>
     </div>
   </nav>
@@ -207,22 +218,6 @@
   <!-- STOREFRONT HOMEPAGE (DEFAULT VISIBLE) -->
   <main id="homeView" style="display:block;">
     
-    <!-- Real-Time Platform Ticker -->
-    <div class="platform-live-ticker-strip">
-      <div class="container ticker-flex">
-        <div class="ticker-pulse-badge">
-          <div class="ticker-pulse-dot"></div>
-          <span>LIVE PLATFORM NETWORK</span>
-        </div>
-        <div class="ticker-event-text" id="platformLiveTickerText">
-          Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow • 99.98% Global SLA Active
-        </div>
-        <div style="font-size:11px; color:#94A3B8; white-space:nowrap;">
-          &#128274; Bank-Grade Escrow Protection
-        </div>
-      </div>
-    </div>
-
     <!-- E-COMMERCE HERO GRID (ANIMATED SLIDER + HOT CATEGORIES SIDEBAR) -->
     <section class="woodmart-hero-section">
       <div class="container woodmart-hero-grid">
@@ -672,6 +667,229 @@
     </section>
   </main>
 
+
+    <!-- DOKAN MULTI-PAGE INFORMATION HUB (ABOUT, FAQS, PARTNERS, WORK WITH US, CONTACT) -->
+  <section id="infoPagesView" class="dashboard-view" style="display:none; padding:36px 0; background:#f8fafc;">
+    <div class="container">
+      
+      <!-- Breadcrumb Bar -->
+      <div class="info-breadcrumb-bar" style="margin-bottom:24px; font-size:13px; color:#64748b;">
+        <a href="#" onclick="app.switchInfoPage('home'); return false;" style="color:#0f172a; font-weight:600;">Home</a>
+        <span style="margin:0 8px;">&rsaquo;</span>
+        <span id="infoBreadcrumbCurrent" style="color:#e54660; font-weight:700;">About Us</span>
+      </div>
+
+      <div class="info-layout-grid" style="display:grid; grid-template-columns: 260px 1fr; gap:28px; align-items:start;">
+        
+        <!-- Left Sidebar Navigation -->
+        <aside class="info-sidebar-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:16px; box-shadow:0 4px 15px rgba(0,0,0,0.03);">
+          <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; padding:0 10px;">
+            Information Hub
+          </div>
+          <ul class="info-sidebar-menu" style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px;">
+            <li>
+              <button type="button" class="info-side-link active" id="sideLinkAbout" onclick="app.switchInfoPage('about')">
+                <span>📖</span> About Us
+              </button>
+            </li>
+            <li>
+              <button type="button" class="info-side-link" id="sideLinkFaqs" onclick="app.switchInfoPage('faqs')">
+                <span>❓</span> FAQs &amp; Help
+              </button>
+            </li>
+            <li>
+              <button type="button" class="info-side-link" id="sideLinkPartners" onclick="app.switchInfoPage('partners')">
+                <span>🤝</span> Our Partners
+              </button>
+            </li>
+            <li>
+              <button type="button" class="info-side-link" id="sideLinkWork" onclick="app.switchInfoPage('work-with-us')">
+                <span>💼</span> Work With Us
+              </button>
+            </li>
+            <li>
+              <button type="button" class="info-side-link" id="sideLinkContact" onclick="app.switchInfoPage('contact')">
+                <span>✉️</span> Contact Us
+              </button>
+            </li>
+            <li>
+              <button type="button" class="info-side-link" id="sideLinkPrivacy" onclick="app.switchInfoPage('privacy')">
+                <span>🔒</span> Privacy Policy
+              </button>
+            </li>
+            <li>
+              <button type="button" class="info-side-link" id="sideLinkTerms" onclick="app.switchInfoPage('terms')">
+                <span>📜</span> Terms &amp; Conditions
+              </button>
+            </li>
+          </ul>
+
+          <!-- Sidebar Merchant CTA Card -->
+          <div style="margin-top:20px; background:linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border:1px solid #C7D2FE; border-radius:10px; padding:14px; text-align:center;">
+            <div style="font-size:12.5px; font-weight:800; color:#1e1b4b; margin-bottom:4px;">Become a Vendor</div>
+            <p style="font-size:11.5px; color:#4338ca; line-height:1.4; margin-bottom:10px;">Earn guaranteed 18% to 30% profit margins on top tier-1 brands.</p>
+            <button type="button" class="btn-primary" style="width:100%; justify-content:center; padding:8px 12px; font-size:12px; background:#e54660;" onclick="app.openDokanAuthModal('register')">
+              Apply as Vendor &rsaquo;
+            </button>
+          </div>
+        </aside>
+
+        <!-- Right Content Panels -->
+        <div class="info-main-content" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:32px 36px; box-shadow:0 4px 15px rgba(0,0,0,0.03);">
+          
+          <!-- Panel: About Us -->
+          <div id="infoPanelAbout" class="info-content-panel" style="display:block;">
+            <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:800; color:#0f172a; margin-bottom:12px;">About E Seller Store</h1>
+            <p style="font-size:15px; color:#475569; line-height:1.7; margin-bottom:20px;">
+              <strong>E Seller Store</strong> is a premier international multi-vendor e-commerce marketplace connecting global consumers with verified authorized suppliers, top-tier consumer brands (Apple, Dell, Rolex, Nike, Sephora, Samsung), and independent boutique vendors.
+            </p>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-bottom:28px;">
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
+                <h4 style="font-size:15px; font-weight:800; color:#0f172a; margin-bottom:6px;">🛡️ 256-Bit Escrow Protection</h4>
+                <p style="font-size:13px; color:#64748b; line-height:1.5; margin:0;">Every purchase is secured through bank-grade multi-signature escrow. Funds are disbursed to sellers only upon verified customer delivery.</p>
+              </div>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
+                <h4 style="font-size:15px; font-weight:800; color:#0f172a; margin-bottom:6px;">📈 Guaranteed Vendor Yield</h4>
+                <p style="font-size:13px; color:#64748b; line-height:1.5; margin:0;">Authorized retail merchants enjoy pre-negotiated wholesale margins between 18% and 30% with real-time wallet settlement.</p>
+              </div>
+            </div>
+            <h3 style="font-size:20px; font-weight:800; color:#0f172a; margin-bottom:10px;">Our Global Mission</h3>
+            <p style="font-size:14px; color:#475569; line-height:1.6; margin-bottom:16px;">
+              We eliminate intermediaries and counterfeit vulnerabilities by establishing direct, cryptographically verified provenance between original manufacturers and discerning shoppers worldwide.
+            </p>
+          </div>
+
+          <!-- Panel: FAQs -->
+          <div id="infoPanelFaqs" class="info-content-panel" style="display:none;">
+            <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:800; color:#0f172a; margin-bottom:12px;">Frequently Asked Questions</h1>
+            <p style="font-size:14px; color:#64748b; margin-bottom:24px;">Find answers to common questions about buying, selling, and escrow protections on E Seller Store.</p>
+            
+            <div class="faq-item" style="border-bottom:1px solid #e2e8f0; padding:16px 0;">
+              <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">1. How do I place an order on E Seller Store?</h4>
+              <p style="font-size:13.5px; color:#475569; line-height:1.6; margin:0;">Browse products using our categorized catalog, select your items, and click "Buy Now" or "Add to Cart". Checkout supports Stripe, PayPal, and instant Direct Bank Escrow.</p>
+            </div>
+            <div class="faq-item" style="border-bottom:1px solid #e2e8f0; padding:16px 0;">
+              <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">2. How does the 256-bit Escrow Protection work?</h4>
+              <p style="font-size:13.5px; color:#475569; line-height:1.6; margin:0;">When you make a payment, your funds are safely held in an institutional escrow account. The merchant fulfills your order with tracking. Once delivery is confirmed, funds are released to the vendor.</p>
+            </div>
+            <div class="faq-item" style="border-bottom:1px solid #e2e8f0; padding:16px 0;">
+              <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">3. What are the requirements to become a verified vendor?</h4>
+              <p style="font-size:13.5px; color:#475569; line-height:1.6; margin:0;">Vendors must provide valid business details, email OTP verification, an authorized referral sponsor code (00546), and store address. Super Admin reviews and activates applications within 24 hours.</p>
+            </div>
+            <div class="faq-item" style="border-bottom:1px solid #e2e8f0; padding:16px 0;">
+              <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">4. What is the return and refund policy?</h4>
+              <p style="font-size:13.5px; color:#475569; line-height:1.6; margin:0;">We offer a 60-day free return guarantee on all eligible retail items. Returns are processed through your My Account portal or by contacting 24/7 Live Support.</p>
+            </div>
+          </div>
+
+          <!-- Panel: Our Partners -->
+          <div id="infoPanelPartners" class="info-content-panel" style="display:none;">
+            <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:800; color:#0f172a; margin-bottom:12px;">Our Global Brand Partners</h1>
+            <p style="font-size:14px; color:#64748b; margin-bottom:24px;">E Seller Store partners with world-class manufacturers, certified distributors, and authorized retail channels.</p>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+              <div style="border:1px solid #e2e8f0; border-radius:10px; padding:18px; text-align:center; background:#f8fafc;">
+                <h4 style="font-size:16px; font-weight:800; color:#0f172a;">Apple Inc.</h4>
+                <span style="font-size:11.5px; color:#16a34a; font-weight:700;">Certified Tier-1 Tech</span>
+                <p style="font-size:12px; color:#64748b; margin-top:6px;">MacBooks, iPhone 15 Pro, iPads</p>
+              </div>
+              <div style="border:1px solid #e2e8f0; border-radius:10px; padding:18px; text-align:center; background:#f8fafc;">
+                <h4 style="font-size:16px; font-weight:800; color:#0f172a;">Dell Enterprise</h4>
+                <span style="font-size:11.5px; color:#16a34a; font-weight:700;">Commercial Workstations</span>
+                <p style="font-size:12px; color:#64748b; margin-top:6px;">Dell XPS, Precision, OptiPlex</p>
+              </div>
+              <div style="border:1px solid #e2e8f0; border-radius:10px; padding:18px; text-align:center; background:#f8fafc;">
+                <h4 style="font-size:16px; font-weight:800; color:#0f172a;">Rolex Horology</h4>
+                <span style="font-size:11.5px; color:#16a34a; font-weight:700;">Haute Horlogerie</span>
+                <p style="font-size:12px; color:#64748b; margin-top:6px;">Submariner, Oyster Perpetual</p>
+              </div>
+              <div style="border:1px solid #e2e8f0; border-radius:10px; padding:18px; text-align:center; background:#f8fafc;">
+                <h4 style="font-size:16px; font-weight:800; color:#0f172a;">Nike Global</h4>
+                <span style="font-size:11.5px; color:#16a34a; font-weight:700;">Athletic &amp; Streetwear</span>
+                <p style="font-size:12px; color:#64748b; margin-top:6px;">Air Max, Jordans, Tech Fleece</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel: Work With Us -->
+          <div id="infoPanelWork" class="info-content-panel" style="display:none;">
+            <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:800; color:#0f172a; margin-bottom:12px;">Work With Us &amp; Careers</h1>
+            <p style="font-size:14px; color:#64748b; margin-bottom:24px;">Join our high-growth global multi-vendor commerce ecosystem.</p>
+            
+            <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:24px;">
+              <div style="border:1px solid #e2e8f0; border-radius:10px; padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                  <h4 style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:2px;">Vendor Success &amp; Onboarding Specialist</h4>
+                  <div style="font-size:12px; color:#64748b;">Remote &bull; Full-Time &bull; Global Operations</div>
+                </div>
+                <button class="btn-hero-secondary" style="padding:8px 16px; font-size:12px;" onclick="alert('Please send your resume to careers@esellerstore.com');">Apply Now</button>
+              </div>
+              <div style="border:1px solid #e2e8f0; border-radius:10px; padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                  <h4 style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:2px;">Escrow &amp; Compliance Risk Analyst</h4>
+                  <div style="font-size:12px; color:#64748b;">Remote &bull; Full-Time &bull; Financial Escrow</div>
+                </div>
+                <button class="btn-hero-secondary" style="padding:8px 16px; font-size:12px;" onclick="alert('Please send your resume to careers@esellerstore.com');">Apply Now</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel: Contact Us -->
+          <div id="infoPanelContact" class="info-content-panel" style="display:none;">
+            <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:800; color:#0f172a; margin-bottom:12px;">Contact E Seller Store Support</h1>
+            <p style="font-size:14px; color:#64748b; margin-bottom:24px;">We are here 24/7 to assist customers, authorized vendors, and wholesale partners.</p>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom:24px;">
+              <div>
+                <form onsubmit="event.preventDefault(); alert('Thank you! Your message has been received. Our support desk will reply within 2 hours.'); this.reset();">
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Your Name *</label>
+                    <input type="text" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" placeholder="e.g. Alex Morgan">
+                  </div>
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Your Email *</label>
+                    <input type="email" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" placeholder="alex@domain.com">
+                  </div>
+                  <div style="margin-bottom:14px;">
+                    <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Message *</label>
+                    <textarea required rows="4" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" placeholder="How can our support desk assist you?"></textarea>
+                  </div>
+                  <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#e54660;">Send Inquiry &rsaquo;</button>
+                </form>
+              </div>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:20px;">
+                <h4 style="font-size:15px; font-weight:800; color:#0f172a; margin-bottom:14px;">Direct Channels</h4>
+                <p style="font-size:13px; color:#475569; margin-bottom:10px;"><strong>📍 Headquarters:</strong> E Seller Store Global Commerce Hub, Commerce Avenue, Suite 400</p>
+                <p style="font-size:13px; color:#475569; margin-bottom:10px;"><strong>✉️ Email:</strong> support@ssellerstorebay.com</p>
+                <p style="font-size:13px; color:#475569; margin-bottom:14px;"><strong>⚡ Live Support:</strong> Available 24/7/365 via Tawk.to</p>
+                <button type="button" class="btn-hero-primary" style="width:100%; justify-content:center; padding:10px; font-size:13px; background:#0f172a;" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();}">
+                  Launch Live Chat &rsaquo;
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel: Privacy Policy -->
+          <div id="infoPanelPrivacy" class="info-content-panel" style="display:none;">
+            <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:800; color:#0f172a; margin-bottom:12px;">Privacy Policy</h1>
+            <p style="font-size:14px; color:#475569; line-height:1.7;">
+              At E Seller Store, your personal privacy and security are paramount. We collect only necessary details (email, shipping address, order payment tokens) to facilitate orders, escrow releases, and vendor onboarding. We never sell or distribute your data to third parties.
+            </p>
+          </div>
+
+          <!-- Panel: Terms & Conditions -->
+          <div id="infoPanelTerms" class="info-content-panel" style="display:none;">
+            <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:800; color:#0f172a; margin-bottom:12px;">Terms &amp; Conditions</h1>
+            <p style="font-size:14px; color:#475569; line-height:1.7;">
+              All transactions conducted on E Seller Store are governed by our multi-vendor commerce regulations, manufacturer warranty guidelines, and 256-bit escrow dispute policies.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
 
   <!-- DOKAN-STYLE "MY ACCOUNT" VIEW -->
   <section id="myAccountView" class="dashboard-view" style="display:none;">
@@ -2800,7 +3018,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=5.2.2"></script>
+  <script src="app-bundle.js?v=5.4"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">

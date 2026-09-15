@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v5.2.2_resilient_catalog_render';
+const APP_VERSION = 'v5.4_coral_navbar_dokan_pages';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -8158,7 +8158,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v5.2.2_resilient_catalog_render';
+    const APP_VERSION = 'v5.4_coral_navbar_dokan_pages';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -10013,6 +10013,107 @@ class DokanEngine {
 const engine = new DokanEngine();
 
 class ESellerStoreApp {
+  switchInfoPage(pageKey = 'home') {
+    try {
+      const homeView = document.getElementById('homeView');
+      const infoView = document.getElementById('infoPagesView');
+      const adminView = document.getElementById('adminDashboardView');
+      const vendorView = document.getElementById('vendorDashboardView');
+      const accountView = document.getElementById('myAccountView');
+
+      if (pageKey === 'home') {
+        if (homeView) homeView.style.display = 'block';
+        if (infoView) infoView.style.display = 'none';
+        if (adminView) adminView.style.display = 'none';
+        if (vendorView) vendorView.style.display = 'none';
+        if (accountView) accountView.style.display = 'none';
+        this.currentPersona = 'customer';
+        this.renderHomepageSections();
+        this.renderCatalog();
+      } else {
+        if (homeView) homeView.style.display = 'none';
+        if (infoView) {
+          infoView.style.display = 'block';
+          infoView.classList.add('active');
+        }
+        if (adminView) adminView.style.display = 'none';
+        if (vendorView) vendorView.style.display = 'none';
+        if (accountView) accountView.style.display = 'none';
+
+        // Panels
+        const panelMap = {
+          'about': 'infoPanelAbout',
+          'faqs': 'infoPanelFaqs',
+          'partners': 'infoPanelPartners',
+          'work-with-us': 'infoPanelWork',
+          'careers': 'infoPanelWork',
+          'contact': 'infoPanelContact',
+          'privacy': 'infoPanelPrivacy',
+          'terms': 'infoPanelTerms'
+        };
+
+        const targetPanelId = panelMap[pageKey] || 'infoPanelAbout';
+        document.querySelectorAll('.info-content-panel').forEach(p => {
+          p.style.display = (p.id === targetPanelId ? 'block' : 'none');
+        });
+
+        // Sidebar active links
+        const sideMap = {
+          'about': 'sideLinkAbout',
+          'faqs': 'sideLinkFaqs',
+          'partners': 'sideLinkPartners',
+          'work-with-us': 'sideLinkWork',
+          'careers': 'sideLinkWork',
+          'contact': 'sideLinkContact',
+          'privacy': 'sideLinkPrivacy',
+          'terms': 'sideLinkTerms'
+        };
+        const activeSideId = sideMap[pageKey] || 'sideLinkAbout';
+        document.querySelectorAll('.info-side-link').forEach(btn => {
+          btn.classList.toggle('active', btn.id === activeSideId);
+        });
+
+        // Breadcrumb
+        const breadcrumbEl = document.getElementById('infoBreadcrumbCurrent');
+        if (breadcrumbEl) {
+          const names = {
+            'about': 'About Us',
+            'faqs': 'FAQs & Help',
+            'partners': 'Our Partners',
+            'work-with-us': 'Work With Us',
+            'careers': 'Work With Us',
+            'contact': 'Contact Us',
+            'privacy': 'Privacy Policy',
+            'terms': 'Terms & Conditions'
+          };
+          breadcrumbEl.textContent = names[pageKey] || 'About Us';
+        }
+      }
+
+      // Update coral navbar active links
+      const coralMap = {
+        'home': 'navLinkHome',
+        'about': 'navLinkAbout',
+        'faqs': 'navLinkFaqs',
+        'partners': 'navLinkPartners',
+        'work-with-us': 'navLinkWork',
+        'careers': 'navLinkWork',
+        'contact': 'navLinkContact'
+      };
+      const activeNavId = coralMap[pageKey] || 'navLinkHome';
+      document.querySelectorAll('.coral-nav-link').forEach(link => {
+        if (!link.classList.contains('coral-nav-cta')) {
+          link.classList.toggle('active', link.id === activeNavId);
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      console.error('switchInfoPage error:', e);
+    }
+  }
+
+
   initHeroSlider() {
     const track = document.getElementById('heroSlidesTrack');
     const prevBtn = document.getElementById('sliderPrevBtn');
@@ -14386,3 +14487,5 @@ window.handleLostPassword = function() { if (window.app) window.app.handleLostPa
 
 window.openDokanAuthModal = function(m) { if (window.app) window.app.openDokanAuthModal(m); };
 window.handleDokanLogin = function(e) { if (window.app) window.app.handleDokanLogin(e); };
+
+window.switchInfoPage = function(p) { if (window.app) window.app.switchInfoPage(p); };

@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v5.2.2_resilient_catalog_render';
+    const APP_VERSION = 'v5.4_coral_navbar_dokan_pages';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
