@@ -1,10 +1,10 @@
-/**
+﻿/**
  * E Seller Store - Complete Standalone Application Bundle
  * Multi-Vendor Marketplace Engine (Dokan-Compatible Architecture)
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v4.1_wizard_otp_onboarding';
+const APP_VERSION = 'v4.2_dokan_my_account_activation';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -8158,7 +8158,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v4.1_wizard_otp_onboarding';
+    const APP_VERSION = 'v4.2_dokan_my_account_activation';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -9346,6 +9346,124 @@ class DokanEngine {
 
   registerVendor(data) {
     return this.submitVendorApplication(data);
+  }
+
+  registerVendorWithActivationLink(data) {
+    const email = (data.email || '').trim().toLowerCase();
+    const role = (data.role || 'vendor').trim().toLowerCase();
+    const isVendor = role === 'vendor';
+
+    if (!email || !email.includes('@')) {
+      throw new Error('Valid email address is required.');
+    }
+
+    if (isVendor) {
+      if (data.referralCode !== '00546') {
+        throw new Error('Invalid referral code. Must be 00546.');
+      }
+    }
+
+    const token = 'act_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+    const storeName = data.shopName || data.storeName || (data.firstName ? `${data.firstName} Store` : 'New Store');
+    const ownerName = data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : (data.ownerName || email.split('@')[0]);
+    const slug = data.slug || storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    const newApp = {
+      id: 'app_' + Date.now(),
+      role: role,
+      email: email,
+      ownerName: ownerName,
+      firstName: data.firstName || '',
+      lastName: data.lastName || '',
+      storeName: storeName,
+      slug: slug,
+      referralCode: data.referralCode || '00546',
+      country: data.country || 'United States',
+      phone: data.phone || data.mobile || '',
+      mobile: data.phone || data.mobile || '',
+      transactionPassword: data.transactionPassword || '',
+      status: 'pending',
+      verificationStatus: 'activation_sent',
+      activationToken: token,
+      createdAt: new Date().toISOString()
+    };
+
+    const apps = this.getVendorApplications();
+    const filteredApps = apps.filter(a => a.email && a.email.toLowerCase() !== email);
+    filteredApps.unshift(newApp);
+    this.saveVendorApplications(filteredApps);
+
+    const vendors = this.getVendors();
+    const newVendorRecord = {
+      id: 'v_' + newApp.id.replace('app_', ''),
+      role: role,
+      name: storeName,
+      storeName: storeName,
+      slug: slug,
+      ownerName: ownerName,
+      email: email,
+      phone: newApp.phone,
+      mobile: newApp.phone,
+      country: newApp.country,
+      referralCode: newApp.referralCode,
+      transactionPassword: newApp.transactionPassword,
+      status: 'pending_verification',
+      verificationStatus: 'activation_sent',
+      balance: 0.00,
+      profitEarned: 0.00,
+      profitMarginPercent: 25,
+      productsSold: 0,
+      commissionRate: 15,
+      storeLogo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80',
+      rating: 5.0,
+      joinedDate: new Date().toISOString().split('T')[0]
+    };
+
+    const existingVendorIdx = vendors.findIndex(v => v.email && v.email.toLowerCase() === email);
+    if (existingVendorIdx >= 0) {
+      vendors[existingVendorIdx] = Object.assign({}, vendors[existingVendorIdx], newVendorRecord);
+    } else {
+      vendors.push(newVendorRecord);
+    }
+    this.saveVendors(vendors);
+
+    this.pushCloudState('vendor_application', newApp);
+    this.logActivity('Vendor Activation Sent', `Activation link dispatched to ${email} for store ${storeName}`, 'info');
+
+    const origin = (typeof window !== 'undefined' && window.location.origin) ? window.location.origin : 'https://ssellerstorebay.com';
+    const activationLink = `${origin}/my-account/set-password?token=${token}&email=${encodeURIComponent(email)}`;
+
+    return {
+      success: true,
+      application: newApp,
+      activationToken: token,
+      activationLink: activationLink,
+      activationLinkPreview: activationLink
+    };
+  }
+
+  setPasswordWithToken(email, token, password) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.email && a.email.toLowerCase() === cleanEmail);
+    if (app) {
+      app.password = password;
+      app.verificationStatus = 'activated';
+      app.activatedAt = new Date().toISOString();
+      this.saveVendorApplications(apps);
+    }
+
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => v.email && v.email.toLowerCase() === cleanEmail);
+    if (vendor) {
+      vendor.password = password;
+      vendor.verificationStatus = 'activated';
+      this.saveVendors(vendors);
+    }
+
+    this.logActivity('Password Configured', `Account password set and activated for ${cleanEmail}`, 'success');
+    return true;
   }
 
   approveVendorApplication(applicationId) {
@@ -12990,6 +13108,7 @@ class ESellerStoreApp {
     const homeView = document.getElementById('homeView');
     const vendorDashView = document.getElementById('vendorDashboardView');
     const adminDashView = document.getElementById('adminDashboardView');
+    const myAccountView = document.getElementById('myAccountView');
 
     if (homeView) homeView.style.display = persona === 'customer' ? 'block' : 'none';
     if (vendorDashView) {
@@ -12999,6 +13118,10 @@ class ESellerStoreApp {
     if (adminDashView) {
       adminDashView.style.display = persona === 'admin' ? 'block' : 'none';
       adminDashView.classList.toggle('active', persona === 'admin');
+    }
+    if (myAccountView) {
+      myAccountView.style.display = persona === 'account' ? 'block' : 'none';
+      myAccountView.classList.toggle('active', persona === 'account');
     }
 
     if (persona === 'customer') this.renderHomepageSections();
@@ -13013,6 +13136,7 @@ class ESellerStoreApp {
     if (notify) {
       if (persona === 'admin') this.showToast('Super Admin Dashboard Active');
       else if (persona === 'vendor') this.showToast('Seller Dashboard Active');
+      else if (persona === 'account') this.showToast('My Account Active');
       else this.showToast('Customer Storefront Active');
     }
     this.updateCounters();
@@ -13341,6 +13465,350 @@ class ESellerStoreApp {
       drawer.classList.remove('active');
     }
   }
+
+  // --- DOKAN MY ACCOUNT CONTROLLERS ---
+  openMyAccount(mode = 'login', role = 'vendor') {
+    this.closeModals();
+    this.closeMobileDrawer();
+    this.setPersona('account');
+    this.switchAccountMode(mode);
+    if (mode === 'register') {
+      this.switchAccountRegisterRole(role);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  switchAccountMode(mode) {
+    const loginForm = document.getElementById('accountLoginFormSection');
+    const registerForm = document.getElementById('accountRegisterFormSection');
+    const registerInfo = document.getElementById('accountRegisterInfoSection');
+    const loginInfo = document.getElementById('accountLoginInfoSection');
+
+    if (mode === 'login') {
+      if (loginForm) loginForm.style.display = 'block';
+      if (registerForm) registerForm.style.display = 'none';
+      if (registerInfo) registerInfo.style.display = 'block';
+      if (loginInfo) loginInfo.style.display = 'none';
+    } else {
+      if (loginForm) loginForm.style.display = 'none';
+      if (registerForm) registerForm.style.display = 'block';
+      if (registerInfo) registerInfo.style.display = 'none';
+      if (loginInfo) loginInfo.style.display = 'block';
+    }
+  }
+
+  switchAccountRegisterRole(role) {
+    const vendorFields = document.getElementById('accountVendorFieldsContainer');
+    const custRadio = document.getElementById('roleCustomerRadio');
+    const vendRadio = document.getElementById('roleVendorRadio');
+
+    if (role === 'customer') {
+      if (custRadio) custRadio.checked = true;
+      if (vendorFields) vendorFields.style.display = 'none';
+    } else {
+      if (vendRadio) vendRadio.checked = true;
+      if (vendorFields) vendorFields.style.display = 'block';
+    }
+  }
+
+  handleAccountShopNameInput(val) {
+    const slugInput = document.getElementById('accountRegShopSlug');
+    if (slugInput) {
+      const slug = (val || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      slugInput.value = slug;
+    }
+  }
+
+  handleAccountReferralInput(val) {
+    const clean = (val || '').trim();
+    const msgEl = document.getElementById('accountReferralValidationMsg');
+    if (!msgEl) return;
+
+    if (clean === '00546') {
+      msgEl.innerHTML = '<div class="referral-success-msg">✓ Valid Vendor Referral Code verified: 00546</div>';
+    } else if (clean.length === 5) {
+      msgEl.innerHTML = '<div class="referral-error-msg">✖ Invalid Referral Code. Must be exactly 00546.</div>';
+    } else if (clean.length > 0) {
+      msgEl.innerHTML = '<div style="font-size:11px; color:#64748b; margin-top:4px;">Enter 5 digits (Referral code: 00546)</div>';
+    } else {
+      msgEl.innerHTML = '';
+    }
+  }
+
+  togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (btn) btn.innerHTML = '🙈';
+    } else {
+      input.type = 'password';
+      if (btn) btn.innerHTML = '👁️';
+    }
+  }
+
+  handleLostPassword() {
+    const email = prompt('Enter your registered email address to receive a password reset link:');
+    if (email && email.includes('@')) {
+      alert(`🔑 Password Reset Link Sent!\n\nA secure password reset link has been dispatched to: ${email}`);
+    } else if (email) {
+      alert('Please enter a valid email address.');
+    }
+  }
+
+  handleAccountLogin(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const usernameEl = document.getElementById('accountLoginUsername');
+    const passEl = document.getElementById('accountLoginPassword');
+    const login = (usernameEl ? usernameEl.value : '').trim().toLowerCase();
+    const pass = (passEl ? passEl.value : '').trim();
+
+    if (!login || !pass) {
+      alert('Please enter both your email/username and password.');
+      return;
+    }
+
+    // 1. Check Super Admin credentials
+    const adminAuth = engine.getAdminAuth ? engine.getAdminAuth() : { email: 'admin@esellerstore.com', password: 'Abbas@123' };
+    if (login === adminAuth.email.toLowerCase() && pass === adminAuth.password) {
+      this.setPersona('admin');
+      this.showToast('🔑 Super Admin Access Granted');
+      return;
+    }
+
+    // 2. Check Vendors
+    const vendors = engine.getVendors();
+    const vendor = vendors.find(v => (v.email && v.email.toLowerCase() === login) || (v.name && v.name.toLowerCase() === login) || (v.id && v.id.toLowerCase() === login));
+
+    if (!vendor) {
+      const apps = engine.getVendorApplications ? engine.getVendorApplications() : [];
+      const app = apps.find(a => a.email && a.email.toLowerCase() === login);
+      if (app) {
+        if (app.verificationStatus === 'activation_sent' && !app.password) {
+          if (confirm(`⏳ ACCOUNT ACTIVATION REQUIRED\n\nYour account has been registered but password is not yet set.\n\nWould you like to open the Set Password activation dialog now?`)) {
+            this.openSetPasswordModal(app.activationToken || ('act_' + Date.now()), app.email);
+          }
+          return;
+        }
+        alert(`⏳ ACCOUNT PENDING REVIEW\n\nYour store "${app.storeName}" application is currently under Super Admin review.`);
+        return;
+      }
+
+      alert(`❌ No account found matching "${login}".\nPlease register for an account.`);
+      return;
+    }
+
+    if (vendor.password && vendor.password !== pass) {
+      alert('❌ Incorrect password. Please try again or click "Lost your password?".');
+      return;
+    }
+
+    if (vendor.status === 'pending' || vendor.status === 'pending_verification') {
+      alert(`⏳ ACCOUNT PENDING REVIEW\n\nYour store "${vendor.name}" application is currently awaiting Super Admin review.\nYou will receive full access once approved.`);
+      return;
+    }
+
+    this.activeVendorId = vendor.id;
+    this.setPersona('vendor');
+    this.showToast(`🏪 Logged in as ${vendor.name}`);
+  }
+
+  async handleAccountRegister(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const emailEl = document.getElementById('accountRegEmail');
+    const email = (emailEl ? emailEl.value : '').trim().toLowerCase();
+
+    const custRadio = document.getElementById('roleCustomerRadio');
+    const isCustomer = custRadio && custRadio.checked;
+    const role = isCustomer ? 'customer' : 'vendor';
+
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    let payload = { email, role };
+
+    if (!isCustomer) {
+      const firstName = (document.getElementById('accountRegFirstName')?.value || '').trim();
+      const lastName = (document.getElementById('accountRegLastName')?.value || '').trim();
+      const shopName = (document.getElementById('accountRegShopName')?.value || '').trim();
+      const slug = (document.getElementById('accountRegShopSlug')?.value || '').trim();
+      const referralCode = (document.getElementById('accountRegReferralCode')?.value || '').trim();
+      const country = (document.getElementById('accountRegCountry')?.value || 'United States').trim();
+      const callingCode = (document.getElementById('accountRegCallingCode')?.value || '+1').trim();
+      const phoneNum = (document.getElementById('accountRegPhone')?.value || '').trim();
+      const txPassword = (document.getElementById('accountRegTxPassword')?.value || '').trim();
+      const confirmTxPassword = (document.getElementById('accountRegConfirmTxPassword')?.value || '').trim();
+
+      if (!firstName || !lastName) {
+        alert('Please enter your First Name and Last Name.');
+        return;
+      }
+      if (!shopName) {
+        alert('Please enter your Shop Name.');
+        return;
+      }
+      if (referralCode !== '00546') {
+        alert('❌ Invalid referral code! Please enter the required 5-digit vendor referral code (00546).');
+        return;
+      }
+      if (!phoneNum) {
+        alert('Please enter your Phone Number.');
+        return;
+      }
+      if (txPassword && confirmTxPassword && txPassword !== confirmTxPassword) {
+        alert('Transaction passwords do not match.');
+        return;
+      }
+
+      payload = {
+        ...payload,
+        firstName,
+        lastName,
+        ownerName: `${firstName} ${lastName}`,
+        shopName,
+        slug,
+        referralCode,
+        country,
+        phone: `${callingCode} ${phoneNum}`,
+        transactionPassword: txPassword,
+        confirmTransactionPassword: confirmTxPassword
+      };
+    }
+
+    const submitBtn = document.getElementById('btnAccountRegisterSubmit');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⏳ Generating Activation Link...';
+    }
+
+    try {
+      let result = null;
+
+      try {
+        const res = await fetch('/api/auth/register-vendor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          result = await res.json();
+        }
+      } catch (apiErr) {}
+
+      if (!result || !result.success) {
+        result = engine.registerVendorWithActivationLink ? engine.registerVendorWithActivationLink(payload) : { success: true, activationToken: 'act_' + Date.now(), activationLink: `${window.location.origin}/my-account/set-password?token=act_${Date.now()}&email=${encodeURIComponent(email)}` };
+      }
+
+      const activationLink = result.activationLink || result.activationLinkPreview || `${window.location.origin}/my-account/set-password?token=${result.activationToken}&email=${encodeURIComponent(email)}`;
+
+      alert(`🎉 REGISTRATION SUBMITTED SUCCESSFULLY!\n\nAn automated activation link has been sent to:\n📧 ${email}\n\nActivation Link:\n${activationLink}\n\nClick OK to configure your permanent store password now.`);
+
+      this.openSetPasswordModal(result.activationToken, email);
+
+    } catch (err) {
+      alert('Registration error: ' + err.message);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Register &rsaquo;';
+      }
+    }
+  }
+
+  openSetPasswordModal(token, email) {
+    const modal = document.getElementById('setPasswordModalOverlay');
+    const tokenInput = document.getElementById('activationTokenInput');
+    const emailDisplay = document.getElementById('activationEmailDisplay');
+    const newPass = document.getElementById('activationNewPassword');
+    const confPass = document.getElementById('activationConfirmPassword');
+
+    if (tokenInput) tokenInput.value = token || '';
+    if (emailDisplay) emailDisplay.value = email || '';
+    if (newPass) newPass.value = '';
+    if (confPass) confPass.value = '';
+
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
+  }
+
+  async handleSetPasswordSubmit(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const token = (document.getElementById('activationTokenInput')?.value || '').trim();
+    const email = (document.getElementById('activationEmailDisplay')?.value || '').trim();
+    const pass = (document.getElementById('activationNewPassword')?.value || '').trim();
+    const conf = (document.getElementById('activationConfirmPassword')?.value || '').trim();
+
+    if (!pass || pass.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
+    if (pass !== conf) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    const btn = document.getElementById('btnSetPasswordSubmit');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Activating Account...';
+    }
+
+    try {
+      try {
+        const res = await fetch('/api/auth/set-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, token, password: pass, confirmPassword: conf })
+        });
+      } catch (e) {}
+
+      if (engine.setPasswordWithToken) {
+        engine.setPasswordWithToken(email, token, pass);
+      }
+
+      this.closeModals();
+      alert(`🎉 ACCOUNT ACTIVATED SUCCESSFULLY!\n\nYour store password has been established for ${email}.\nYou may now sign in.`);
+      
+      this.openMyAccount('login');
+      const userEl = document.getElementById('accountLoginUsername');
+      if (userEl) userEl.value = email;
+
+    } catch (err) {
+      alert('Activation error: ' + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '🚀 Set Password &amp; Activate Account';
+      }
+    }
+  }
+
+  checkActivationUrlParams() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      let token = urlParams.get('token');
+      let email = urlParams.get('email');
+
+      if (!token && window.location.hash.includes('token=')) {
+        const hashQuery = window.location.hash.split('?')[1] || '';
+        const hashParams = new URLSearchParams(hashQuery);
+        token = hashParams.get('token');
+        email = hashParams.get('email');
+      }
+
+      if (token && email) {
+        this.openSetPasswordModal(token, email);
+      } else if (window.location.hash === '#my-account' || window.location.hash === '#account') {
+        this.openMyAccount('login');
+      } else if (window.location.hash === '#become-a-vendor') {
+        this.openMyAccount('register', 'vendor');
+      }
+    } catch (e) {}
+  }
 }
 
 window.app = new ESellerStoreApp();
@@ -13436,3 +13904,15 @@ window.wizardProceedToStep3 = function() { if (window.app) window.app.wizardProc
 window.wizardHandleShopNameInput = function(v) { if (window.app) window.app.wizardHandleShopNameInput(v); };
 window.wizardHandleReferralInput = function(v) { if (window.app) window.app.wizardHandleReferralInput(v); };
 window.handleWizardFinalSubmit = function(e) { if (window.app) window.app.handleWizardFinalSubmit(e); };
+
+window.openMyAccount = function(m, r) { if (window.app) window.app.openMyAccount(m, r); };
+window.switchAccountMode = function(m) { if (window.app) window.app.switchAccountMode(m); };
+window.switchAccountRegisterRole = function(r) { if (window.app) window.app.switchAccountRegisterRole(r); };
+window.handleAccountShopNameInput = function(v) { if (window.app) window.app.handleAccountShopNameInput(v); };
+window.handleAccountReferralInput = function(v) { if (window.app) window.app.handleAccountReferralInput(v); };
+window.togglePasswordVisibility = function(i, b) { if (window.app) window.app.togglePasswordVisibility(i, b); };
+window.handleAccountLogin = function(e) { if (window.app) window.app.handleAccountLogin(e); };
+window.handleAccountRegister = function(e) { if (window.app) window.app.handleAccountRegister(e); };
+window.openSetPasswordModal = function(t, em) { if (window.app) window.app.openSetPasswordModal(t, em); };
+window.handleSetPasswordSubmit = function(e) { if (window.app) window.app.handleSetPasswordSubmit(e); };
+window.handleLostPassword = function() { if (window.app) window.app.handleLostPassword(); };

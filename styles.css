@@ -2331,3 +2331,336 @@ html, body {
     gap: 12px !important;
   }
 }
+
+/* ==========================================================================
+   DOKAN-STYLE "MY ACCOUNT" PAGE & SPLIT AUTHENTICATION
+   ========================================================================== */
+
+#myAccountView {
+  display: none;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 200px);
+  padding-bottom: 60px;
+}
+
+#myAccountView.active {
+  display: block !important;
+}
+
+.dokan-breadcrumb-banner {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 26px 0;
+  margin-bottom: 36px;
+}
+
+.dokan-page-title {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.dokan-breadcrumbs {
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dokan-breadcrumbs a {
+  color: #0284c7;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.dokan-breadcrumbs a:hover {
+  color: #0369a1;
+  text-decoration: underline;
+}
+
+.dokan-breadcrumbs .sep {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.dokan-breadcrumbs .current {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.dokan-split-auth-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.dokan-auth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+.dokan-auth-col {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 36px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.dokan-auth-col-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dokan-info-box {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 26px 22px;
+}
+
+.dokan-info-text {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.65;
+  margin-bottom: 24px;
+}
+
+.btn-dokan-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 20px;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-dokan-switch:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.btn-dokan-auth-submit {
+  width: 100%;
+  padding: 13px 20px;
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.btn-dokan-auth-submit:hover {
+  background: #b91c1c;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.28);
+}
+
+.btn-dokan-auth-submit:active {
+  transform: scale(0.99);
+}
+
+.dokan-form-group {
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.dokan-form-group label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.dokan-form-group label .required {
+  color: #dc2626;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+.dokan-form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13.5px;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #0f172a;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dokan-form-input:focus {
+  border-color: #dc2626;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 44px;
+  box-sizing: border-box;
+}
+
+.password-eye-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #64748b;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.password-eye-btn:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.dokan-remember-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0 20px 0;
+  font-size: 13px;
+}
+
+.dokan-remember-row a {
+  color: #dc2626;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.dokan-remember-row a:hover {
+  color: #991b1b;
+  text-decoration: underline;
+}
+
+.role-radio-group {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin: 14px 0 18px 0;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.role-radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.role-radio-label input[type="radio"] {
+  accent-color: #dc2626;
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+}
+
+.dokan-privacy-notice {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 16px 0 20px 0;
+}
+
+.dokan-vendor-expand-container {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.phone-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.phone-calling-code-select {
+  width: 130px;
+  flex-shrink: 0;
+  padding: 10px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 12.5px;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.phone-calling-code-select:focus {
+  border-color: #dc2626;
+  outline: none;
+}
+
+.dokan-activation-modal-card {
+  background: #ffffff;
+  border-radius: 14px;
+  max-width: 520px;
+  width: 92%;
+  padding: 32px 28px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+@media screen and (max-width: 820px) {
+  .dokan-auth-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .dokan-auth-col {
+    padding: 24px 20px !important;
+  }
+}

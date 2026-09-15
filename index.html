@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=4.1">
+  <link rel="stylesheet" href="styles.css?v=4.2">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -122,6 +122,10 @@
       </div>
 
       <div class="top-bar-links" style="display:flex; align-items:center; gap:14px;">
+        <a href="#" onclick="app.openMyAccount('register', 'vendor'); return false;" style="color:#f59e0b; font-weight:700;">Become A Vendor</a>
+        <span style="color:#cbd5e1;">|</span>
+        <a href="#" onclick="app.openMyAccount('login'); return false;" style="font-weight:600;">My Account</a>
+        <span style="color:#cbd5e1;">|</span>
         <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" class="seller-login-btn">Seller Login</a>
         <span style="color:#cbd5e1;">|</span>
         <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;">Admin Login</a>
@@ -200,6 +204,8 @@
 
       <ul class="ref-nav-menu" style="align-items:center;">
         <li><a href="#" class="active" onclick="app.setPersona('customer'); return false;">Home</a></li>
+        <li><a href="#" onclick="app.openMyAccount('register', 'vendor'); return false;">Become A Vendor</a></li>
+        <li><a href="#" onclick="app.openMyAccount('login'); return false;">My Account</a></li>
         <li><a href="#" onclick="window.scrollTo({top: 900, behavior:'smooth'}); return false;">All Brands (40+)</a></li>
         <li><a href="#" onclick="window.scrollTo({top: 300, behavior:'smooth'}); return false;">🔥 Hot Deals</a></li>
       </ul>
@@ -462,6 +468,227 @@
       </div>
     </section>
   </main>
+
+
+  <!-- DOKAN-STYLE "MY ACCOUNT" VIEW -->
+  <section id="myAccountView" class="dashboard-view" style="display:none;">
+    <!-- Breadcrumb Banner -->
+    <div class="dokan-breadcrumb-banner">
+      <div class="container">
+        <h1 class="dokan-page-title">My Account</h1>
+        <div class="dokan-breadcrumbs">
+          <a href="#" onclick="app.setPersona('customer'); return false;">Home</a>
+          <span class="sep">&rsaquo;</span>
+          <span class="current">My account</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Split Two-Column Authentication Container -->
+    <div class="dokan-split-auth-container">
+      <div class="dokan-auth-grid">
+
+        <!-- COLUMN 1: INTERACTIVE FORM (Login or Register) -->
+        <div class="dokan-auth-col">
+          
+          <!-- STATE A: LOGIN FORM -->
+          <div id="accountLoginFormSection" style="display:block;">
+            <h2 class="dokan-auth-col-title">Login</h2>
+            <form id="dokanAccountLoginForm" onsubmit="app.handleAccountLogin(event)">
+              <div class="dokan-form-group">
+                <label for="accountLoginUsername">Username or email address <span class="required">*</span></label>
+                <input type="text" id="accountLoginUsername" class="dokan-form-input" required autocomplete="username" placeholder="yourname@domain.com">
+              </div>
+
+              <div class="dokan-form-group">
+                <label for="accountLoginPassword">Password <span class="required">*</span></label>
+                <div class="password-input-wrapper">
+                  <input type="password" id="accountLoginPassword" class="dokan-form-input" required autocomplete="current-password" placeholder="Enter account password">
+                  <button type="button" class="password-eye-btn" onclick="app.togglePasswordVisibility('accountLoginPassword', this)" title="Toggle password visibility">👁️</button>
+                </div>
+              </div>
+
+              <div class="dokan-remember-row">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500; color:#475569;">
+                  <input type="checkbox" id="accountRememberMe" style="accent-color:#dc2626; width:16px; height:16px;">
+                  Remember me
+                </label>
+                <a href="#" onclick="app.handleLostPassword(); return false;">Lost your password?</a>
+              </div>
+
+              <button type="submit" class="btn-dokan-auth-submit" id="btnAccountLoginSubmit">
+                Log In &rsaquo;
+              </button>
+            </form>
+          </div>
+
+          <!-- STATE B & C: REGISTRATION FORM -->
+          <div id="accountRegisterFormSection" style="display:none;">
+            <h2 class="dokan-auth-col-title">Register</h2>
+            <form id="dokanAccountRegisterForm" onsubmit="app.handleAccountRegister(event)">
+              
+              <!-- Email Field -->
+              <div class="dokan-form-group">
+                <label for="accountRegEmail">Email address <span class="required">*</span></label>
+                <input type="email" id="accountRegEmail" class="dokan-form-input" required autocomplete="email" placeholder="merchant@domain.com">
+                <small class="form-help-text" style="color:#0284c7; margin-top:5px; display:block;">
+                  ✉️ A secure link to set your password and activate your account will be sent to this email address.
+                </small>
+              </div>
+
+              <!-- Role Selection Radios -->
+              <div class="role-radio-group">
+                <label class="role-radio-label">
+                  <input type="radio" name="accountRegisterRole" id="roleCustomerRadio" value="customer" onchange="app.switchAccountRegisterRole('customer')">
+                  I am a customer
+                </label>
+                <label class="role-radio-label">
+                  <input type="radio" name="accountRegisterRole" id="roleVendorRadio" value="vendor" checked onchange="app.switchAccountRegisterRole('vendor')">
+                  I am a vendor
+                </label>
+              </div>
+
+              <!-- VENDOR EXPANDABLE FIELDS (Dokan Parity) -->
+              <div id="accountVendorFieldsContainer" class="dokan-vendor-expand-container" style="display:block;">
+                
+                <!-- First & Last Name -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:18px;">
+                  <div class="dokan-form-group" style="margin-bottom:0;">
+                    <label for="accountRegFirstName">First Name <span class="required">*</span></label>
+                    <input type="text" id="accountRegFirstName" class="dokan-form-input" placeholder="e.g. Sarah">
+                  </div>
+                  <div class="dokan-form-group" style="margin-bottom:0;">
+                    <label for="accountRegLastName">Last Name <span class="required">*</span></label>
+                    <input type="text" id="accountRegLastName" class="dokan-form-input" placeholder="e.g. Jenkins">
+                  </div>
+                </div>
+
+                <!-- Shop Name -->
+                <div class="dokan-form-group">
+                  <label for="accountRegShopName">Shop Name <span class="required">*</span></label>
+                  <input type="text" id="accountRegShopName" class="dokan-form-input" placeholder="e.g. Sarah Luxe Boutique" oninput="app.handleAccountShopNameInput(this.value)">
+                </div>
+
+                <!-- Live Auto-Slug Shop URL -->
+                <div class="dokan-form-group">
+                  <label>Shop URL <span class="required">*</span></label>
+                  <div class="live-slug-box" style="display:flex; align-items:center; border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; background:#f8fafc; font-size:13px;">
+                    <span class="live-slug-prefix" style="padding:10px 12px; background:#f1f5f9; color:#64748b; font-weight:600; border-right:1px solid #cbd5e1; font-size:12px; white-space:nowrap;">https://ssellerstorebay.com/store/</span>
+                    <input type="text" id="accountRegShopSlug" class="live-slug-input" style="flex:1; padding:10px 12px; border:none; background:transparent; font-size:13px; font-weight:600; color:#0f172a; outline:none;" readonly placeholder="your-shop-name">
+                  </div>
+                  <small id="accountSlugAvailableBadge" style="display:block; margin-top:4px; font-size:11.5px; color:#15803d; font-weight:600;">✓ Store slug generated automatically</small>
+                </div>
+
+                <!-- Referral Code (Strict 00546) -->
+                <div class="dokan-form-group">
+                  <label for="accountRegReferralCode">Referral Code <span class="required">*</span></label>
+                  <input type="text" id="accountRegReferralCode" class="dokan-form-input" placeholder="Enter 5-digit referral cod" maxlength="5" oninput="app.handleAccountReferralInput(this.value)" autocomplete="off">
+                  <small class="form-help-text">Enter the 5-digit referral code you received from an existing vendor.</small>
+                  <div id="accountReferralValidationMsg"></div>
+                </div>
+
+                <!-- Country Selector -->
+                <div class="dokan-form-group">
+                  <label for="accountRegCountry">Country <span class="required">*</span></label>
+                  <select id="accountRegCountry" class="dokan-form-input" style="background:#ffffff;">
+                    <option value="United States" selected>🇺🇸 United States</option>
+                    <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                    <option value="Canada">🇨🇦 Canada</option>
+                    <option value="Australia">🇦🇺 Australia</option>
+                    <option value="Germany">🇩🇪 Germany</option>
+                    <option value="France">🇫🇷 France</option>
+                    <option value="United Arab Emirates">🇦🇪 United Arab Emirates</option>
+                    <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+                    <option value="Pakistan">🇵🇰 Pakistan</option>
+                    <option value="India">🇮🇳 India</option>
+                    <option value="Singapore">🇸🇬 Singapore</option>
+                  </select>
+                </div>
+
+                <!-- Phone Number with Calling Code -->
+                <div class="dokan-form-group">
+                  <label for="accountRegPhone">Phone Number <span class="required">*</span></label>
+                  <div class="phone-input-group">
+                    <select id="accountRegCallingCode" class="phone-calling-code-select">
+                      <option value="+1" selected>🇺🇸 +1 (US/CA)</option>
+                      <option value="+44">🇬🇧 +44 (UK)</option>
+                      <option value="+971">🇦🇪 +971 (UAE)</option>
+                      <option value="+966">🇸🇦 +966 (KSA)</option>
+                      <option value="+49">🇩🇪 +49 (DE)</option>
+                      <option value="+33">🇫🇷 +33 (FR)</option>
+                      <option value="+61">🇦🇺 +61 (AU)</option>
+                      <option value="+92">🇵🇰 +92 (PK)</option>
+                      <option value="+91">🇮🇳 +91 (IN)</option>
+                      <option value="+65">🇸🇬 +65 (SG)</option>
+                    </select>
+                    <input type="tel" id="accountRegPhone" class="dokan-form-input" placeholder="(555) 000-0000" style="flex:1;">
+                  </div>
+                </div>
+
+                <!-- Transaction Password -->
+                <div class="dokan-form-group">
+                  <label for="accountRegTxPassword">Transaction Password <span class="required">*</span></label>
+                  <div class="password-input-wrapper">
+                    <input type="password" id="accountRegTxPassword" class="dokan-form-input" placeholder="Create a 4-20 character" maxlength="20">
+                    <button type="button" class="password-eye-btn" onclick="app.togglePasswordVisibility('accountRegTxPassword', this)">👁️</button>
+                  </div>
+                  <small class="form-help-text">Used to authorize wallet payouts and earnings withdrawals.</small>
+                </div>
+
+                <!-- Confirm Transaction Password -->
+                <div class="dokan-form-group">
+                  <label for="accountRegConfirmTxPassword">Confirm Transaction Password <span class="required">*</span></label>
+                  <div class="password-input-wrapper">
+                    <input type="password" id="accountRegConfirmTxPassword" class="dokan-form-input" placeholder="Confirm transaction password" maxlength="20">
+                    <button type="button" class="password-eye-btn" onclick="app.togglePasswordVisibility('accountRegConfirmTxPassword', this)">👁️</button>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Privacy Policy Notice -->
+              <p class="dokan-privacy-notice">
+                Your personal data will be used to support your experience throughout this website, to manage access to your account, and for other purposes described in our <a href="#" style="color:#dc2626; text-decoration:underline;">privacy policy</a>.
+              </p>
+
+              <button type="submit" class="btn-dokan-auth-submit" id="btnAccountRegisterSubmit">
+                Register &rsaquo;
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- COLUMN 2: SECONDARY INFO BOX & MODE SWITCH -->
+        <div class="dokan-auth-col">
+
+          <!-- STATE A: RIGHT COLUMN (Register Info Box) -->
+          <div id="accountRegisterInfoSection" class="dokan-info-box" style="display:block;">
+            <h3 style="font-family:'Outfit',sans-serif; font-size:20px; font-weight:800; color:#0f172a; margin-top:0; margin-bottom:14px;">Register</h3>
+            <p class="dokan-info-text">
+              Registering for this site allows you to access your order status and history. Just fill in the fields below, and we'll get a new account set up for you in no time. We will only ask you for information necessary to make the purchase process faster and easier.
+            </p>
+            <button type="button" class="btn-dokan-switch" onclick="app.switchAccountMode('register')">
+              Register
+            </button>
+          </div>
+
+          <!-- STATE B & C: RIGHT COLUMN (Login Info Box) -->
+          <div id="accountLoginInfoSection" class="dokan-info-box" style="display:none;">
+            <h3 style="font-family:'Outfit',sans-serif; font-size:20px; font-weight:800; color:#0f172a; margin-top:0; margin-bottom:14px;">Login</h3>
+            <p class="dokan-info-text">
+              Already have an account? Log in to access your vendor dashboard, track orders, and manage listings.
+            </p>
+            <button type="button" class="btn-dokan-switch" onclick="app.switchAccountMode('login')">
+              Log In
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
 
   <!-- ADMIN DASHBOARD VIEW -->
   <!-- SUPER ADMIN MASTER CONTROL PANEL -->
@@ -2161,6 +2388,47 @@
     </div>
   </div>
 
+  <!-- SET PASSWORD / ACCOUNT ACTIVATION MODAL OVERLAY -->
+  <div class="modal-overlay" id="setPasswordModalOverlay">
+    <div class="dokan-activation-modal-card">
+      <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="width:48px; height:48px; border-radius:50%; background:#fee2e2; color:#dc2626; font-size:22px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:8px;">🔐</div>
+        <h3 style="font-family:'Outfit',sans-serif; font-size:22px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">Set Store Login Password</h3>
+        <p style="font-size:13px; color:#64748b; margin:0;">Complete your account activation to unlock your merchant portal.</p>
+      </div>
+
+      <form id="setPasswordActivationForm" onsubmit="app.handleSetPasswordSubmit(event)">
+        <input type="hidden" id="activationTokenInput">
+        
+        <div class="dokan-form-group">
+          <label>Email Address</label>
+          <input type="email" id="activationEmailDisplay" class="dokan-form-input" readonly style="background:#f1f5f9; color:#475569; font-weight:600;">
+        </div>
+
+        <div class="dokan-form-group">
+          <label for="activationNewPassword">Create Store Password <span class="required">*</span></label>
+          <div class="password-input-wrapper">
+            <input type="password" id="activationNewPassword" class="dokan-form-input" placeholder="At least 6 characters" required minlength="6">
+            <button type="button" class="password-eye-btn" onclick="app.togglePasswordVisibility('activationNewPassword', this)">👁️</button>
+          </div>
+        </div>
+
+        <div class="dokan-form-group">
+          <label for="activationConfirmPassword">Confirm Store Password <span class="required">*</span></label>
+          <div class="password-input-wrapper">
+            <input type="password" id="activationConfirmPassword" class="dokan-form-input" placeholder="Re-enter store password" required minlength="6">
+            <button type="button" class="password-eye-btn" onclick="app.togglePasswordVisibility('activationConfirmPassword', this)">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-dokan-auth-submit" id="btnSetPasswordSubmit" style="margin-top:8px;">
+          🚀 Set Password &amp; Activate Account
+        </button>
+      </form>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="quickViewModalOverlay">
     <div class="modal-card">
       <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
@@ -2267,7 +2535,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=4.1"></script>
+  <script src="app-bundle.js?v=4.2"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
@@ -2284,3 +2552,5 @@
   <!--End of Tawk.to Script-->
 </body>
 </html>
+
+

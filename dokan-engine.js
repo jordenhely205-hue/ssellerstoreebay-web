@@ -1,4 +1,4 @@
-/**
+﻿/**
  * E Seller Store - Dokan Multi-Vendor & Headless Engine
  * Manages Onboarding with CNIC, Profit Calculation (18%-30%), Real-Time Activity Tracking,
  * Ad Campaigns Management Engine, Manual Live Chat Stream & Web Audio Notifications.
@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v4.1_wizard_otp_onboarding';
+    const APP_VERSION = 'v4.2_dokan_my_account_activation';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -964,6 +964,125 @@ class DokanEngine {
     return this.submitVendorApplication(data);
   }
 
+  registerVendorWithActivationLink(data) {
+    const email = (data.email || '').trim().toLowerCase();
+    const role = (data.role || 'vendor').trim().toLowerCase();
+    const isVendor = role === 'vendor';
+
+    if (!email || !email.includes('@')) {
+      throw new Error('Valid email address is required.');
+    }
+
+    if (isVendor) {
+      if (data.referralCode !== '00546') {
+        throw new Error('Invalid referral code. Must be 00546.');
+      }
+    }
+
+    const token = 'act_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+    const storeName = data.shopName || data.storeName || (data.firstName ? `${data.firstName} Store` : 'New Store');
+    const ownerName = data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : (data.ownerName || email.split('@')[0]);
+    const slug = data.slug || storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    const newApp = {
+      id: 'app_' + Date.now(),
+      role: role,
+      email: email,
+      ownerName: ownerName,
+      firstName: data.firstName || '',
+      lastName: data.lastName || '',
+      storeName: storeName,
+      slug: slug,
+      referralCode: data.referralCode || '00546',
+      country: data.country || 'United States',
+      phone: data.phone || data.mobile || '',
+      mobile: data.phone || data.mobile || '',
+      transactionPassword: data.transactionPassword || '',
+      status: 'pending',
+      verificationStatus: 'activation_sent',
+      activationToken: token,
+      createdAt: new Date().toISOString()
+    };
+
+    const apps = this.getVendorApplications();
+    const filteredApps = apps.filter(a => a.email && a.email.toLowerCase() !== email);
+    filteredApps.unshift(newApp);
+    this.saveVendorApplications(filteredApps);
+
+    // Also register in vendors as pending
+    const vendors = this.getVendors();
+    const newVendorRecord = {
+      id: 'v_' + newApp.id.replace('app_', ''),
+      role: role,
+      name: storeName,
+      storeName: storeName,
+      slug: slug,
+      ownerName: ownerName,
+      email: email,
+      phone: newApp.phone,
+      mobile: newApp.phone,
+      country: newApp.country,
+      referralCode: newApp.referralCode,
+      transactionPassword: newApp.transactionPassword,
+      status: 'pending_verification',
+      verificationStatus: 'activation_sent',
+      balance: 0.00,
+      profitEarned: 0.00,
+      profitMarginPercent: 25,
+      productsSold: 0,
+      commissionRate: 15,
+      storeLogo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80',
+      rating: 5.0,
+      joinedDate: new Date().toISOString().split('T')[0]
+    };
+
+    const existingVendorIdx = vendors.findIndex(v => v.email && v.email.toLowerCase() === email);
+    if (existingVendorIdx >= 0) {
+      vendors[existingVendorIdx] = Object.assign({}, vendors[existingVendorIdx], newVendorRecord);
+    } else {
+      vendors.push(newVendorRecord);
+    }
+    this.saveVendors(vendors);
+
+    this.pushCloudState('vendor_application', newApp);
+    this.logActivity('Vendor Activation Sent', `Activation link dispatched to ${email} for store ${storeName}`, 'info');
+
+    const origin = (typeof window !== 'undefined' && window.location.origin) ? window.location.origin : 'https://ssellerstorebay.com';
+    const activationLink = `${origin}/my-account/set-password?token=${token}&email=${encodeURIComponent(email)}`;
+
+    return {
+      success: true,
+      application: newApp,
+      activationToken: token,
+      activationLink: activationLink,
+      activationLinkPreview: activationLink
+    };
+  }
+
+  setPasswordWithToken(email, token, password) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const apps = this.getVendorApplications();
+    const app = apps.find(a => a.email && a.email.toLowerCase() === cleanEmail);
+    if (app) {
+      app.password = password;
+      app.verificationStatus = 'activated';
+      app.activatedAt = new Date().toISOString();
+      this.saveVendorApplications(apps);
+    }
+
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => v.email && v.email.toLowerCase() === cleanEmail);
+    if (vendor) {
+      vendor.password = password;
+      vendor.verificationStatus = 'activated';
+      this.saveVendors(vendors);
+    }
+
+    this.logActivity('Password Configured', `Account password set and activated for ${cleanEmail}`, 'success');
+    return true;
+  }
+
   approveVendorApplication(applicationId) {
     const apps = this.getVendorApplications();
     const app = apps.find(a => a.id === applicationId || a.id === ('app_' + applicationId) || (a.email && a.email.toLowerCase() === applicationId.toLowerCase()));
@@ -1445,3 +1564,4 @@ class DokanEngine {
 }
 
 export const engine = new DokanEngine();
+

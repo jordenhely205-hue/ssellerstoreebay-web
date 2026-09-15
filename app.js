@@ -1268,10 +1268,15 @@ class ESellerStoreApp {
     const homeView = document.getElementById('homeView');
     const vendorDashView = document.getElementById('vendorDashboardView');
     const adminDashView = document.getElementById('adminDashboardView');
+    const myAccountView = document.getElementById('myAccountView');
 
     if (homeView) homeView.style.display = persona === 'customer' ? 'block' : 'none';
     if (vendorDashView) vendorDashView.classList.toggle('active', persona === 'vendor');
     if (adminDashView) adminDashView.classList.toggle('active', persona === 'admin');
+    if (myAccountView) {
+      myAccountView.style.display = persona === 'account' ? 'block' : 'none';
+      myAccountView.classList.toggle('active', persona === 'account');
+    }
 
     if (persona === 'customer') this.renderHomepageSections();
     if (persona === 'admin') this.renderAdminDashboard();
@@ -1469,3 +1474,16 @@ window.handleSellerLogin = function(e) { if (window.app) window.app.handleSeller
 window.handleAdminLogin = function(e) { if (window.app) window.app.handleAdminLogin(e); };
 window.handleAdminApproveApplication = function(id) { if (window.app) window.app.handleAdminApproveApplication(id); };
 window.handleAdminRejectApplication = function(id) { if (window.app) window.app.handleAdminRejectApplication(id); };
+
+
+window.openMyAccount = function(m, r) { if (window.app) window.app.openMyAccount(m, r); };
+window.switchAccountMode = function(m) { if (window.app) window.app.switchAccountMode(m); };
+window.switchAccountRegisterRole = function(r) { if (window.app) window.app.switchAccountRegisterRole(r); };
+window.handleAccountShopNameInput = function(v) { if (window.app) window.app.handleAccountShopNameInput(v); };
+window.handleAccountReferralInput = function(v) { if (window.app) window.app.handleAccountReferralInput(v); };
+window.togglePasswordVisibility = function(i, b) { if (window.app) window.app.togglePasswordVisibility(i, b); };
+window.handleAccountLogin = function(e) { if (window.app) window.app.handleAccountLogin(e); };
+window.handleAccountRegister = function(e) { if (window.app) window.app.handleAccountRegister(e); };
+window.openSetPasswordModal = function(t, em) { if (window.app) window.app.openSetPasswordModal(t, em); };
+window.handleSetPasswordSubmit = function(e) { if (window.app) window.app.handleSetPasswordSubmit(e); };
+window.handleLostPassword = function() { if (window.app) window.app.handleLostPassword(); };
