@@ -1,4 +1,4 @@
-const APP_VERSION = 'v5.0_split_auth_minimal_storefront';
+const APP_VERSION = 'v5.1_woodmart_ecommerce_slider';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -9,6 +9,99 @@ import { engine } from './dokan-engine.js';
 import { INITIAL_BRANDS, INITIAL_CATEGORIES } from './data.js';
 
 class ESellerStoreApp {
+  initHeroSlider() {
+    const track = document.getElementById('heroSlidesTrack');
+    const prevBtn = document.getElementById('sliderPrevBtn');
+    const nextBtn = document.getElementById('sliderNextBtn');
+    const dotsContainer = document.getElementById('sliderDotsContainer');
+    const sliderBox = document.getElementById('heroProductSlider');
+    if (!track) return;
+
+    let currentSlide = 0;
+    const slides = track.querySelectorAll('.woodmart-slide');
+    const totalSlides = slides.length || 4;
+    let autoPlayTimer = null;
+
+    const updateSlider = (idx) => {
+      currentSlide = (idx + totalSlides) % totalSlides;
+      track.style.transform = `translateX(-${currentSlide * 100}%)`;
+      if (dotsContainer) {
+        const dots = dotsContainer.querySelectorAll('.slider-dot');
+        dots.forEach((dot, dIdx) => {
+          dot.classList.toggle('active', dIdx === currentSlide);
+        });
+      }
+    };
+
+    const startAutoPlay = () => {
+      stopAutoPlay();
+      autoPlayTimer = setInterval(() => {
+        updateSlider(currentSlide + 1);
+      }, 4500);
+    };
+
+    const stopAutoPlay = () => {
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+      }
+    };
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        updateSlider(currentSlide - 1);
+        startAutoPlay();
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        updateSlider(currentSlide + 1);
+        startAutoPlay();
+      });
+    }
+
+    if (dotsContainer) {
+      dotsContainer.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('slider-dot')) {
+          const slideIdx = parseInt(e.target.dataset.slide, 10);
+          if (!isNaN(slideIdx)) {
+            updateSlider(slideIdx);
+            startAutoPlay();
+          }
+        }
+      });
+    }
+
+    if (sliderBox) {
+      sliderBox.addEventListener('mouseenter', stopAutoPlay);
+      sliderBox.addEventListener('mouseleave', startAutoPlay);
+
+      // Touch swipe support for mobile
+      let touchStartX = 0;
+      let touchEndX = 0;
+      sliderBox.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        stopAutoPlay();
+      }, { passive: true });
+
+      sliderBox.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        if (touchStartX - touchEndX > 45) {
+          updateSlider(currentSlide + 1);
+        } else if (touchEndX - touchStartX > 45) {
+          updateSlider(currentSlide - 1);
+        }
+        startAutoPlay();
+      }, { passive: true });
+    }
+
+    startAutoPlay();
+  }
+
+
   constructor() {
     this.currentView = 'home';
     this.currentPersona = 'customer';
@@ -1518,6 +1611,7 @@ class ESellerStoreApp {
   }
 
   bindEvents() {
+    this.initHeroSlider();
     // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {

@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=5.0">
+  <link rel="stylesheet" href="styles.css?v=5.1">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -213,69 +213,217 @@
       </div>
     </div>
 
-    <!-- Minimalist Enterprise Hero Section -->
-    <section class="enterprise-hero-section">
-      <div class="container enterprise-hero-container">
-        <div class="hero-institution-badge">
-          <span style="color:#4F46E5;">&#9670;</span> INSTITUTIONAL MULTI-VENDOR COMMERCE
-        </div>
-        <h1 class="enterprise-hero-title">
-          Global Commerce,<br>
-          <span class="hero-gradient-text">Built for Scale.</span>
-        </h1>
-        <p class="enterprise-hero-subtitle">
-          Empowering verified global merchants and retail clients with certified tier-1 brands, guaranteed 18%-30% vendor profit margins, and automated real-time escrow settlement.
-        </p>
+    <!-- E-COMMERCE HERO GRID (ANIMATED SLIDER + HOT CATEGORIES SIDEBAR) -->
+    <section class="woodmart-hero-section">
+      <div class="container woodmart-hero-grid">
+        
+        <!-- Left / Center Canvas: Animated Product Slider (Carousel) -->
+        <div class="woodmart-slider-container" id="heroProductSlider">
+          <div class="woodmart-slides-track" id="heroSlidesTrack">
+            
+            <!-- Slide 1: Samsung Galaxy Flip5 -->
+            <div class="woodmart-slide woodmart-slide-1">
+              <div class="slide-content">
+                <span class="slide-tagline">Fresh design in an elegant case</span>
+                <h2 class="slide-title">Samsung Galaxy Z Flip5</h2>
+                <p class="slide-sub">
+                  Foldable Dynamic AMOLED 2X &bull; Flex Window &bull; <strong>$999.00</strong>
+                </p>
+                <button class="btn-slider-cta" onclick="app.directBuyNow('p1')">
+                  Buy Now &rsaquo;
+                </button>
+              </div>
+              <div class="slide-image-wrap">
+                <img src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=700&auto=format&fit=crop&q=80" alt="Samsung Galaxy Z Flip5">
+              </div>
+            </div>
 
-        <div class="hero-proof-chips">
-          <div class="proof-chip">
-            <span style="color:#10B981;">&#9679;</span> <strong>$12.8M+</strong> Distributed Payouts
+            <!-- Slide 2: Apple iPhone 15 Pro Max -->
+            <div class="woodmart-slide woodmart-slide-2">
+              <div class="slide-content">
+                <span class="slide-tagline">Titanium. So strong. So light. So Pro.</span>
+                <h2 class="slide-title">Apple iPhone 15 Pro Max</h2>
+                <p class="slide-sub">
+                  A17 Pro 3nm Chip &bull; 48MP Pro Camera System &bull; <strong>$1,199.00</strong>
+                </p>
+                <button class="btn-slider-cta" onclick="app.directBuyNow('p1')">
+                  Buy Now &rsaquo;
+                </button>
+              </div>
+              <div class="slide-image-wrap">
+                <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=700&auto=format&fit=crop&q=80" alt="Apple iPhone 15 Pro Max">
+              </div>
+            </div>
+
+            <!-- Slide 3: Apple MacBook Pro 16 M3 Max -->
+            <div class="woodmart-slide woodmart-slide-3">
+              <div class="slide-content">
+                <span class="slide-tagline">Supercharged for pros</span>
+                <h2 class="slide-title">Apple MacBook Pro 16 M3 Max</h2>
+                <p class="slide-sub">
+                  Liquid Retina XDR Display &bull; 36GB Unified RAM &bull; <strong>$2,499.00</strong>
+                </p>
+                <button class="btn-slider-cta" onclick="app.directBuyNow('p2')">
+                  Buy Now &rsaquo;
+                </button>
+              </div>
+              <div class="slide-image-wrap">
+                <img src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=700&auto=format&fit=crop&q=80" alt="Apple MacBook Pro 16 M3 Max">
+              </div>
+            </div>
+
+            <!-- Slide 4: Rolex Submariner Date -->
+            <div class="woodmart-slide woodmart-slide-4">
+              <div class="slide-content">
+                <span class="slide-tagline">Master of Precision & Horology</span>
+                <h2 class="slide-title">Rolex Submariner Date</h2>
+                <p class="slide-sub">
+                  Cerachrom Bezel &bull; Oystersteel 41mm &bull; <strong>$10,250.00</strong>
+                </p>
+                <button class="btn-slider-cta" onclick="app.filterByCategory('jewelry')">
+                  Buy Now &rsaquo;
+                </button>
+              </div>
+              <div class="slide-image-wrap">
+                <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=700&auto=format&fit=crop&q=80" alt="Rolex Submariner Date">
+              </div>
+            </div>
+
           </div>
-          <div class="proof-chip">
-            <span style="color:#4F46E5;">&#9679;</span> <strong>99.98%</strong> Fulfillment SLA
-          </div>
-          <div class="proof-chip">
-            <span style="color:#0EA5E9;">&#9679;</span> <strong>256-Bit</strong> Bank-Grade Escrow
+
+          <!-- Slider Arrow Controls -->
+          <button class="slider-arrow-btn prev" id="sliderPrevBtn" aria-label="Previous Slide">&lsaquo;</button>
+          <button class="slider-arrow-btn next" id="sliderNextBtn" aria-label="Next Slide">&rsaquo;</button>
+
+          <!-- Slider Pagination Dots -->
+          <div class="slider-dots-container" id="sliderDotsContainer">
+            <button class="slider-dot active" data-slide="0" aria-label="Slide 1"></button>
+            <button class="slider-dot" data-slide="1" aria-label="Slide 2"></button>
+            <button class="slider-dot" data-slide="2" aria-label="Slide 3"></button>
+            <button class="slider-dot" data-slide="3" aria-label="Slide 4"></button>
           </div>
         </div>
 
-        <div class="hero-cta-group">
-          <button class="btn-hero-primary" onclick="document.getElementById('catalogGridSection').scrollIntoView({behavior:'smooth'})">
-            Explore Marketplace &rsaquo;
-          </button>
-          <button class="btn-hero-secondary" onclick="app.openDokanAuthModal('register')">
-            Become a Vendor &rsaquo;
-          </button>
-        </div>
+        <!-- Right Sidebar — Hot categories Menu -->
+        <aside class="woodmart-hot-categories-sidebar">
+          <div class="hot-cat-header">
+            <span style="display:flex; align-items:center; gap:8px;">
+              <span>🔥</span> Hot categories
+            </span>
+            <span style="font-size:11px; opacity:0.8;">TOP</span>
+          </div>
+          <ul class="hot-cat-list">
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('fashion'); return false;">
+                <span><span class="hot-cat-icon">👔</span> Men Clothing Fashion</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('computers'); return false;">
+                <span><span class="hot-cat-icon">💻</span> Computer Accessories</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('fashion'); return false;">
+                <span><span class="hot-cat-icon">👜</span> Women's Fashion Bag</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('toys'); return false;">
+                <span><span class="hot-cat-icon">🧸</span> Kids Toy</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('jewelry'); return false;">
+                <span><span class="hot-cat-icon">⌚</span> Jewelry Watches</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('auto'); return false;">
+                <span><span class="hot-cat-icon">🏍️</span> Automobile Motorcycle</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('fashion'); return false;">
+                <span><span class="hot-cat-icon">👗</span> Women Clothing Fashion</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('beauty'); return false;">
+                <span><span class="hot-cat-icon">💄</span> Beauty</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('sports'); return false;">
+                <span><span class="hot-cat-icon">⚽</span> Sports Outdoor</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+            <li class="hot-cat-item">
+              <a href="#" onclick="app.filterByCategory('computers'); return false;">
+                <span><span class="hot-cat-icon">📱</span> Phone Accessories</span>
+                <span class="hot-cat-arrow">&rsaquo;</span>
+              </a>
+            </li>
+          </ul>
+        </aside>
+
       </div>
     </section>
 
-    <!-- Institutional Trust Strip -->
-    <section class="institutional-trust-strip">
-      <div class="container trust-badges-flex">
-        <div class="trust-badge-item">
-          <span class="trust-badge-icon">&#10003;</span>
-          <span>Apple Certified Partner</span>
-        </div>
-        <div class="trust-badge-item">
-          <span class="trust-badge-icon">&#10003;</span>
-          <span>Dell Enterprise Supplier</span>
-        </div>
-        <div class="trust-badge-item">
-          <span class="trust-badge-icon">&#9889;</span>
-          <span>Rolex Official Horology</span>
-        </div>
-        <div class="trust-badge-item">
-          <span class="trust-badge-icon">&#128095;</span>
-          <span>Nike Retail Partner</span>
-        </div>
-        <div class="trust-badge-item">
-          <span class="trust-badge-icon">&#10003;</span>
-          <span>256-Bit SSL Escrow</span>
-        </div>
-        <div class="trust-badge-item">
-          <span class="trust-badge-icon">&#9889;</span>
-          <span>Automated Fast Settlement</span>
+    <!-- Bottom Value Props Bar (Directly below Slider) -->
+    <section class="woodmart-value-props-section">
+      <div class="container">
+        <div class="woodmart-value-props-grid">
+          
+          <div class="value-prop-item">
+            <div class="value-prop-icon">🚚</div>
+            <div>
+              <div class="value-prop-title">Fast, Free Shipping</div>
+              <div class="value-prop-desc">On order over $50</div>
+            </div>
+          </div>
+
+          <div class="value-prop-item">
+            <div class="value-prop-icon">⚡</div>
+            <div>
+              <div class="value-prop-title">Next Day Delivery</div>
+              <div class="value-prop-desc">Free &ndash; spend over $99</div>
+            </div>
+          </div>
+
+          <div class="value-prop-item">
+            <div class="value-prop-icon">🔄</div>
+            <div>
+              <div class="value-prop-title">60-Day Free Returns</div>
+              <div class="value-prop-desc">All shipping methods</div>
+            </div>
+          </div>
+
+          <div class="value-prop-item">
+            <div class="value-prop-icon">🎧</div>
+            <div>
+              <div class="value-prop-title">Expert Customer Service</div>
+              <div class="value-prop-desc">Choose chat or call us</div>
+            </div>
+          </div>
+
+          <div class="value-prop-item">
+            <div class="value-prop-icon">⭐</div>
+            <div>
+              <div class="value-prop-title">Exclusive Brands</div>
+              <div class="value-prop-desc">More exclusive products</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -2642,7 +2790,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=5.0"></script>
+  <script src="app-bundle.js?v=5.1"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
