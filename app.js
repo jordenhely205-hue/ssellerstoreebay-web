@@ -1,4 +1,4 @@
-const APP_VERSION = 'v5.2_clean_login_credentials';
+const APP_VERSION = 'v5.2.2_resilient_catalog_render';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -1444,9 +1444,13 @@ class ESellerStoreApp {
   setPersona(persona) {
     this.currentPersona = persona;
 
-    document.querySelectorAll('.persona-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.persona === persona);
-    });
+    try {
+      document.querySelectorAll('.persona-btn').forEach(btn => {
+        if (!btn) return;
+        const pVal = (btn.dataset && btn.dataset.persona) || btn.getAttribute('data-persona') || '';
+        if (btn.classList) btn.classList.toggle('active', pVal === persona);
+      });
+    } catch (e) {}
 
     const homeView = document.getElementById('homeView');
     const vendorDashView = document.getElementById('vendorDashboardView');
