@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v6.1_header_dark_navy_pill_search';
+const APP_VERSION = 'v6.2_separate_logo_og_preview';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);

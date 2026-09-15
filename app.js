@@ -1,4 +1,4 @@
-const APP_VERSION = 'v6.1_header_dark_navy_pill_search';
+const APP_VERSION = 'v6.2_separate_logo_og_preview';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
