@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.6_onboarding_flow';
+    const APP_VERSION = 'v3.7_multi_step_onboarding';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -825,9 +825,48 @@ class DokanEngine {
     }
   }
 
-  submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description, role }) {
-    if (!ownerName || !email || !password || !storeName || !mobile) {
-      throw new Error('Please fill in all mandatory fields (Full Name, Store Name, Mobile, Email, and Password).');
+  submitVendorApplication({
+    ownerName,
+    fatherName,
+    cnic,
+    email,
+    password,
+    storeName,
+    slug,
+    mobile,
+    referralCode,
+    address,
+    city,
+    bankName,
+    accountTitle,
+    iban,
+    description,
+    role
+  }) {
+    // 1. Mandatory Fields Validation
+    if (!email || !email.trim()) {
+      throw new Error('Please enter a valid Email Address.');
+    }
+    if (!ownerName || !ownerName.trim()) {
+      throw new Error('Please enter your Full Name.');
+    }
+    if (!fatherName || !fatherName.trim()) {
+      throw new Error('Please enter your Father Name.');
+    }
+    if (!storeName || !storeName.trim()) {
+      throw new Error('Please enter your Shop Name.');
+    }
+    if (!mobile || !mobile.trim()) {
+      throw new Error('Please enter your Mobile Number / WhatsApp.');
+    }
+    if (!address || !address.trim()) {
+      throw new Error('Please enter your Full Address / City / Region.');
+    }
+
+    // 2. Strict Referral Code Validation (00546)
+    const cleanReferral = (referralCode || '').toString().trim();
+    if (cleanReferral !== '00546') {
+      throw new Error('Invalid referral code. Please enter an authorized sponsor code to proceed.');
     }
 
     const vendors = this.getVendors();
@@ -838,22 +877,33 @@ class DokanEngine {
 
     const applications = this.getVendorApplications();
     const cleanCnic = (cnic && typeof cnic === 'string' && cnic.trim()) ? cnic.trim() : 'N/A';
-    const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller application.';
+    const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered application.';
     const cleanRole = (role === 'vendor') ? 'vendor' : 'seller';
+    const cleanSlug = slug && slug.trim() ? slug.trim() : storeName.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+    const cleanPassword = password && password.trim() ? password.trim() : ('Temp@' + Math.random().toString(36).slice(-8));
 
     const newApp = {
       id: 'app_' + Date.now(),
       status: 'pending',
+      verificationStatus: 'verification_link_sent',
       role: cleanRole,
       createdAt: new Date().toISOString(),
+      email: email.trim(),
       ownerName: ownerName.trim(),
+      fatherName: fatherName.trim(),
       storeName: storeName.trim(),
       name: storeName.trim(),
-      email: email.trim(),
+      slug: cleanSlug,
       mobile: mobile.trim(),
       phone: mobile.trim(),
+      referralCode: cleanReferral,
+      address: address.trim(),
+      city: city ? city.trim() : '',
+      bankName: bankName ? bankName.trim() : '',
+      accountTitle: accountTitle ? accountTitle.trim() : '',
+      iban: iban ? iban.trim() : '',
       cnic: cleanCnic,
-      password: password.trim(),
+      password: cleanPassword,
       description: cleanDesc
     };
 
@@ -868,14 +918,22 @@ class DokanEngine {
       role: cleanRole,
       name: newApp.storeName,
       storeName: newApp.storeName,
+      slug: newApp.slug,
       ownerName: newApp.ownerName,
-      cnic: newApp.cnic,
+      fatherName: newApp.fatherName,
       email: newApp.email,
       mobile: newApp.mobile,
       phone: newApp.mobile,
+      referralCode: newApp.referralCode,
+      address: newApp.address,
+      bankName: newApp.bankName,
+      accountTitle: newApp.accountTitle,
+      iban: newApp.iban,
+      cnic: newApp.cnic,
       password: newApp.password,
       description: newApp.description,
       status: 'pending_verification',
+      verificationStatus: 'verification_link_sent',
       balance: 0.00,
       profitEarned: 0.00,
       profitMarginPercent: 25,

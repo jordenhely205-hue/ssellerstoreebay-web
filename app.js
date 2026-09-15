@@ -989,16 +989,72 @@ window.app = new E Seller StoreApp();
   /**
    * Requirement #1: Advanced User Onboarding (Registration with CNIC, Email, Description)
    */
-  /**
-   * Requirement #1: Advanced User Onboarding (Registration with CNIC, Email, Description)
-   */
+  selectOnboardingRole(role = 'vendor') {
+    this.selectedOnboardingRole = role;
+    const radioSeller = document.getElementById('radioRoleSeller');
+    const radioVendor = document.getElementById('radioRoleVendor');
+    const cardSeller = document.getElementById('cardRoleSeller');
+    const cardVendor = document.getElementById('cardRoleVendor');
+
+    if (radioSeller) radioSeller.checked = (role === 'seller');
+    if (radioVendor) radioVendor.checked = (role === 'vendor');
+    if (cardSeller) cardSeller.classList.toggle('active', role === 'seller');
+    if (cardVendor) cardVendor.classList.toggle('active', role === 'vendor');
+  }
+
+  proceedSelectedOnboardingRole() {
+    const role = this.selectedOnboardingRole || (document.getElementById('radioRoleSeller') && document.getElementById('radioRoleSeller').checked ? 'seller' : 'vendor');
+    this.openSellerRegistration(role);
+  }
+
   openOnboardingSelection() {
     this.closeModals();
+    this.selectOnboardingRole(this.selectedOnboardingRole || 'vendor');
     this.openModal('onboardingSelectModalOverlay');
   }
 
-  openSellerRegistration(role = 'seller') {
+  generateShopSlug(name) {
+    if (!name) return '';
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  handleShopNameInput(val) {
+    const slugEl = document.getElementById('vendorRegSlug');
+    if (slugEl) {
+      slugEl.value = this.generateShopSlug(val);
+    }
+  }
+
+  handleReferralCodeInput(val) {
+    const trimmed = (val || '').trim();
+    const errBox = document.getElementById('referralCodeErrorBox');
+    const succBox = document.getElementById('referralCodeSuccessBox');
+    const inputEl = document.getElementById('vendorRegReferralCode');
+
+    if (trimmed === '00546') {
+      if (errBox) errBox.style.display = 'none';
+      if (succBox) succBox.style.display = 'block';
+      if (inputEl) { inputEl.style.borderColor = '#16a34a'; inputEl.style.background = '#f0fdf4'; }
+    } else if (trimmed.length >= 5) {
+      if (errBox) errBox.style.display = 'block';
+      if (succBox) succBox.style.display = 'none';
+      if (inputEl) { inputEl.style.borderColor = '#dc2626'; inputEl.style.background = '#fef2f2'; }
+    } else {
+      if (errBox) errBox.style.display = 'none';
+      if (succBox) succBox.style.display = 'none';
+      if (inputEl) { inputEl.style.borderColor = '#cbd5e1'; inputEl.style.background = '#ffffff'; }
+    }
+  }
+
+  openSellerRegistration(role = 'vendor') {
     this.closeModals();
+    this.selectedOnboardingRole = role;
+
     const roleInput = document.getElementById('vendorRegRole');
     if (roleInput) roleInput.value = role;
 
@@ -1006,17 +1062,32 @@ window.app = new E Seller StoreApp();
     const subtitleEl = document.getElementById('sellerRegModalSubtitle');
     const storeNameLabel = document.getElementById('vendorRegStoreNameLabel');
     const storeNameInput = document.getElementById('vendorRegStoreName');
+    const slugInput = document.getElementById('vendorRegSlug');
+    const badgeEl = document.getElementById('sellerRegStepBadge');
+    const errBox = document.getElementById('referralCodeErrorBox');
+    const succBox = document.getElementById('referralCodeSuccessBox');
+    const refInput = document.getElementById('vendorRegReferralCode');
+
+    if (errBox) errBox.style.display = 'none';
+    if (succBox) succBox.style.display = 'none';
+    if (refInput) { refInput.style.borderColor = '#cbd5e1'; refInput.style.background = '#ffffff'; }
 
     if (role === 'vendor') {
+      if (badgeEl) { badgeEl.textContent = 'STEP 2: VENDOR APPLICATION'; badgeEl.style.background = '#dbeafe'; badgeEl.style.color = '#1e40af'; }
       if (titleEl) titleEl.textContent = 'Vendor & Supplier Registration';
       if (subtitleEl) subtitleEl.textContent = 'Apply as a Wholesale & Brand Partner to list multi-item catalogs';
-      if (storeNameLabel) storeNameLabel.textContent = 'Vendor / Company Name *';
+      if (storeNameLabel) storeNameLabel.textContent = 'Shop / Company Name *';
       if (storeNameInput) storeNameInput.placeholder = 'e.g. Nexus Wholesale Hub';
     } else {
+      if (badgeEl) { badgeEl.textContent = 'STEP 2: SELLER APPLICATION'; badgeEl.style.background = '#fee2e2'; badgeEl.style.color = '#b91c1c'; }
       if (titleEl) titleEl.textContent = 'Seller Registration Portal';
       if (subtitleEl) subtitleEl.textContent = 'Start selling your retail products with guaranteed 18%–30% profit margins';
-      if (storeNameLabel) storeNameLabel.textContent = 'Store Name *';
+      if (storeNameLabel) storeNameLabel.textContent = 'Shop / Store Name *';
       if (storeNameInput) storeNameInput.placeholder = 'e.g. Urban Style Store';
+    }
+
+    if (storeNameInput && storeNameInput.value) {
+      if (slugInput) slugInput.value = this.generateShopSlug(storeNameInput.value);
     }
 
     this.openModal('sellerRegModalOverlay');
@@ -1027,31 +1098,75 @@ window.app = new E Seller StoreApp();
     const form = event.target || document.querySelector('#sellerRegModalOverlay form');
     if (!form) return;
 
-    const ownerName = form.ownerName ? form.ownerName.value.trim() : '';
-    const cnic = form.cnic ? form.cnic.value.trim() : '';
     const email = form.email ? form.email.value.trim() : '';
-    const password = form.password ? form.password.value.trim() : '';
+    const ownerName = form.ownerName ? form.ownerName.value.trim() : '';
+    const fatherName = form.fatherName ? form.fatherName.value.trim() : '';
     const storeName = form.storeName ? form.storeName.value.trim() : '';
+    const slug = form.slug ? form.slug.value.trim() : this.generateShopSlug(storeName);
     const mobile = form.mobile ? form.mobile.value.trim() : '';
+    const referralCode = form.referralCode ? form.referralCode.value.trim() : '';
+    const address = form.address ? form.address.value.trim() : '';
+    const bankName = form.bankName ? form.bankName.value.trim() : '';
+    const accountTitle = form.accountTitle ? form.accountTitle.value.trim() : '';
+    const iban = form.iban ? form.iban.value.trim() : '';
     const description = form.description ? form.description.value.trim() : '';
-    const role = form.onboardingRole ? form.onboardingRole.value : 'seller';
+    const role = form.onboardingRole ? form.onboardingRole.value : 'vendor';
 
-    if (!ownerName || !email || !password || !storeName || !mobile) {
-      alert('Please fill in all mandatory fields: Full Owner Name, Store Name, Mobile, Email, and Password.');
+    // 1. Validate mandatory fields
+    if (!email || !ownerName || !fatherName || !storeName || !mobile || !address) {
+      alert('Please fill in all mandatory fields: Email Address, Full Name, Father Name, Shop Name, Mobile Number, and Full Address.');
+      return;
+    }
+
+    // 2. Strict Referral Code Check (00546)
+    if (referralCode !== '00546') {
+      const errBox = document.getElementById('referralCodeErrorBox');
+      const refInput = document.getElementById('vendorRegReferralCode');
+      if (errBox) errBox.style.display = 'block';
+      if (refInput) {
+        refInput.style.borderColor = '#dc2626';
+        refInput.style.background = '#fef2f2';
+        refInput.focus();
+      }
+      alert('❌ Invalid referral code. Please enter an authorized sponsor code to proceed.\n(Mandatory Sponsor Code: 00546)');
       return;
     }
 
     try {
-      const appRecord = engine.submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description, role });
+      const appRecord = engine.submitVendorApplication({
+        role,
+        email,
+        ownerName,
+        fatherName,
+        storeName,
+        slug,
+        mobile,
+        referralCode,
+        address,
+        bankName,
+        accountTitle,
+        iban,
+        description
+      });
+
       this.closeModals();
       form.reset();
       this.renderAdminDashboard();
       this.renderAdminVendorsTable();
       this.updateCounters();
-      const cnicDisplay = (appRecord.cnic && appRecord.cnic !== 'N/A') ? '\nCNIC: ' + appRecord.cnic : '';
-      const roleLabel = (role === 'vendor') ? 'Vendor & Brand Partner' : 'Retail Seller';
-      alert(`🎉 APPLICATION SUBMITTED SUCCESSFULLY!\n\nRole: ${roleLabel}\nStore/Company: ${appRecord.storeName}\nOwner: ${appRecord.ownerName}${cnicDisplay}\nEmail: ${appRecord.email}\nStatus: PENDING ADMIN APPROVAL\n\nYour application has been placed in the Super Admin Pending Queue for verification.`);
-      this.showToast(`📋 ${roleLabel} registration submitted for review`);
+
+      const roleLabel = (role === 'vendor') ? 'Wholesale Vendor Partner' : 'Retail Seller';
+      alert(`🎉 APPLICATION SUBMITTED SUCCESSFULLY!\n\n` +
+            `Role: ${roleLabel}\n` +
+            `Shop Name: ${appRecord.storeName}\n` +
+            `Store URL: ssellerstorebay.com/store/${appRecord.slug}\n` +
+            `Applicant: ${appRecord.ownerName} s/o ${appRecord.fatherName}\n` +
+            `Email: ${appRecord.email}\n` +
+            `Referral Sponsor Code: ${appRecord.referralCode} [VERIFIED]\n\n` +
+            `📧 A secure verification link has been sent to your email to set your account password.\n` +
+            `Your application has been placed in the Super Admin Pending Queue for review.`);
+      
+      this.showToast(`📋 ${roleLabel} application submitted for verification`);
     } catch (err) {
       alert('Registration Error: ' + err.message);
     }
@@ -1136,26 +1251,32 @@ window.app = new E Seller StoreApp();
         <tr style="background:#fffdf5;">
           <td>
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:18px;">🏪</span>
+              <span style="font-size:18px;">${appRecord.role === 'vendor' ? '🏢' : '🛍️'}</span>
               <div>
                 <strong style="font-size:13px; color:#1e293b;">${appRecord.storeName || appRecord.name}</strong><br>
-                <small style="color:#64748b;">ID: <code>${appRecord.id}</code></small>
+                <small style="color:#0284c7; font-family:monospace;">/${appRecord.slug || 'store'}</small><br>
+                <small style="color:#64748b;">Role: <strong>${(appRecord.role || 'vendor').toUpperCase()}</strong></small>
               </div>
             </div>
           </td>
           <td>
             <strong>${appRecord.ownerName}</strong><br>
-            <small style="color:var(--nav-red); font-weight:700;">CNIC: ${appRecord.cnic || 'N/A'}</small>
+            ${appRecord.fatherName ? `<small style="color:#64748b;">s/o ${appRecord.fatherName}</small><br>` : ''}
+            <small style="color:#16a34a; font-weight:700;">Ref Code: <code>${appRecord.referralCode || '00546'}</code></small>
           </td>
           <td>
             ${appRecord.email}<br>
             <small style="color:#64748b;">${appRecord.mobile || appRecord.phone || 'N/A'}</small>
           </td>
           <td>
-            <small style="color:#475569;">${appRecord.createdAt ? new Date(appRecord.createdAt).toLocaleDateString() : 'Today'}</small>
+            <small style="color:#475569;">${appRecord.createdAt ? new Date(appRecord.createdAt).toLocaleDateString() : 'Today'}</small><br>
+            <span style="font-size:10px; color:#166534; background:#dcfce7; padding:2px 6px; border-radius:8px;">Email Sent</span>
           </td>
           <td>
-            <small style="color:#64748b; display:inline-block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${appRecord.description || ''}">${appRecord.description || 'Registered Seller application.'}</small>
+            <small style="color:#64748b; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${appRecord.address || appRecord.description || ''}">
+              📍 ${appRecord.address || 'Address on file'}
+            </small>
+            ${appRecord.bankName ? `<small style="color:#475569; display:block; font-size:10.5px;">🏦 ${appRecord.bankName} (${appRecord.iban || 'IBAN'})</small>` : ''}
           </td>
           <td>
             <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING</span>
@@ -1163,7 +1284,7 @@ window.app = new E Seller StoreApp();
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px;">
               <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981; color:#fff;" onclick="app.handleAdminApproveApplication('${appRecord.id}')">✅ Approve Store</button>
-              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${appRecord.id}')">❌ Reject / Delete</button>
+              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${appRecord.id}')">❌ Reject</button>
             </div>
           </td>
         </tr>
@@ -1545,3 +1666,7 @@ window.handleForceCloudPush = function() { if (window.app) window.app.handleForc
 window.handleForceCloudPull = function() { if (window.app) window.app.handleForceCloudPull(); };
 window.openOnboardingSelection = function() { if (window.app) window.app.openOnboardingSelection(); };
 window.openSellerRegistration = function(r) { if (window.app) window.app.openSellerRegistration(r); };
+window.selectOnboardingRole = function(r) { if (window.app) window.app.selectOnboardingRole(r); };
+window.proceedSelectedOnboardingRole = function() { if (window.app) window.app.proceedSelectedOnboardingRole(); };
+window.handleShopNameInput = function(v) { if (window.app) window.app.handleShopNameInput(v); };
+window.handleReferralCodeInput = function(v) { if (window.app) window.app.handleReferralCodeInput(v); };

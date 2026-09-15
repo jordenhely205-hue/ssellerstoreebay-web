@@ -2031,8 +2031,173 @@ html, body {
 }
 
 /* ==========================================================================
-   ONBOARDING ROLE SELECTION MODAL STYLES
+   MULTI-STEP ONBOARDING & VERTICAL VENDOR FORM STYLES
    ========================================================================== */
+.onboarding-radio-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 16px;
+  background: #ffffff;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.onboarding-radio-card:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.onboarding-radio-card.active {
+  border-color: #1a73e8;
+  background: #f0f7ff;
+  box-shadow: 0 8px 20px rgba(26, 115, 232, 0.12);
+}
+
+.onboarding-radio-card input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 3px;
+  accent-color: #1a73e8;
+  cursor: pointer;
+}
+
+.onboarding-radio-card-body {
+  flex: 1;
+}
+
+.onboarding-radio-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* Verification notice box */
+.verification-notice-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #166534;
+}
+
+/* Slug input wrapper */
+.slug-preview-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.slug-prefix {
+  padding: 9px 10px;
+  background: #f1f5f9;
+  border-right: 1px solid #cbd5e1;
+  font-size: 12px;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.slug-input {
+  flex: 1;
+  padding: 9px 10px;
+  border: none;
+  background: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0f172a;
+  outline: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Vertical Form Rows */
+.vertical-form-group {
+  margin-bottom: 14px;
+}
+
+.vertical-form-group label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1e293b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.vertical-form-group input,
+.vertical-form-group textarea,
+.vertical-form-group select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12.5px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vertical-form-group input:focus,
+.vertical-form-group textarea:focus {
+  border-color: #1a73e8;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15);
+}
+
+.referral-error-msg {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.referral-success-msg {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.form-help-text {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.optional-section-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+  background: #f8fafc;
+  margin-bottom: 14px;
+}
+
 .onboarding-options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

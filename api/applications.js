@@ -1,4 +1,4 @@
-﻿// Vercel Serverless Function: GET /api/applications, POST /api/applications, PATCH /api/applications, DELETE /api/applications
+// Vercel Serverless Function: GET /api/applications, POST /api/applications, PATCH /api/applications, DELETE /api/applications
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -53,19 +53,30 @@ module.exports = async (req, res) => {
       const payload = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
       const appRecord = {
         id: payload.id || ('app_' + Date.now()),
+        role: payload.role || 'vendor',
         ownerName: payload.ownerName || 'Applicant',
+        fatherName: payload.fatherName || '',
         cnic: payload.cnic || 'N/A',
         email: payload.email || '',
         storeName: payload.storeName || (payload.ownerName + ' Store'),
+        slug: payload.slug || '',
         mobile: payload.mobile || payload.phone || '',
-        password: payload.password || 'Sanvi@123',
+        referralCode: payload.referralCode || '00546',
+        address: payload.address || '',
+        city: payload.city || '',
+        bankName: payload.bankName || '',
+        accountTitle: payload.accountTitle || '',
+        iban: payload.iban || '',
+        password: payload.password || '',
         description: payload.description || '',
         status: payload.status || 'pending',
-        createdAt: payload.createdAt || new Date().toLocaleString(),
-        deviceOrigin: req.headers['user-agent'] || 'Web Client'
+        verificationStatus: payload.verificationStatus || 'verification_link_sent',
+        createdAt: payload.createdAt || new Date().toISOString(),
+        deviceOrigin: req.headers['user-agent'] || 'Web Client',
+        ...payload
       };
 
-      const existingIdx = apps.findIndex(a => a.id === appRecord.id || (a.email && a.email.toLowerCase() === appRecord.email.toLowerCase()));
+      const existingIdx = apps.findIndex(a => a.id === appRecord.id || (a.email && a.email.toLowerCase() === (appRecord.email || '').toLowerCase()));
       if (existingIdx >= 0) {
         apps[existingIdx] = { ...apps[existingIdx], ...appRecord };
       } else {

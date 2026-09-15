@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=3.6">
+  <link rel="stylesheet" href="styles.css?v=3.7">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -1920,104 +1920,172 @@
     </div>
   </div>
 
-  <!-- ROLE-SELECTION ONBOARDING MODAL (BECOME A SELLER vs BECOME A VENDOR) -->
+  <!-- ROLE-SELECTION INTERMEDIATE MODAL (STEP 1: SELECT ROLE & CONTINUE) -->
   <div class="modal-overlay" id="onboardingSelectModalOverlay">
-    <div class="modal-card" style="max-width:620px; padding:32px 28px;">
+    <div class="modal-card" style="max-width:560px; padding:30px 26px;">
       <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
-      <div style="text-align:center; margin-bottom:24px;">
-        <h2 style="font-family:'Outfit', sans-serif; font-size:24px; color:#0f172a; margin-bottom:6px;">Join E Seller Store Marketplace</h2>
-        <p style="font-size:13px; color:#64748b; margin:0;">Select how you would like to partner and sell on our platform</p>
+      <div style="text-align:center; margin-bottom:20px;">
+        <span style="font-size:11px; font-weight:800; color:#1a73e8; letter-spacing:1px; text-transform:uppercase; background:#eff6ff; padding:4px 10px; border-radius:12px; display:inline-block; margin-bottom:8px;">STEP 1 OF 2</span>
+        <h2 style="font-family:'Outfit', sans-serif; font-size:24px; color:#0f172a; margin-bottom:6px;">Select Your Marketplace Role</h2>
+        <p style="font-size:13px; color:#64748b; margin:0;">Choose how you want to partner and sell products on E Seller Store</p>
       </div>
 
-      <div class="onboarding-options-grid">
+      <div style="margin-bottom:20px;">
         <!-- Option 1: Become a Seller -->
-        <div class="onboarding-card" onclick="app.openSellerRegistration('seller')">
-          <div class="onboarding-card-icon" style="background:#fef2f2; color:#dc2626;">🛍️</div>
-          <span class="onboarding-card-tag" style="background:#fee2e2; color:#b91c1c;">Retail Merchant</span>
-          <h3 style="font-family:'Outfit', sans-serif; font-size:18px; color:#0f172a; margin:10px 0 6px 0;">Become a Seller</h3>
-          <p style="font-size:12px; color:#64748b; line-height:1.5; margin:0 0 16px 0; flex-grow:1;">
-            Sell retail products directly to thousands of customers with guaranteed <strong>18% to 30% profit margins</strong> and automated fast payouts.
-          </p>
-          <button type="button" class="btn-primary" style="width:100%; justify-content:center; background:#dc2626; padding:10px; font-size:12px; font-weight:600;" onclick="event.stopPropagation(); app.openSellerRegistration('seller');">
-            Proceed as Seller &rsaquo;
-          </button>
-        </div>
+        <label class="onboarding-radio-card" id="cardRoleSeller" onclick="app.selectOnboardingRole('seller')">
+          <input type="radio" name="onboardingRoleChoice" id="radioRoleSeller" value="seller" onchange="app.selectOnboardingRole('seller')">
+          <div class="onboarding-radio-icon" style="background:#fef2f2; color:#dc2626;">🛍️</div>
+          <div class="onboarding-radio-card-body">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">Become a Seller</strong>
+              <span class="onboarding-card-tag" style="background:#fee2e2; color:#b91c1c;">Retail Merchant</span>
+            </div>
+            <p style="font-size:12px; color:#64748b; margin:0; line-height:1.45;">
+              Sell retail items directly with guaranteed <strong>18% to 30% profit margin</strong>, zero setup fees, and automated fast payouts.
+            </p>
+          </div>
+        </label>
 
         <!-- Option 2: Become a Vendor -->
-        <div class="onboarding-card" onclick="app.openSellerRegistration('vendor')">
-          <div class="onboarding-card-icon" style="background:#eff6ff; color:#1d4ed8;">🏢</div>
-          <span class="onboarding-card-tag" style="background:#dbeafe; color:#1e40af;">Wholesale / Brand</span>
-          <h3 style="font-family:'Outfit', sans-serif; font-size:18px; color:#0f172a; margin:10px 0 6px 0;">Become a Vendor</h3>
-          <p style="font-size:12px; color:#64748b; line-height:1.5; margin:0 0 16px 0; flex-grow:1;">
-            Supply wholesale inventories, multi-category brand catalogs, and bulk products directly into our global marketplace distribution.
-          </p>
-          <button type="button" class="btn-primary" style="width:100%; justify-content:center; background:#1a73e8; padding:10px; font-size:12px; font-weight:600;" onclick="event.stopPropagation(); app.openSellerRegistration('vendor');">
-            Proceed as Vendor &rsaquo;
-          </button>
-        </div>
+        <label class="onboarding-radio-card active" id="cardRoleVendor" onclick="app.selectOnboardingRole('vendor')">
+          <input type="radio" name="onboardingRoleChoice" id="radioRoleVendor" value="vendor" checked onchange="app.selectOnboardingRole('vendor')">
+          <div class="onboarding-radio-icon" style="background:#eff6ff; color:#1d4ed8;">🏢</div>
+          <div class="onboarding-radio-card-body">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">Become a Vendor</strong>
+              <span class="onboarding-card-tag" style="background:#dbeafe; color:#1e40af;">Wholesale / Brand</span>
+            </div>
+            <p style="font-size:12px; color:#64748b; margin:0; line-height:1.45;">
+              Supply wholesale inventories, multi-category brand catalogs, and bulk products into our global marketplace distribution.
+            </p>
+          </div>
+        </label>
       </div>
 
-      <div style="text-align:center; margin-top:20px; font-size:12px; color:#64748b; border-top:1px solid #f1f5f9; padding-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-        <span>Already have an account? <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="color:#0284c7; font-weight:700;">Seller Login</a></span>
+      <button type="button" class="btn-primary" id="btnContinueOnboardingRole" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; border-radius:8px;" onclick="app.proceedSelectedOnboardingRole()">
+        Continue / Next &rsaquo;
+      </button>
+
+      <div style="text-align:center; margin-top:16px; font-size:12px; color:#64748b; border-top:1px solid #f1f5f9; padding-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span>Already registered? <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="color:#0284c7; font-weight:700;">Seller Login</a></span>
         <button type="button" onclick="app.closeModals()" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; font-weight:600; text-decoration:underline;">Back to Homepage</button>
       </div>
     </div>
   </div>
 
-  <!-- ADVANCED USER ONBOARDING REGISTRATION MODAL -->
+  <!-- ADVANCED USER ONBOARDING VERTICAL APPLICATION MODAL (STEP 2) -->
   <div class="modal-overlay" id="sellerRegModalOverlay">
-    <div class="modal-card" style="max-width:500px; padding:28px;">
+    <div class="modal-card" style="max-width:540px; padding:28px 24px; max-height:92vh; overflow-y:auto;">
       <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
-      <div style="margin-bottom:18px;">
+      
+      <div style="margin-bottom:16px;">
         <button type="button" onclick="app.openOnboardingSelection()" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:4px; font-weight:600; margin-bottom:8px;">
           &larr; Back to Role Selection
         </button>
         <div style="text-align:center;">
-          <h2 id="sellerRegModalTitle" style="font-family:'Outfit', sans-serif; font-size:22px; color:#222733; margin-bottom:4px;">Seller Registration Portal</h2>
-          <p id="sellerRegModalSubtitle" style="font-size:12.5px; color:#666;">Start selling your retail products with guaranteed 18%–30% profit margins</p>
+          <span id="sellerRegStepBadge" style="font-size:10.5px; font-weight:800; color:#166534; letter-spacing:1px; text-transform:uppercase; background:#dcfce7; padding:3px 10px; border-radius:12px; display:inline-block; margin-bottom:6px;">STEP 2: APPLICATION DETAILS</span>
+          <h2 id="sellerRegModalTitle" style="font-family:'Outfit', sans-serif; font-size:22px; color:#0f172a; margin-bottom:4px;">Vendor & Supplier Registration</h2>
+          <p id="sellerRegModalSubtitle" style="font-size:12.5px; color:#64748b; margin:0;">Complete the verification form to partner with E Seller Store</p>
         </div>
       </div>
 
-      <form onsubmit="app.handleVendorRegistration(event)">
-        <input type="hidden" name="onboardingRole" id="vendorRegRole" value="seller">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-          <div>
-            <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Full Owner Name *</label>
-            <input type="text" name="ownerName" id="vendorRegOwnerName" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:12px;" placeholder="e.g. John Doe" required>
-          </div>
-          <div>
-            <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">CNIC / National ID <span style="font-weight:normal; color:#64748b;">(Optional)</span></label>
-            <input type="text" name="cnic" id="vendorRegCnic" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:12px;" placeholder="e.g. 42101-1234567-1">
-          </div>
-        </div>
+      <form id="vendorRegistrationForm" onsubmit="app.handleVendorRegistration(event)" autocomplete="off">
+        <input type="hidden" name="onboardingRole" id="vendorRegRole" value="vendor">
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-          <div>
-            <label id="vendorRegStoreNameLabel" style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Store Name *</label>
-            <input type="text" name="storeName" id="vendorRegStoreName" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:12px;" placeholder="e.g. Urban Style Store" required>
-          </div>
-          <div>
-            <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Mobile Number *</label>
-            <input type="tel" name="mobile" id="vendorRegMobile" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:12px;" placeholder="+1 (555) 000-0000" required>
+        <!-- 1. Email & Account Setup (Step 2A) -->
+        <div class="vertical-form-group">
+          <label for="vendorRegEmail">Email Address *</label>
+          <input type="email" name="email" id="vendorRegEmail" placeholder="e.g. owner@brandstore.com" autocomplete="email" required>
+          
+          <div class="verification-notice-box">
+            <span style="font-size:16px;">ℹ️</span>
+            <div>
+              <strong style="display:block; color:#166534; margin-bottom:2px;">Email Verification &amp; Password Setup</strong>
+              <span style="font-size:11.5px; color:#15803d; line-height:1.4; display:block;">
+                A secure verification link will be sent to your email to set your account password upon submission.
+              </span>
+            </div>
           </div>
         </div>
 
-        <div style="margin-bottom:12px;">
-          <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Email Address *</label>
-          <input type="email" name="email" id="vendorRegEmail" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:12px;" placeholder="user@example.com" required>
+        <!-- 2. Personal & Store Information -->
+        <div class="vertical-form-group">
+          <label for="vendorRegOwnerName">Full Name *</label>
+          <input type="text" name="ownerName" id="vendorRegOwnerName" placeholder="e.g. John Doe" required>
         </div>
 
-        <div style="margin-bottom:12px;">
-          <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Profile Description / Business Details <span style="font-weight:normal; color:#64748b;">(Optional)</span></label>
-          <textarea name="description" id="vendorRegDescription" rows="2" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:12px;" placeholder="Brief details about your business products & brand background (Optional)..."></textarea>
+        <div class="vertical-form-group">
+          <label for="vendorRegFatherName">Father Name *</label>
+          <input type="text" name="fatherName" id="vendorRegFatherName" placeholder="e.g. Robert Doe" required>
         </div>
 
-        <div style="margin-bottom:18px;">
-          <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Account Password *</label>
-          <input type="password" name="password" id="vendorRegPassword" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:12px;" placeholder="Enter your secure password" required>
+        <div class="vertical-form-group">
+          <label id="vendorRegStoreNameLabel" for="vendorRegStoreName">Shop Name *</label>
+          <input type="text" name="storeName" id="vendorRegStoreName" placeholder="e.g. Alpha Traders" oninput="app.handleShopNameInput(this.value)" required>
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:12px;">Submit Verification Application</button>
+        <div class="vertical-form-group">
+          <label for="vendorRegSlug">Shop URL Slug <span style="font-weight:normal; color:#64748b;">(Auto-generated)</span></label>
+          <div class="slug-preview-wrapper">
+            <span class="slug-prefix">ssellerstorebay.com/store/</span>
+            <input type="text" id="vendorRegSlug" name="slug" class="slug-input" placeholder="alpha-traders" readonly>
+          </div>
+          <small class="form-help-text">Live storefront permanent URL slug for your catalog.</small>
+        </div>
+
+        <div class="vertical-form-group">
+          <label for="vendorRegMobile">Mobile Number / WhatsApp *</label>
+          <input type="tel" name="mobile" id="vendorRegMobile" placeholder="+1 (555) 000-0000 / +92 300 1234567" required>
+        </div>
+
+        <!-- 3. Mandatory Referral Code Validation (00546) -->
+        <div class="vertical-form-group">
+          <label for="vendorRegReferralCode" style="color:#b91c1c;">Referral Code * <span style="font-weight:normal; color:#dc2626;">(Required - Sponsor Code)</span></label>
+          <input type="text" name="referralCode" id="vendorRegReferralCode" placeholder="Enter sponsor code (e.g. 00546)" oninput="app.handleReferralCodeInput(this.value)" required>
+          <div id="referralCodeErrorBox" class="referral-error-msg" style="display:none;">
+            ❌ Invalid referral code. Please enter an authorized sponsor code to proceed.
+          </div>
+          <div id="referralCodeSuccessBox" class="referral-success-msg" style="display:none;">
+            ✅ Authorized sponsor code verified (00546).
+          </div>
+          <small class="form-help-text">Mandatory authorized sponsor code required for onboarding.</small>
+        </div>
+
+        <!-- 4. Address & Regional Details -->
+        <div class="vertical-form-group">
+          <label for="vendorRegAddress">Full Address / City / Region *</label>
+          <textarea name="address" id="vendorRegAddress" rows="2" placeholder="Enter complete business street address, city, and region..." required></textarea>
+        </div>
+
+        <!-- 5. Optional Financial & Bank Details -->
+        <div class="optional-section-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong style="font-size:12px; color:#1e293b;">💳 Bank Details / Payout Method</strong>
+            <span style="font-size:10px; color:#64748b; background:#e2e8f0; padding:2px 8px; border-radius:10px; font-weight:700;">OPTIONAL</span>
+          </div>
+          <div class="vertical-form-group" style="margin-bottom:10px;">
+            <label for="vendorRegBankName" style="font-size:11px;">Bank Name</label>
+            <input type="text" name="bankName" id="vendorRegBankName" placeholder="e.g. Chase Bank, HBL, Bank of America">
+          </div>
+          <div class="vertical-form-group" style="margin-bottom:10px;">
+            <label for="vendorRegAccountTitle" style="font-size:11px;">Account Title</label>
+            <input type="text" name="accountTitle" id="vendorRegAccountTitle" placeholder="e.g. John Doe / Alpha Traders LLC">
+          </div>
+          <div class="vertical-form-group" style="margin-bottom:0;">
+            <label for="vendorRegIban" style="font-size:11px;">IBAN / Account Number</label>
+            <input type="text" name="iban" id="vendorRegIban" placeholder="e.g. US12345678901234 / PK36HABB00000012345678">
+          </div>
+        </div>
+
+        <!-- 6. Optional Description -->
+        <div class="vertical-form-group">
+          <label for="vendorRegDescription">Profile Description / Business Overview <span style="font-weight:normal; color:#64748b;">(Optional)</span></label>
+          <textarea name="description" id="vendorRegDescription" rows="2" placeholder="Brief details about your products, catalog brands, and business background..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btnSubmitVendorReg" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; margin-top:6px; border-radius:8px;">
+          🚀 Submit Verification Application
+        </button>
       </form>
     </div>
   </div>
@@ -2128,7 +2196,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=3.6"></script>
+  <script src="app-bundle.js?v=3.7"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
