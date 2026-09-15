@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=4.2">
+  <link rel="stylesheet" href="styles.css?v=4.5">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -105,113 +105,96 @@
 </head>
 <body>
 
-  <!-- TOP UTILITY BAR (Clean De-duplicated Commercial Navigation) -->
+  <!-- TOP UTILITY BAR (Enterprise Minimalist) -->
   <div class="ref-top-bar">
     <div class="container top-bar-flex">
       <div class="top-bar-dropdowns">
-        <select id="languageSwitcher">
-          <option value="EN">English ∨</option>
-          <option value="ES">Español ∨</option>
-          <option value="FR">Français ∨</option>
+        <select id="languageSwitcher" title="Language Selector">
+          <option value="EN">ðŸŒ English</option>
+          <option value="ES">ðŸ‡ªðŸ‡¸ EspaÃ±ol</option>
+          <option value="FR">ðŸ‡«ðŸ‡· FranÃ§ais</option>
+          <option value="DE">ðŸ‡©ðŸ‡ª Deutsch</option>
+          <option value="AR">ðŸ‡¦ðŸ‡ª Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©</option>
         </select>
-        <select id="currencySwitcher">
-          <option value="USD">U.S. Dollar ∨</option>
-          <option value="EUR">Euro (€) ∨</option>
-          <option value="GBP">Pound (£) ∨</option>
+        <select id="currencySwitcher" title="Currency Selector">
+          <option value="USD">ðŸ’µ USD ($)</option>
+          <option value="EUR">ðŸ’¶ EUR (â‚¬)</option>
+          <option value="GBP">ðŸ’· GBP (Â£)</option>
+          <option value="AED">ðŸ‡¦ðŸ‡ª AED (Ø¯.Ø¥)</option>
+          <option value="PKR">ðŸ‡µðŸ‡° PKR (â‚¨)</option>
         </select>
       </div>
 
       <div class="top-bar-links" style="display:flex; align-items:center; gap:14px;">
-        <a href="#" onclick="app.openMyAccount('register', 'vendor'); return false;" style="color:#f59e0b; font-weight:700;">Become A Vendor</a>
+        <a href="#" onclick="app.openMyAccount('register', 'vendor'); return false;" style="color:#4f46e5; font-weight:700;">Become a Vendor</a>
         <span style="color:#cbd5e1;">|</span>
         <a href="#" onclick="app.openMyAccount('login'); return false;" style="font-weight:600;">My Account</a>
         <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" class="seller-login-btn">Seller Login</a>
+        <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" class="seller-login-btn">Seller Portal</a>
         <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;">Admin Login</a>
+        <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;">Admin</a>
         <span style="color:#cbd5e1;">|</span>
-        <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} return false;">Help &amp; Support</a>
+        <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} return false;">Help Hub</a>
       </div>
     </div>
   </div>
 
-  <!-- MAIN HEADER (Clean White Modern E-Commerce Aesthetic) -->
-  <header class="ref-main-header">
-    <div class="container header-flex">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button class="mobile-hamburger-btn" onclick="app.toggleMobileDrawer()" aria-label="Open Navigation Menu">☰</button>
-        <!-- E Seller Store Official Logo with Shopping Cart Vector Mark -->
-        <a href="#" class="ref-logo" onclick="app.setPersona('customer'); return false;" style="display:flex; align-items:center; gap:8px;">
-          <svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-            <rect width="36" height="36" rx="9" fill="#0F172A"/>
-            <!-- Clean Shopping Cart Outline in Crisp White -->
-            <path d="M7.5 9.5H10.5L13 22H24.5L27 12.5H11.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="14.5" cy="25.5" r="1.6" fill="#38BDF8"/>
-            <circle cx="23" cy="25.5" r="1.6" fill="#38BDF8"/>
-            <!-- Integrated 'E' & 'S' lines inside Cart Basket with Light Sky-Blue accent stroke -->
-            <path d="M15.5 15H21C21.8 15 22.2 15.4 22.2 16.2C22.2 17 21.6 17.5 20.8 17.5H16.2C15.4 17.5 14.8 18 14.8 18.8C14.8 19.6 15.2 20 16 20H21.5" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- FROSTED STICKY NAVIGATION BAR -->
+  <header class="enterprise-navbar-wrapper">
+    <div class="enterprise-navbar-container">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="mobile-hamburger-btn" onclick="app.toggleMobileDrawer()" aria-label="Open Navigation Menu">â˜°</button>
+        <!-- E Seller Store Official Logo -->
+        <a href="#" class="ref-logo" onclick="app.setPersona('customer'); return false;" style="display:flex; align-items:center; gap:10px;">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+            <rect width="36" height="36" rx="10" fill="#0B0F17"/>
+            <path d="M7.5 9.5H10.5L13 22H24.5L27 12.5H11.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="14.5" cy="25.5" r="1.6" fill="#10B981"/>
+            <circle cx="23" cy="25.5" r="1.6" fill="#10B981"/>
+            <path d="M15.5 15H21C21.8 15 22.2 15.4 22.2 16.2C22.2 17 21.6 17.5 20.8 17.5H16.2C15.4 17.5 14.8 18 14.8 18.8C14.8 19.6 15.2 20 16 20H21.5" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span style="font-family:'Outfit','Inter',sans-serif; font-size:24px; font-weight:800; letter-spacing:-0.5px;">
-            <span style="color:#DC2626;">E Seller </span><span style="color:#F59E0B;">Store</span>
+          <span style="font-family:'Outfit','Inter',sans-serif; font-size:23px; font-weight:800; letter-spacing:-0.5px; color:#0B0F17;">
+            <span>E Seller </span><span style="color:#4F46E5;">Store</span>
           </span>
         </a>
       </div>
 
-      <!-- Search Bar -->
-      <div class="ref-search-container">
-        <div class="ref-search-pill">
-          <input type="text" id="ajaxSearchInput" class="ref-search-input" placeholder="Search products, brands (Dell, Apple, Nike, Rolex), or categories..." autocomplete="off">
-          <button class="ref-search-icon-btn">🔍</button>
+      <!-- Command-Style Omni-Search Bar -->
+      <div class="omni-search-wrapper">
+        <div class="omni-search-input-box" onclick="document.getElementById('ajaxSearchInput').focus()">
+          <span style="font-size:15px; color:#64748B;">ðŸ”</span>
+          <input type="text" id="ajaxSearchInput" placeholder="Search 40+ brands (Dell, Apple, Rolex, Nike) or categories..." autocomplete="off">
+          <kbd class="cmd-kbd-badge" id="cmdKbdShortcutHint">Ctrl K</kbd>
         </div>
-
         <div class="ajax-search-dropdown" id="ajaxSearchDropdown"></div>
       </div>
 
-      <!-- User Account & Cart Section -->
-      <div class="ref-user-auth">
-        <div class="ref-user-avatar" onclick="app.openModal('sellerLoginModalOverlay');" style="cursor:pointer;" title="Seller Portal">👤</div>
-        <div class="ref-user-links">
-          <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="font-weight:700; font-size:13px; color:#0F172A;">Seller Portal</a><br>
-          <div style="font-size:11px; display:flex; gap:6px; align-items:center;">
-            <a href="#" onclick="app.openOnboardingSelection(); return false;" style="color:#DC2626; font-weight:600;">Join as Seller</a>
-            <span style="color:#CBD5E1;">•</span>
-            <a href="#" onclick="app.openModal('adminLoginModalOverlay'); return false;" style="color:#64748B;">Admin</a>
-          </div>
+      <!-- Unified Utility Capsule -->
+      <div class="enterprise-utility-capsule">
+        <a href="#" onclick="app.openOnboardingSelection(); return false;" class="utility-cta-partner">
+          <span>âš¡</span> Apply Now &rsaquo;
+        </a>
+        <div class="utility-cart-pill" onclick="app.openCartDrawer()" title="Shopping Cart">
+          <span>ðŸ›’</span>
+          <span id="navCartCountHeader" style="background:#4F46E5; color:#fff; font-size:11px; padding:2px 6px; border-radius:10px; font-weight:800;">0</span>
         </div>
-        <button class="ref-cart-icon-mobile" onclick="app.openCartDrawer()" style="display:none; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:#e0f2fe; color:#0284c7; font-size:16px; position:relative;" title="Shopping Cart">
-          🛒
-          <span class="cart-pill-count" style="position:absolute; top:-2px; right:-2px; background:#dc2626; color:#fff; font-size:10px; font-weight:bold; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;">0</span>
-        </button>
       </div>
     </div>
   </header>
 
-  <!-- RED NAVIGATION BAR -->
-  <nav class="ref-nav-bar">
-    <div class="container nav-bar-flex">
-      <div class="categories-btn-trigger">
-        ☰ Categories <small style="font-size:11px;">(See All)</small> ∨
-        <div class="categories-dropdown-menu">
-          <a href="#" class="cat-item" onclick="app.filterByCategory('computers'); return false;">Computer & Accessories <span>&rsaquo;</span></a>
-          <a href="#" class="cat-item" onclick="app.filterByCategory('jewelry'); return false;">Jewelry & Watches <span>&rsaquo;</span></a>
-          <a href="#" class="cat-item" onclick="app.filterByCategory('fashion'); return false;">Men Clothing & Fashion <span>&rsaquo;</span></a>
-          <a href="#" class="cat-item" onclick="app.filterByCategory('beauty'); return false;">Women Clothing & Fashion <span>&rsaquo;</span></a>
-          <a href="#" class="cat-item" onclick="app.filterByCategory('sneakers'); return false;">Footwear & Sneakers <span>&rsaquo;</span></a>
-          <a href="#" class="cat-item" onclick="app.filterByCategory('homedecor'); return false;">Home Decor & Living <span>&rsaquo;</span></a>
-          <a href="#" class="cat-item" onclick="app.filterByCategory('tools'); return false;">Automobile & Hardware <span>&rsaquo;</span></a>
-        </div>
+  <!-- SECONDARY CATEGORY PILL NAVIGATION -->
+  <nav style="background:#FFFFFF; border-bottom:1px solid #E2E8F0; padding:8px 0;">
+    <div class="container" style="display:flex; align-items:center; justify-content:space-between; gap:16px; overflow-x:auto;">
+      <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
+        <button class="cat-pill-item" onclick="app.setPersona('customer')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:700; background:#0B0F17; color:#fff;">âš¡ Featured</button>
+        <button class="cat-pill-item" onclick="app.filterByCategory('computers')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">ðŸ’» Computers &amp; Tech</button>
+        <button class="cat-pill-item" onclick="app.filterByCategory('jewelry')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">âŒš Luxury Watches (Rolex)</button>
+        <button class="cat-pill-item" onclick="app.filterByCategory('sneakers')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">ðŸ‘Ÿ Sneakers (Nike)</button>
+        <button class="cat-pill-item" onclick="app.filterByCategory('fashion')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:600; background:#F1F5F9; color:#334155;">ðŸ‘” Men &amp; Women Fashion</button>
+        <button class="cat-pill-item" onclick="app.openMyAccount('register', 'vendor')" style="padding:6px 14px; border-radius:20px; font-size:12.5px; font-weight:700; background:#EEF2FF; color:#4F46E5;">ðŸª Vendor Portal</button>
       </div>
-
-      <ul class="ref-nav-menu" style="align-items:center;">
-        <li><a href="#" class="active" onclick="app.setPersona('customer'); return false;">Home</a></li>
-        <li><a href="#" onclick="app.openMyAccount('register', 'vendor'); return false;">Become A Vendor</a></li>
-        <li><a href="#" onclick="app.openMyAccount('login'); return false;">My Account</a></li>
-        <li><a href="#" onclick="window.scrollTo({top: 900, behavior:'smooth'}); return false;">All Brands (40+)</a></li>
-        <li><a href="#" onclick="window.scrollTo({top: 300, behavior:'smooth'}); return false;">🔥 Hot Deals</a></li>
-      </ul>
-
-      <div class="ref-cart-summary" onclick="app.openCartDrawer()">
-        🛒 <span id="navCartTotalHeader">$0.00</span> (<span id="navCartCountHeader">0</span> items)
+      <div style="font-size:12.5px; font-weight:700; color:#475569; white-space:nowrap;">
+        Cart Total: <span id="navCartTotalHeader" style="color:#0B0F17;">$0.00</span>
       </div>
     </div>
   </nav>
@@ -219,85 +202,208 @@
   <!-- STOREFRONT HOMEPAGE (DEFAULT VISIBLE) -->
   <main id="homeView" style="display:block;">
     
-    <!-- Highlighted Seller Zone Banner -->
-    <section class="container" style="padding-top:16px;">
-      <div class="seller-zone-banner">
-        <div class="seller-zone-text">
-          <h3>🏪 E Seller Store Seller Zone</h3>
-          <p>Start selling your products with guaranteed <strong>18% to 30% profit margin</strong> & real-time payout!</p>
+    <!-- Real-Time Platform Ticker -->
+    <div class="platform-live-ticker-strip">
+      <div class="container ticker-flex">
+        <div class="ticker-pulse-badge">
+          <div class="ticker-pulse-dot"></div>
+          <span>LIVE PLATFORM NETWORK</span>
         </div>
-        <div>
-          <button class="highlight-apply-now-btn" id="sellerZoneApplyNowBtn" onclick="app.openOnboardingSelection(); return false;">
-            Apply Now &rsaquo;
-          </button>
+        <div class="ticker-event-text" id="platformLiveTickerText">
+          âš¡ Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow â€¢ 99.98% Global SLA Active
+        </div>
+        <div style="font-size:11px; color:#94A3B8; white-space:nowrap;">
+          ðŸ”’ Bank-Grade Escrow Protection
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Hero Section (Renders Active Hero Ad Dynamic Campaign) -->
-    <section class="hero-layout-section">
-      <div class="container hero-flex-grid">
-        <div class="ref-main-banner" id="heroMainBannerBox">
-          <img src="https://images.unsplash.com/photo-1544816155-12df9643f363?w=1200&auto=format&fit=crop&q=80" alt="E Seller Store Mega Summer Promo" style="opacity:0.95;">
-          <div class="banner-overlay-content">
-            <span class="hot-badge" style="background:#1A73E8; color:#ffffff; margin-bottom:8px; display:inline-block;">OFFICIAL COLLECTION</span>
-            <h2>E Seller Store Mega Summer Promo</h2>
-            <p>Shop up to 50% OFF on Dell, Nike, Apple iPhone, HP, Watches & Accessories.</p>
-            <button class="btn-primary hero-campaign-cta" id="heroShopCampaignBtn" onclick="app.handleHeroCampaignClick(event)">Shop Campaign Now &rsaquo;</button>
+    <!-- Dual-Split Enterprise Hero Section -->
+    <section class="enterprise-hero-section">
+      <div class="container enterprise-hero-grid">
+        <!-- Left Hero Column -->
+        <div>
+          <div class="hero-institution-badge">
+            <span>ðŸ›ï¸</span> INSTITUTIONAL MULTI-VENDOR COMMERCE
+          </div>
+          <h1 class="enterprise-hero-title">
+            Global Commerce,<br>
+            <span class="hero-gradient-text">Built for Scale.</span>
+          </h1>
+          <p class="enterprise-hero-subtitle">
+            Empowering verified global merchants and retail clients with certified tier-1 brands, guaranteed 18%â€“30% vendor profit margins, and automated real-time escrow settlement.
+          </p>
+
+          <div class="hero-proof-chips">
+            <div class="proof-chip">
+              <span style="color:#10B981;">â—</span> <strong>$12.8M+</strong> Distributed Payouts
+            </div>
+            <div class="proof-chip">
+              <span style="color:#4F46E5;">â—</span> <strong>99.98%</strong> Fulfillment SLA
+            </div>
+            <div class="proof-chip">
+              <span style="color:#0EA5E9;">â—</span> <strong>256-Bit</strong> Bank-Grade Escrow
+            </div>
+          </div>
+
+          <div class="hero-cta-group">
+            <button class="btn-hero-primary" onclick="document.getElementById('catalogGridSection').scrollIntoView({behavior:'smooth'})">
+              Explore Marketplace &rsaquo;
+            </button>
+            <button class="btn-hero-secondary" id="heroPartnerBtn" onclick="app.openOnboardingSelection()">
+              Become an Authorized Partner &rsaquo;
+            </button>
           </div>
         </div>
 
-        <div class="todays-deal-vertical-box" id="sidebarAdBannerBox">
-          <div class="todays-deal-header">
-            <h4>Todays Deal</h4>
-            <span class="hot-badge">Hot</span>
-          </div>
-          <div class="todays-deal-body">
-            <div class="deal-item-card" onclick="app.directBuyNow('p3')">
-              <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&auto=format&fit=crop&q=80" alt="Smart Watch">
-              <div>
-                <div style="font-size:12px; font-weight:600; color:#333; margin-bottom:4px;">Smart Series Watch</div>
-                <div class="deal-item-price">$359.00</div>
+        <!-- Right Hero Column (Glassmorphic Interactive Analytics Card) -->
+        <div>
+          <div class="glass-analytics-hero-card">
+            <div class="glass-card-header">
+              <div class="glass-vendor-badge">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Sanvicollection Verified Vendor" class="glass-vendor-avatar">
+                <div>
+                  <div style="font-size:13.5px; font-weight:800; color:#0F172A;">Sanvicollection</div>
+                  <div style="font-size:11px; color:#10B981; font-weight:700;">â— Verified Brand Partner</div>
+                </div>
               </div>
+              <div class="ticker-pulse-badge" style="background:#ECFDF5; border-color:#A7F3D0; color:#059669;">
+                <div class="ticker-pulse-dot"></div>
+                <span>ESCROW SETTLED</span>
+              </div>
+            </div>
+
+            <div class="glass-balance-box">
+              <div class="glass-balance-label">Total Authenticated Volume</div>
+              <div class="glass-balance-amount">$34,890.50</div>
+              <div style="font-size:11.5px; color:#10B981; margin-top:4px; font-weight:700;">
+                â†— +28.4% monthly distribution growth
+              </div>
+            </div>
+
+            <div class="glass-metrics-grid">
+              <div class="glass-metric-cell">
+                <div class="glass-metric-val">$14,250</div>
+                <div class="glass-metric-lbl">24H Volume</div>
+              </div>
+              <div class="glass-metric-cell">
+                <div class="glass-metric-val">1,248</div>
+                <div class="glass-metric-lbl">Orders Fulfilled</div>
+              </div>
+              <div class="glass-metric-cell">
+                <div class="glass-metric-val" style="color:#10B981;">28.5%</div>
+                <div class="glass-metric-lbl">Avg. Margin</div>
+              </div>
+            </div>
+
+            <div class="glass-floating-pill">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:18px;">âŒš</span>
+                <div>
+                  <div style="font-weight:700; color:#065F46;">Rolex Submariner 41mm</div>
+                  <div style="font-size:11px; color:#047857;">Fulfilled â€¢ Instant Payout Sent ($13,450.00)</div>
+                </div>
+              </div>
+              <span style="font-weight:800; color:#059669; font-size:12px;">âœ… SETTLED</span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Category Icon Strip -->
-    <section class="category-strip-section">
+    <!-- Institutional Trust Strip -->
+    <section class="institutional-trust-strip">
+      <div class="container trust-badges-flex">
+        <div class="trust-badge-item">
+          <span class="trust-badge-icon">ðŸ›ï¸</span>
+          <span>Apple Certified Partner</span>
+        </div>
+        <div class="trust-badge-item">
+          <span class="trust-badge-icon">ðŸ’»</span>
+          <span>Dell Enterprise Supplier</span>
+        </div>
+        <div class="trust-badge-item">
+          <span class="trust-badge-icon">âŒš</span>
+          <span>Rolex Official Horology</span>
+        </div>
+        <div class="trust-badge-item">
+          <span class="trust-badge-icon">ðŸ‘Ÿ</span>
+          <span>Nike Retail Partner</span>
+        </div>
+        <div class="trust-badge-item">
+          <span class="trust-badge-icon">ðŸ›¡ï¸</span>
+          <span>256-Bit SSL Escrow</span>
+        </div>
+        <div class="trust-badge-item">
+          <span class="trust-badge-icon">âš¡</span>
+          <span>Automated Fast Settlement</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Curated Bento Grid Section -->
+    <section class="enterprise-bento-section">
       <div class="container">
-        <div class="category-strip-flex">
-          <div class="cat-strip-card" onclick="app.filterByCategory('computers')">
-            <img src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=150&auto=format&fit=crop&q=80" alt="Computer Accessories">
-            <p>Computers & Tech</p>
+        <div class="section-heading" style="margin-bottom:24px;">
+          <span>ðŸŒŸ Curated Enterprise Showcase</span>
+          <small style="font-size:13px; color:#64748B;">High-yield multi-category brand divisions</small>
+        </div>
+
+        <div class="enterprise-bento-grid">
+          <!-- Bento 1: Large Featured Tech -->
+          <div class="bento-card bento-card-large" onclick="app.filterByCategory('computers')" style="cursor:pointer;">
+            <div>
+              <span class="bento-tag" style="background:rgba(79, 70, 229, 0.25); color:#A5B4FC; border:1px solid rgba(79, 70, 229, 0.5);">ENTERPRISE COMPUTING &amp; AI</span>
+              <h3 style="font-family:'Outfit',sans-serif; font-size:26px; font-weight:800; margin-bottom:10px;">Dell XPS OLED &amp; Apple M3 Max</h3>
+              <p style="font-size:13.5px; color:#94A3B8; line-height:1.6; margin-bottom:20px;">
+                Direct certified workstations, titanium MacBooks, and ultra-high performance commercial tech with manufacturer warranty.
+              </p>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+              <span style="font-size:12.5px; color:#38BDF8; font-weight:700;">Explore 25+ Tech Products &rsaquo;</span>
+              <span style="font-size:12px; background:rgba(255,255,255,0.1); padding:4px 10px; border-radius:12px;">Verified Authentic</span>
+            </div>
           </div>
-          <div class="cat-strip-card" onclick="app.filterByCategory('jewelry')">
-            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=150&auto=format&fit=crop&q=80" alt="Jewelry & Watches">
-            <p>Jewelry & Watches</p>
+
+          <!-- Bento 2: Luxury Watches -->
+          <div class="bento-card" onclick="app.filterByCategory('jewelry')" style="cursor:pointer;">
+            <div>
+              <span class="bento-tag" style="background:#FEF3C7; color:#B45309;">HAUTE HORLOGERIE</span>
+              <h4 style="font-family:'Outfit',sans-serif; font-size:18px; font-weight:800; color:#0F172A; margin-bottom:6px;">Rolex &amp; Luxury Timepieces</h4>
+              <p style="font-size:12px; color:#64748B; margin-bottom:12px;">Submariner Date, Oyster Perpetual, and certified horology collections.</p>
+            </div>
+            <span style="font-size:12px; color:#4F46E5; font-weight:700;">View Collection &rsaquo;</span>
           </div>
-          <div class="cat-strip-card" onclick="app.filterByCategory('fashion')">
-            <img src="https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=150&auto=format&fit=crop&q=80" alt="Men Clothing">
-            <p>Men Clothing & Fashion</p>
+
+          <!-- Bento 3: Footwear & Apparel -->
+          <div class="bento-card" onclick="app.filterByCategory('sneakers')" style="cursor:pointer;">
+            <div>
+              <span class="bento-tag" style="background:#FCE7F3; color:#BE185D;">DESIGNER STREETWEAR</span>
+              <h4 style="font-family:'Outfit',sans-serif; font-size:18px; font-weight:800; color:#0F172A; margin-bottom:6px;">Nike Originals &amp; Footwear</h4>
+              <p style="font-size:12px; color:#64748B; margin-bottom:12px;">Air Max 270 React, sports editions, and verified streetwear apparel.</p>
+            </div>
+            <span style="font-size:12px; color:#4F46E5; font-weight:700;">View Footwear &rsaquo;</span>
           </div>
-          <div class="cat-strip-card" onclick="app.filterByCategory('beauty')">
-            <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=150&auto=format&fit=crop&q=80" alt="Women Clothing">
-            <p>Women Clothing & Fashion</p>
+
+          <!-- Bento 4: Merchant Yield Guarantee -->
+          <div class="bento-card" onclick="app.openOnboardingSelection()" style="cursor:pointer; background:linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border-color:#C7D2FE;">
+            <div>
+              <span class="bento-tag" style="background:#4F46E5; color:#FFFFFF;">PARTNER PROGRAM</span>
+              <h4 style="font-family:'Outfit',sans-serif; font-size:18px; font-weight:800; color:#1E1B4B; margin-bottom:6px;">Guaranteed 18%â€“30% Margin</h4>
+              <p style="font-size:12px; color:#4338CA; margin-bottom:12px;">Automated escrow distribution, bulk product catalog, and real-time wallet withdrawals.</p>
+            </div>
+            <span style="font-size:12px; color:#4F46E5; font-weight:800;">Join as Partner &rsaquo;</span>
           </div>
-          <div class="cat-strip-card" onclick="app.filterByCategory('sneakers')">
-            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=150&auto=format&fit=crop&q=80" alt="Footwear & Sneakers">
-            <p>Footwear & Sneakers</p>
+
+          <!-- Bento 5: 24/7 Support Hub -->
+          <div class="bento-card" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();}" style="cursor:pointer;">
+            <div>
+              <span class="bento-tag" style="background:#ECFDF5; color:#047857;">INSTANT SUPPORT</span>
+              <h4 style="font-family:'Outfit',sans-serif; font-size:18px; font-weight:800; color:#0F172A; margin-bottom:6px;">Enterprise Live Assistance</h4>
+              <p style="font-size:12px; color:#64748B; margin-bottom:12px;">Real-time merchant support, escrow resolution, and client live chat.</p>
+            </div>
+            <span style="font-size:12px; color:#10B981; font-weight:700;">Launch Live Chat &rsaquo;</span>
           </div>
-          <div class="cat-strip-card" onclick="app.filterByCategory('homedecor')">
-            <img src="https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=150&auto=format&fit=crop&q=80" alt="Home Decor">
-            <p>Home Decor & Living</p>
-          </div>
-          <div class="cat-strip-card" onclick="app.filterByCategory('tools')">
-            <img src="https://images.unsplash.com/photo-1504148455328-c376907d081c?w=150&auto=format&fit=crop&q=80" alt="Automobile">
-            <p>Automobile & Hardware</p>
-          </div>
-          <div class="cat-strip-arrow-next" onclick="app.showToast('Browsing all categories')">&rarr;</div>
         </div>
       </div>
     </section>
@@ -2173,49 +2279,49 @@
       <!-- STEP 1: Role Selection Screen -->
       <div id="wizardStepPanel1" class="wizard-step-panel">
         <div style="text-align:center; margin-bottom:20px;">
-          <span style="font-size:11px; font-weight:800; color:#1a73e8; letter-spacing:1px; text-transform:uppercase; background:#eff6ff; padding:4px 10px; border-radius:12px; display:inline-block; margin-bottom:8px;">STEP 1 OF 3</span>
-          <h2 style="font-family:'Outfit', sans-serif; font-size:24px; color:#0f172a; margin-bottom:6px;">Select Your Marketplace Role</h2>
-          <p style="font-size:13px; color:#64748b; margin:0;">Choose how you want to partner and sell products on E Seller Store</p>
+          <span style="font-size:11px; font-weight:800; color:#4F46E5; letter-spacing:1px; text-transform:uppercase; background:#EEF2FF; padding:4px 10px; border-radius:12px; display:inline-block; margin-bottom:8px;">STEP 1 OF 3</span>
+          <h2 style="font-family:'Outfit', sans-serif; font-size:24px; color:#0f172a; margin-bottom:6px;">Select Your Account Type</h2>
+          <p style="font-size:13px; color:#64748b; margin:0;">Choose how you want to interact on the E Seller Store platform</p>
         </div>
 
         <div style="margin-bottom:20px;">
-          <!-- Option 1: Become a Seller -->
+          <!-- Option 1: I am a customer -->
           <label class="onboarding-radio-card" id="cardRoleSeller" onclick="app.wizardSelectRole('seller')">
             <input type="radio" name="wizardRoleChoice" id="radioRoleSeller" value="seller" onchange="app.wizardSelectRole('seller')">
-            <div class="onboarding-radio-icon" style="background:#fef2f2; color:#dc2626;">🛍️</div>
+            <div class="onboarding-radio-icon" style="background:#F1F5F9; color:#0F172A;">ðŸ›ï¸</div>
             <div class="onboarding-radio-card-body">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">Become a Seller</strong>
-                <span class="onboarding-card-tag" style="background:#fee2e2; color:#b91c1c;">Retail Merchant</span>
+                <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">I am a customer</strong>
+                <span class="onboarding-card-tag" style="background:#E2E8F0; color:#334155;">Retail Buyer</span>
               </div>
               <p style="font-size:12px; color:#64748b; margin:0; line-height:1.45;">
-                Sell retail items directly with guaranteed <strong>18% to 30% profit margin</strong>, zero setup fees, and automated fast payouts.
+                Access certified brand products, track order history in real-time, and enjoy 100% buyer escrow protection.
               </p>
             </div>
           </label>
 
-          <!-- Option 2: Become a Vendor -->
+          <!-- Option 2: I am a vendor -->
           <label class="onboarding-radio-card active" id="cardRoleVendor" onclick="app.wizardSelectRole('vendor')">
             <input type="radio" name="wizardRoleChoice" id="radioRoleVendor" value="vendor" checked onchange="app.wizardSelectRole('vendor')">
-            <div class="onboarding-radio-icon" style="background:#eff6ff; color:#1d4ed8;">🏢</div>
+            <div class="onboarding-radio-icon" style="background:#EEF2FF; color:#4F46E5;">ðŸ¢</div>
             <div class="onboarding-radio-card-body">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">Become a Vendor</strong>
-                <span class="onboarding-card-tag" style="background:#dbeafe; color:#1e40af;">Wholesale / Brand</span>
+                <strong style="font-size:15px; color:#0f172a; font-family:'Outfit', sans-serif;">I am a vendor</strong>
+                <span class="onboarding-card-tag" style="background:#C7D2FE; color:#3730A3;">Authorized Merchant</span>
               </div>
               <p style="font-size:12px; color:#64748b; margin:0; line-height:1.45;">
-                Supply wholesale inventories, multi-category brand catalogs, and bulk products into our global marketplace distribution.
+                Launch your digital store, access wholesale inventories, and earn guaranteed <strong>18% to 30% profit margin</strong> with automated payouts.
               </p>
             </div>
           </label>
         </div>
 
-        <button type="button" class="btn-primary" id="btnContinueToVerification" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; border-radius:8px;" onclick="app.wizardGoToStep(2)">
+        <button type="button" class="btn-hero-primary" id="btnContinueToVerification" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; border-radius:8px;" onclick="app.wizardGoToStep(2)">
           Continue to Verification &rsaquo;
         </button>
 
         <div style="text-align:center; margin-top:16px; font-size:12px; color:#64748b; border-top:1px solid #f1f5f9; padding-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:gap:8px;">
-          <span>Already registered? <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="color:#0284c7; font-weight:700;">Seller Login</a></span>
+          <span>Already registered? <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); return false;" style="color:#4F46E5; font-weight:700;">Seller Login</a></span>
           <button type="button" onclick="app.closeModals()" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; font-weight:600; text-decoration:underline;">Back to Homepage</button>
         </div>
       </div>
@@ -2227,39 +2333,40 @@
             &larr; Back to Role Selection
           </button>
           <div style="text-align:center;">
-            <span id="wizardStep2Badge" style="font-size:10.5px; font-weight:800; color:#1e40af; letter-spacing:1px; text-transform:uppercase; background:#dbeafe; padding:3px 10px; border-radius:12px; display:inline-block; margin-bottom:6px;">STEP 2: EMAIL OTP &amp; PASSWORD</span>
-            <h2 style="font-family:'Outfit', sans-serif; font-size:22px; color:#0f172a; margin-bottom:4px;">Email Verification &amp; Security</h2>
-            <p style="font-size:12.5px; color:#64748b; margin:0;">Verify your official email address and establish store login credentials</p>
+            <span id="wizardStep2Badge" style="font-size:10.5px; font-weight:800; color:#4F46E5; letter-spacing:1px; text-transform:uppercase; background:#EEF2FF; padding:3px 10px; border-radius:12px; display:inline-block; margin-bottom:6px;">STEP 2: EMAIL OTP &amp; CREDENTIAL SETUP</span>
+            <h2 style="font-family:'Outfit', sans-serif; font-size:22px; color:#0f172a; margin-bottom:4px;">Email Authentication &amp; Password</h2>
+            <p style="font-size:12.5px; color:#64748b; margin:0;">Verify your business email and establish permanent login credentials</p>
           </div>
         </div>
 
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
           <div class="vertical-form-group">
-            <label for="wizardEmailInput">Email Address *</label>
+            <label for="wizardEmailInput">Official Email Address *</label>
             <div style="display:flex; gap:8px;">
               <input type="email" id="wizardEmailInput" placeholder="e.g. owner@brandstore.com" autocomplete="email" style="flex:1;">
-              <button type="button" id="btnWizardSendOtp" class="btn-primary" style="padding:8px 14px; font-size:12px; white-space:nowrap; border-radius:6px; background:#1a73e8;" onclick="app.wizardSendOtp()">
+              <button type="button" id="btnWizardSendOtp" class="btn-hero-primary" style="padding:8px 14px; font-size:12px; white-space:nowrap; border-radius:6px;" onclick="app.wizardSendOtp()">
                 Send OTP Code
               </button>
             </div>
-            <small id="wizardOtpStatusText" class="form-help-text" style="color:#64748b;">We will send a 6-digit verification code to this email.</small>
+            <small id="wizardOtpStatusText" class="form-help-text" style="color:#64748b;">We will dispatch an authentic 6-digit authentication passcode to this email.</small>
           </div>
 
-          <!-- 6-digit OTP Code Input Container (shown when OTP sent) -->
+          <!-- 6-digit OTP Code Input Container -->
           <div id="wizardOtpInputContainer" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #cbd5e1;">
-            <label for="wizardOtpCodeInput" style="font-size:11.5px; font-weight:700; color:#1e293b; display:block; margin-bottom:4px;">Enter 6-Digit OTP Verification Code *</label>
+            <label for="wizardOtpCodeInput" style="font-size:11.5px; font-weight:700; color:#1e293b; display:block; margin-bottom:4px;">Enter 6-Digit Verification Passcode *</label>
             <div style="display:flex; gap:8px; align-items:center;">
-              <input type="text" id="wizardOtpCodeInput" maxlength="6" placeholder="123456" style="font-size:18px; font-weight:800; letter-spacing:6px; text-align:center; flex:1; font-family:monospace;" oninput="app.wizardHandleOtpInput(this.value)">
-              <button type="button" id="btnWizardVerifyOtp" class="btn-primary" style="padding:9px 16px; font-size:12px; border-radius:6px; background:#16a34a;" onclick="app.wizardVerifyOtp()">
+              <input type="text" id="wizardOtpCodeInput" maxlength="6" placeholder="" style="font-size:18px; font-weight:800; letter-spacing:6px; text-align:center; flex:1; font-family:monospace;" oninput="app.wizardHandleOtpInput(this.value)" autocomplete="one-time-code">
+              <button type="button" id="btnWizardVerifyOtp" class="btn-primary" style="padding:9px 16px; font-size:12px; border-radius:6px; background:#10B981;" onclick="app.wizardVerifyOtp()">
                 Verify OTP
               </button>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-              <span id="wizardOtpTimerText" style="font-size:11px; color:#64748b;">Code expires in: <strong id="wizardOtpCountdown">60s</strong></span>
-              <button type="button" id="btnWizardResendOtp" style="background:none; border:none; color:#1a73e8; font-size:11.5px; font-weight:700; cursor:pointer; display:none;" onclick="app.wizardSendOtp()">Resend OTP Code</button>
+              <span id="wizardOtpTimerText" style="font-size:11px; color:#64748b;">Code expires in: <strong id="wizardOtpCountdown">300s</strong></span>
+              <button type="button" id="btnWizardResendOtp" style="background:none; border:none; color:#4F46E5; font-size:11.5px; font-weight:700; cursor:pointer; display:none;" onclick="app.wizardSendOtp()">Resend Passcode</button>
             </div>
             <div id="wizardOtpVerifiedBadge" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:8px 12px; border-radius:6px; font-size:12px; font-weight:700; margin-top:8px;">
-              ✅ Email verified successfully!
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="#15803d" style="vertical-align:middle; margin-right:4px;"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              Email authenticated and verified successfully!
             </div>
           </div>
         </div>
@@ -2267,7 +2374,7 @@
         <!-- Password Creation Section -->
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
           <h4 style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-            <span>🔑</span> Create Store Login Password
+            <span>ðŸ”‘</span> Create Store Login Password
           </h4>
           <div class="vertical-form-group">
             <label for="wizardPasswordInput">Create Password * <span style="font-weight:normal; color:#64748b;">(Min. 6 characters)</span></label>
@@ -2280,7 +2387,7 @@
           </div>
         </div>
 
-        <button type="button" class="btn-primary" id="btnProceedToStoreProfile" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; border-radius:8px; opacity:0.6; cursor:not-allowed;" disabled onclick="app.wizardProceedToStep3()">
+        <button type="button" class="btn-hero-primary" id="btnProceedToStoreProfile" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; border-radius:8px; opacity:0.6; cursor:not-allowed;" disabled onclick="app.wizardProceedToStep3()">
           Proceed to Store Profile &rsaquo;
         </button>
       </div>
@@ -2301,7 +2408,7 @@
         <form id="wizardFinalApplicationForm" onsubmit="app.handleWizardFinalSubmit(event)" autocomplete="off">
           <!-- 1. Verified Email (Locked) -->
           <div class="vertical-form-group">
-            <label for="wizardVerifiedEmailDisplay">Verified Email Address <span style="color:#16a34a; font-weight:800;">(Verified ✅)</span></label>
+            <label for="wizardVerifiedEmailDisplay">Verified Email Address <span style="color:#16a34a; font-weight:800;">(Verified <svg width="14" height="14" viewBox="0 0 20 20" fill="#16a34a" style="vertical-align:middle;"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>)</span></label>
             <input type="email" id="wizardVerifiedEmailDisplay" readonly style="background:#f1f5f9; color:#475569; font-weight:600; cursor:not-allowed;">
           </div>
 
@@ -2340,37 +2447,42 @@
             <label for="wizardReferralCode" style="color:#b91c1c;">Referral Code * <span style="font-weight:normal; color:#dc2626;">(Required - Sponsor Code)</span></label>
             <input type="text" id="wizardReferralCode" name="referralCode" placeholder="Enter sponsor code (e.g. 00546)" oninput="app.wizardHandleReferralInput(this.value)" required>
             <div id="wizardReferralErrorBox" class="referral-error-msg" style="display:none;">
-              ❌ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.
+              âŒ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.
             </div>
             <div id="wizardReferralSuccessBox" class="referral-success-msg" style="display:none;">
-              ✅ Authorized sponsor code verified (00546).
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="#15803d" style="vertical-align:middle; margin-right:4px;"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              Authorized sponsor code verified (00546).
             </div>
             <small class="form-help-text">Mandatory authorized sponsor code required for onboarding.</small>
           </div>
 
-          <!-- 4. Address & Regional Details -->
+          <!-- 4. Mandatory Address & Location -->
           <div class="vertical-form-group">
-            <label for="wizardAddress">Full Address / City / Region *</label>
-            <textarea id="wizardAddress" name="address" rows="2" placeholder="Enter complete business street address, city, and region..." required></textarea>
+            <label for="wizardAddress">Business Street Address *</label>
+            <input type="text" id="wizardAddress" name="address" placeholder="e.g. Suite 400, Commerce Avenue" required>
           </div>
 
-          <!-- 5. Optional Financial & Bank Details -->
+          <div class="vertical-form-group">
+            <label for="wizardCity">City &amp; Country *</label>
+            <input type="text" id="wizardCity" name="city" placeholder="e.g. New York, United States / Karachi, PK" required>
+          </div>
+
+          <!-- 5. Optional Payout & Banking -->
           <div class="optional-section-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <strong style="font-size:12px; color:#1e293b;">💳 Bank Details / Payout Method</strong>
-              <span style="font-size:10px; color:#64748b; background:#e2e8f0; padding:2px 8px; border-radius:10px; font-weight:700;">OPTIONAL</span>
+            <h5 style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+              <span>ðŸ¦</span> Payout &amp; Banking Details <span style="font-weight:normal; color:#64748b;">(Optional)</span>
+            </h5>
+            <div class="vertical-form-group">
+              <label for="wizardBankName">Bank / Payout Provider Name</label>
+              <input type="text" id="wizardBankName" name="bankName" placeholder="e.g. Chase / Wise / Payoneer / HBL">
             </div>
-            <div class="vertical-form-group" style="margin-bottom:10px;">
-              <label for="wizardBankName" style="font-size:11px;">Bank Name</label>
-              <input type="text" id="wizardBankName" name="bankName" placeholder="e.g. Chase Bank, HBL, Bank of America">
-            </div>
-            <div class="vertical-form-group" style="margin-bottom:10px;">
-              <label for="wizardAccountTitle" style="font-size:11px;">Account Title</label>
+            <div class="vertical-form-group">
+              <label for="wizardAccountTitle">Account Title</label>
               <input type="text" id="wizardAccountTitle" name="accountTitle" placeholder="e.g. John Doe / Alpha Traders LLC">
             </div>
             <div class="vertical-form-group" style="margin-bottom:0;">
-              <label for="wizardIban" style="font-size:11px;">IBAN / Account Number</label>
-              <input type="text" id="wizardIban" name="iban" placeholder="e.g. US12345678901234 / PK36HABB00000012345678">
+              <label for="wizardIban">IBAN / Account Number</label>
+              <input type="text" id="wizardIban" name="iban" placeholder="e.g. US12CHAS34567890123456">
             </div>
           </div>
 
@@ -2380,15 +2492,15 @@
             <textarea id="wizardDescription" name="description" rows="2" placeholder="Brief details about your products, catalog brands, and business background..."></textarea>
           </div>
 
-          <button type="submit" class="btn-primary" id="btnSubmitWizardApplication" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; margin-top:6px; border-radius:8px;">
-            🚀 Submit Verification Application
+          <button type="submit" class="btn-hero-primary" id="btnSubmitWizardApplication" style="width:100%; justify-content:center; padding:13px; font-size:14px; font-weight:700; margin-top:6px; border-radius:8px;">
+            ðŸš€ Submit Verification Application
           </button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- SET PASSWORD / ACCOUNT ACTIVATION MODAL OVERLAY -->
+    <!-- SET PASSWORD / ACCOUNT ACTIVATION MODAL OVERLAY -->
   <div class="modal-overlay" id="setPasswordModalOverlay">
     <div class="dokan-activation-modal-card">
       <button class="modal-close-btn" onclick="app.closeModals()">&times;</button>
@@ -2535,7 +2647,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=4.2"></script>
+  <script src="app-bundle.js?v=4.5"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
@@ -2552,5 +2664,6 @@
   <!--End of Tawk.to Script-->
 </body>
 </html>
+
 
 

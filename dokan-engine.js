@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v4.2_dokan_my_account_activation';
+    const APP_VERSION = 'v4.5_ultra_luxury_storefront_otp';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -1564,4 +1564,5 @@ class DokanEngine {
 }
 
 export const engine = new DokanEngine();
+
 

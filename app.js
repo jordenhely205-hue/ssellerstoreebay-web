@@ -1,4 +1,5 @@
-﻿/**
+﻿const APP_VERSION = 'v4.5_ultra_luxury_storefront_otp';
+/**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
  * Profit Calculations (18%-30%), Visible Brands Showcase, Real-Time Cloud Sync & Admin Activity Tracking.
@@ -1412,7 +1413,44 @@ class ESellerStoreApp {
     }
   }
 
+
+  startLivePlatformTicker() {
+    const events = [
+      "âš¡ Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow â€¢ 99.98% Global SLA Active",
+      "ðŸš€ New Merchant 'Alpha Watch Vault' onboarded â€¢ Authorized Sponsor Code 00546 Verified",
+      "ðŸ›¡ï¸ Bank-grade 256-bit buyer escrow active â€¢ Automated 18%â€“30% vendor margin settlement",
+      "ðŸ“¦ Global brand shipment verified: 15x Apple iPhone 15 Pro Max dispatched to verified buyers",
+      "â­ 5.0 Star Merchant Milestone: 'Luxury Life Studio' completed 200+ verified customer orders"
+    ];
+    let idx = 0;
+    setInterval(() => {
+      const el = document.getElementById('platformLiveTickerText');
+      if (el) {
+        idx = (idx + 1) % events.length;
+        el.style.opacity = '0';
+        setTimeout(() => {
+          el.textContent = events[idx];
+          el.style.opacity = '1';
+        }, 300);
+      }
+    }, 4500);
+  }
+
   bindEvents() {
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
     const searchInput = document.getElementById('ajaxSearchInput');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => this.handleAjaxSearch(e.target.value));
@@ -1487,3 +1525,6 @@ window.handleAccountRegister = function(e) { if (window.app) window.app.handleAc
 window.openSetPasswordModal = function(t, em) { if (window.app) window.app.openSetPasswordModal(t, em); };
 window.handleSetPasswordSubmit = function(e) { if (window.app) window.app.handleSetPasswordSubmit(e); };
 window.handleLostPassword = function() { if (window.app) window.app.handleLostPassword(); };
+
+
+

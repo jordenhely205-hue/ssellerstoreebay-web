@@ -1,4 +1,4 @@
-// Vercel Serverless Function: POST /api/send-otp
+﻿// Vercel Serverless Function: POST /api/send-otp
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -34,12 +34,13 @@ module.exports = async (req, res) => {
       const email = (body.email || '').trim().toLowerCase();
 
       if (!email || !email.includes('@')) {
-        return res.status(400).json({ success: false, error: 'Valid email address is required.' });
+        return res.status(400).json({ success: false, error: 'A valid email address is required.' });
       }
 
-      // Generate 6-digit numeric OTP code
+      // Generate authentic 6-digit numeric OTP code
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+      const TTL_SECONDS = 300; // 5 Minutes TTL
+      const expiresAt = Date.now() + TTL_SECONDS * 1000;
 
       const store = getOtpStore();
       store[email] = {
@@ -50,44 +51,98 @@ module.exports = async (req, res) => {
       };
       saveOtpStore(store);
 
-      // Attempt email delivery if configured, otherwise fallback to local/preview
       let emailDispatched = false;
-      try {
-        if (process.env.RESEND_API_KEY) {
-          const { Resend } = require('resend');
-          const resend = new Resend(process.env.RESEND_API_KEY);
-          await resend.emails.send({
-            from: 'E Seller Store <onboarding@esellerstorebay.com>',
-            to: [email],
+      let dispatchProvider = 'sandbox_preview';
+
+      // 1. Attempt Nodemailer SMTP Dispatch if SMTP environment variables are configured
+      if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        try {
+          const nodemailer = require('nodemailer');
+          const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT || '587', 10),
+            secure: process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465',
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS
+            }
+          });
+
+          const fromAddress = process.env.SMTP_FROM || '"E Seller Store Security" <auth@esellerstorebay.com>';
+          await transporter.sendMail({
+            from: fromAddress,
+            to: email,
             subject: `Your E Seller Store Verification Code: ${otpCode}`,
             html: `
-              <div style="font-family:sans-serif; max-width:500px; margin:auto; padding:24px; border:1px solid #e2e8f0; border-radius:10px;">
-                <h2 style="color:#0f172a; margin-bottom:8px;">E Seller Store</h2>
-                <p style="font-size:14px; color:#475569;">Your merchant onboarding verification code is:</p>
-                <div style="background:#f1f5f9; padding:16px; font-size:28px; font-weight:800; letter-spacing:6px; text-align:center; color:#1a73e8; border-radius:8px; margin:16px 0;">
-                  ${otpCode}
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                  <h1 style="color: #0f172a; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">
+                    <span style="color: #4f46e5;">E Seller </span><span style="color: #10b981;">Store</span>
+                  </h1>
+                  <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Official Merchant Onboarding &amp; Security Verification</p>
                 </div>
-                <p style="font-size:12px; color:#64748b;">This code expires in 10 minutes. If you did not request this, please ignore this email.</p>
+                <div style="background: #f8fafc; border-radius: 10px; padding: 24px; border: 1px solid #e2e8f0; text-align: center;">
+                  <p style="color: #334155; font-size: 14px; margin: 0 0 16px 0; font-weight: 600;">Your one-time authentication passcode is:</p>
+                  <div style="background: #0f172a; color: #ffffff; padding: 16px 24px; font-size: 32px; font-weight: 800; letter-spacing: 8px; border-radius: 8px; display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);">
+                    ${otpCode}
+                  </div>
+                  <p style="font-size: 12px; color: #dc2626; margin: 16px 0 0 0; font-weight: 600;">
+                    ⏱️ This code strictly expires in 5 minutes (300 seconds).
+                  </p>
+                </div>
+                <p style="font-size: 12px; color: #94a3b8; text-align: center; margin: 24px 0 0 0; line-height: 1.5;">
+                  If you did not request this verification passcode, please disregard this email. Your account remains secure.
+                </p>
               </div>
             `
           });
           emailDispatched = true;
+          dispatchProvider = 'nodemailer_smtp';
+        } catch (smtpErr) {
+          console.warn('SMTP Dispatch Error:', smtpErr.message);
         }
-      } catch (err) {
-        console.warn('Email delivery notice (local/sandbox mode active):', err.message);
+      }
+
+      // 2. Attempt Resend API Dispatch if RESEND_API_KEY is configured
+      if (!emailDispatched && process.env.RESEND_API_KEY) {
+        try {
+          const { Resend } = require('resend');
+          const resend = new Resend(process.env.RESEND_API_KEY);
+          await resend.emails.send({
+            from: 'E Seller Store <auth@esellerstorebay.com>',
+            to: [email],
+            subject: `Your E Seller Store Verification Code: ${otpCode}`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 500px; margin: auto; padding: 28px 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+                <h2 style="color: #0f172a; margin-bottom: 8px; text-align: center;">E Seller Store</h2>
+                <p style="font-size: 14px; color: #475569; text-align: center;">Your merchant onboarding verification passcode is:</p>
+                <div style="background: #0f172a; color: #ffffff; padding: 16px; font-size: 32px; font-weight: 800; letter-spacing: 8px; text-align: center; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+                  ${otpCode}
+                </div>
+                <p style="font-size: 12px; color: #dc2626; text-align: center; font-weight: 600;">This code expires in 5 minutes (300 seconds).</p>
+              </div>
+            `
+          });
+          emailDispatched = true;
+          dispatchProvider = 'resend_api';
+        } catch (resendErr) {
+          console.warn('Resend Dispatch Error:', resendErr.message);
+        }
       }
 
       return res.status(200).json({
         success: true,
-        message: `Verification code sent to ${email}`,
+        message: `Authentication code dispatched to ${email}`,
+        email: email,
         emailDispatched: emailDispatched,
-        otpPreview: otpCode, // For demo/sandbox instant testing
-        expiresInSeconds: 600
+        dispatchProvider: dispatchProvider,
+        otpPreview: otpCode, // Provided for instant sandbox testing
+        expiresInSeconds: TTL_SECONDS
       });
     } catch (err) {
       return res.status(500).json({ success: false, error: err.message });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  return res.status(405).json({ error: 'Method Not Allowed' });
 };

@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v4.2_dokan_my_account_activation';
+const APP_VERSION = 'v4.5_ultra_luxury_storefront_otp';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -8158,7 +8158,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v4.2_dokan_my_account_activation';
+    const APP_VERSION = 'v4.5_ultra_luxury_storefront_otp';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -10076,7 +10076,21 @@ class ESellerStoreApp {
   }
 
   renderAll() {
-    try { this.updateCounters(); } catch (e) {}
+    try { this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker(); } catch (e) {}
     try { this.renderBrandsCarousel(); } catch (e) {}
     try { this.renderUpfrontVisibleBrands(); } catch (e) {}
     try { this.renderAdminBrandsList(); } catch (e) {}
@@ -10225,6 +10239,20 @@ class ESellerStoreApp {
       this.renderAdminProductsTable();
       if (caller === 'admin') this.handleAdminVendorInventoryView(targetVendorId);
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
       
       this.showToast('🔄 Synchronized Master Catalog (' + res.count + ' items added to ' + res.vendor.name + ')');
       alert('🎉 1-CLICK MASTER CATALOG SYNC COMPLETE!\n\nTarget Store: ' + res.vendor.name + '\nProducts Cloned: ' + res.count + '\nAll items are active with customized SKUs and stock inventory.');
@@ -10777,6 +10805,20 @@ class ESellerStoreApp {
       this.renderHomepageSections();
       this.renderVendorDashboard();
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
     } catch (e) {
       alert('Error saving product: ' + e.message);
     }
@@ -10933,6 +10975,20 @@ class ESellerStoreApp {
       this.renderHomepageSections();
       this.renderVendorDashboard();
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
       this.switchAdminTab('products');
       alert('🎉 BULK CSV IMPORT COMPLETE!\n\nSuccessfully added ' + result.count + ' new products to E Seller Store master catalog.\nAll products are live on the storefront.');
     } catch (e) {
@@ -11021,6 +11077,20 @@ class ESellerStoreApp {
       this.renderAdminVendorsTable();
       this.renderVendorDashboard();
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
       this.showToast(`✅ Store '${vendor.name}' approved & activated!`);
       alert(`🎉 VENDOR APPLICATION APPROVED!\n\nStore "${vendor.name}" (${vendor.ownerName}) is now an active verified seller.\nThe vendor can immediately log in via the Seller Portal with email: ${vendor.email}`);
     } catch (err) {
@@ -11035,6 +11105,20 @@ class ESellerStoreApp {
       this.renderAdminDashboard();
       this.renderAdminVendorsTable();
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
       this.showToast('❌ Vendor application declined');
       alert('⚠️ VENDOR APPLICATION DECLINED\n\nApplication for "' + (app.storeName || app.name) + '" has been rejected.');
     } catch (err) {
@@ -11239,6 +11323,20 @@ class ESellerStoreApp {
     this.renderVendorDashboard();
     this.handleAdminVendorInventoryView(vendor.id);
     this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
     this.showToast(`⚡ Successfully assigned ${clonedProducts.length} master products to ${vendor.name}!`);
     alert(`🎉 MASTER CATALOG ASSIGNMENT COMPLETE!\n\nSuccessfully linked and published ${clonedProducts.length} items directly to ${vendor.name}'s inventory.\nProducts are instantly live on the storefront and vendor dashboard.`);
   }
@@ -11621,6 +11719,20 @@ class ESellerStoreApp {
     this.renderClientChatMessages();
     this.renderAdminChatInbox();
     this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
   }
 
   sendAdminLiveChatMessage(event) {
@@ -11638,6 +11750,20 @@ class ESellerStoreApp {
     this.renderAdminChatInbox();
     this.renderClientChatMessages();
     this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
     this.showToast('✉️ Reply Sent to Client!');
   }
 
@@ -11702,6 +11828,20 @@ class ESellerStoreApp {
       this.renderAdminVendorsTable();
       this.renderVendorDashboard();
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
       this.showToast(`⚡ Re-indexed ${products.length} live products across storefront!`);
       alert(`🎉 FORCE CATALOG SYNC COMPLETE!\n\nRe-indexed ${products.length} live products.\nAll imported, assigned, and edited items are synchronized across the storefront, Admin, and Vendor dashboards.`);
     } catch (err) {
@@ -11835,6 +11975,20 @@ class ESellerStoreApp {
 
     localStorage.setItem('esellerstore_cart', JSON.stringify(this.cart));
     this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
     this.renderCartDrawer();
     this.openCartDrawer();
     this.showToast('🛒 Added to Cart!');
@@ -11852,6 +12006,20 @@ class ESellerStoreApp {
 
     localStorage.setItem('esellerstore_cart', JSON.stringify(this.cart));
     this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
     this.renderCartDrawer();
   }
 
@@ -11929,6 +12097,20 @@ class ESellerStoreApp {
 
     localStorage.setItem('esellerstore_cart', JSON.stringify(this.cart));
     this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
     this.openCheckoutModal();
   }
 
@@ -12024,6 +12206,20 @@ class ESellerStoreApp {
       const purchasedCart = [...this.cart];
       this.cart = [];
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
       this.closeModals();
       this.renderCartDrawer();
       this.renderAdminDashboard();
@@ -12609,6 +12805,20 @@ class ESellerStoreApp {
       this.renderAdminDashboard();
       this.renderAdminVendorsTable();
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
 
       const roleLabel = (role === 'vendor') ? 'Wholesale Vendor Partner' : 'Retail Seller';
       alert(`ðŸŽ‰ 3-STEP WIZARD APPLICATION SUBMITTED!\n\n` +
@@ -13140,6 +13350,20 @@ class ESellerStoreApp {
       else this.showToast('Customer Storefront Active');
     }
     this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
   }
 
   filterByCategory(categoryKey) {
@@ -13250,6 +13474,29 @@ class ESellerStoreApp {
     }, 3000);
   }
 
+
+  startLivePlatformTicker() {
+    const events = [
+      "âš¡ Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow â€¢ 99.98% Global SLA Active",
+      "ðŸš€ New Merchant 'Alpha Watch Vault' onboarded â€¢ Authorized Sponsor Code 00546 Verified",
+      "ðŸ›¡ï¸ Bank-grade 256-bit buyer escrow active â€¢ Automated 18%â€“30% vendor margin settlement",
+      "ðŸ“¦ Global brand shipment verified: 15x Apple iPhone 15 Pro Max dispatched to verified buyers",
+      "â­ 5.0 Star Merchant Milestone: 'Luxury Life Studio' completed 200+ verified customer orders"
+    ];
+    let idx = 0;
+    setInterval(() => {
+      const el = document.getElementById('platformLiveTickerText');
+      if (el) {
+        idx = (idx + 1) % events.length;
+        el.style.opacity = '0';
+        setTimeout(() => {
+          el.textContent = events[idx];
+          el.style.opacity = '1';
+        }, 300);
+      }
+    }, 4500);
+  }
+
   bindEvents() {
     const searchInput = document.getElementById('ajaxSearchInput');
     if (searchInput) {
@@ -13324,6 +13571,20 @@ class ESellerStoreApp {
       this.renderClientChatMessages();
       if (this.currentPersona === 'admin') this.renderAdminChatInbox();
       this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
     });
 
     document.addEventListener('click', (e) => {
@@ -13425,6 +13686,20 @@ class ESellerStoreApp {
       const success = await engine.forceCloudPush();
       if (success) {
         this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
         this.updateCloudSyncBadge(new Date().toISOString());
         this.showToast('✅ Cloud database synchronized successfully!');
         alert('🎉 CLOUD PUSH COMPLETE!\n\nAll current products, vendors, applications, and store orders have been uploaded and persisted to the global cloud database.');
@@ -13448,6 +13723,20 @@ class ESellerStoreApp {
         this.renderAdminVendorsTable();
         this.renderVendorDashboard();
         this.updateCounters();
+    // Keyboard shortcut: Ctrl+K or Cmd+K for Omni-Search
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('ajaxSearchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Start Live Platform Event Ticker
+    this.startLivePlatformTicker();
         this.updateCloudSyncBadge(snapshot.lastUpdated);
         this.showToast('✅ Local cache updated with latest cloud data!');
         alert(`🎉 CLOUD PULL COMPLETE!\n\nSynchronized with cloud database.\nProducts: ${snapshot.products ? snapshot.products.length : 0}\nVendors: ${snapshot.vendors ? snapshot.vendors.length : 0}\nPending Applications: ${snapshot.vendor_applications ? snapshot.vendor_applications.length : 0}`);
@@ -13916,3 +14205,5 @@ window.handleAccountRegister = function(e) { if (window.app) window.app.handleAc
 window.openSetPasswordModal = function(t, em) { if (window.app) window.app.openSetPasswordModal(t, em); };
 window.handleSetPasswordSubmit = function(e) { if (window.app) window.app.handleSetPasswordSubmit(e); };
 window.handleLostPassword = function() { if (window.app) window.app.handleLostPassword(); };
+
+
