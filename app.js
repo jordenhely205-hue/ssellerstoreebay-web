@@ -992,6 +992,36 @@ window.app = new E Seller StoreApp();
   /**
    * Requirement #1: Advanced User Onboarding (Registration with CNIC, Email, Description)
    */
+  openOnboardingSelection() {
+    this.closeModals();
+    this.openModal('onboardingSelectModalOverlay');
+  }
+
+  openSellerRegistration(role = 'seller') {
+    this.closeModals();
+    const roleInput = document.getElementById('vendorRegRole');
+    if (roleInput) roleInput.value = role;
+
+    const titleEl = document.getElementById('sellerRegModalTitle');
+    const subtitleEl = document.getElementById('sellerRegModalSubtitle');
+    const storeNameLabel = document.getElementById('vendorRegStoreNameLabel');
+    const storeNameInput = document.getElementById('vendorRegStoreName');
+
+    if (role === 'vendor') {
+      if (titleEl) titleEl.textContent = 'Vendor & Supplier Registration';
+      if (subtitleEl) subtitleEl.textContent = 'Apply as a Wholesale & Brand Partner to list multi-item catalogs';
+      if (storeNameLabel) storeNameLabel.textContent = 'Vendor / Company Name *';
+      if (storeNameInput) storeNameInput.placeholder = 'e.g. Nexus Wholesale Hub';
+    } else {
+      if (titleEl) titleEl.textContent = 'Seller Registration Portal';
+      if (subtitleEl) subtitleEl.textContent = 'Start selling your retail products with guaranteed 18%–30% profit margins';
+      if (storeNameLabel) storeNameLabel.textContent = 'Store Name *';
+      if (storeNameInput) storeNameInput.placeholder = 'e.g. Urban Style Store';
+    }
+
+    this.openModal('sellerRegModalOverlay');
+  }
+
   handleVendorRegistration(event) {
     if (event && event.preventDefault) event.preventDefault();
     const form = event.target || document.querySelector('#sellerRegModalOverlay form');
@@ -1004,6 +1034,7 @@ window.app = new E Seller StoreApp();
     const storeName = form.storeName ? form.storeName.value.trim() : '';
     const mobile = form.mobile ? form.mobile.value.trim() : '';
     const description = form.description ? form.description.value.trim() : '';
+    const role = form.onboardingRole ? form.onboardingRole.value : 'seller';
 
     if (!ownerName || !email || !password || !storeName || !mobile) {
       alert('Please fill in all mandatory fields: Full Owner Name, Store Name, Mobile, Email, and Password.');
@@ -1011,15 +1042,16 @@ window.app = new E Seller StoreApp();
     }
 
     try {
-      const appRecord = engine.submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description });
+      const appRecord = engine.submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description, role });
       this.closeModals();
       form.reset();
       this.renderAdminDashboard();
       this.renderAdminVendorsTable();
       this.updateCounters();
       const cnicDisplay = (appRecord.cnic && appRecord.cnic !== 'N/A') ? '\nCNIC: ' + appRecord.cnic : '';
-      alert(`🎉 APPLICATION SUBMITTED SUCCESSFULLY!\n\nStore Name: ${appRecord.storeName}\nOwner: ${appRecord.ownerName}${cnicDisplay}\nEmail: ${appRecord.email}\nStatus: PENDING ADMIN APPROVAL\n\nYour application has been placed in the Super Admin Pending Queue for verification.`);
-      this.showToast('📋 Vendor registration submitted for review');
+      const roleLabel = (role === 'vendor') ? 'Vendor & Brand Partner' : 'Retail Seller';
+      alert(`🎉 APPLICATION SUBMITTED SUCCESSFULLY!\n\nRole: ${roleLabel}\nStore/Company: ${appRecord.storeName}\nOwner: ${appRecord.ownerName}${cnicDisplay}\nEmail: ${appRecord.email}\nStatus: PENDING ADMIN APPROVAL\n\nYour application has been placed in the Super Admin Pending Queue for verification.`);
+      this.showToast(`📋 ${roleLabel} registration submitted for review`);
     } catch (err) {
       alert('Registration Error: ' + err.message);
     }
@@ -1511,3 +1543,5 @@ window.app = new E Seller StoreApp();
 window.app = new E Seller StoreApp();
 window.handleForceCloudPush = function() { if (window.app) window.app.handleForceCloudPush(); };
 window.handleForceCloudPull = function() { if (window.app) window.app.handleForceCloudPull(); };
+window.openOnboardingSelection = function() { if (window.app) window.app.openOnboardingSelection(); };
+window.openSellerRegistration = function(r) { if (window.app) window.app.openSellerRegistration(r); };

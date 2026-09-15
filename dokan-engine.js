@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.5_cloud_sync';
+    const APP_VERSION = 'v3.6_onboarding_flow';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -825,7 +825,7 @@ class DokanEngine {
     }
   }
 
-  submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description }) {
+  submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description, role }) {
     if (!ownerName || !email || !password || !storeName || !mobile) {
       throw new Error('Please fill in all mandatory fields (Full Name, Store Name, Mobile, Email, and Password).');
     }
@@ -839,10 +839,12 @@ class DokanEngine {
     const applications = this.getVendorApplications();
     const cleanCnic = (cnic && typeof cnic === 'string' && cnic.trim()) ? cnic.trim() : 'N/A';
     const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller application.';
+    const cleanRole = (role === 'vendor') ? 'vendor' : 'seller';
 
     const newApp = {
       id: 'app_' + Date.now(),
       status: 'pending',
+      role: cleanRole,
       createdAt: new Date().toISOString(),
       ownerName: ownerName.trim(),
       storeName: storeName.trim(),
@@ -863,6 +865,7 @@ class DokanEngine {
     // Also register in vendors as pending
     const newVendorRecord = {
       id: 'v_' + newApp.id.replace('app_', ''),
+      role: cleanRole,
       name: newApp.storeName,
       storeName: newApp.storeName,
       ownerName: newApp.ownerName,

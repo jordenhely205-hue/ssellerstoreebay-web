@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v3.5_cloud_sync';
+const APP_VERSION = 'v3.6_onboarding_flow';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -8158,7 +8158,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v3.5_cloud_sync';
+    const APP_VERSION = 'v3.6_onboarding_flow';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -9211,7 +9211,7 @@ class DokanEngine {
     }
   }
 
-  submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description }) {
+  submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description, role }) {
     if (!ownerName || !email || !password || !storeName || !mobile) {
       throw new Error('Please fill in all mandatory fields (Full Name, Store Name, Mobile, Email, and Password).');
     }
@@ -9225,10 +9225,12 @@ class DokanEngine {
     const applications = this.getVendorApplications();
     const cleanCnic = (cnic && typeof cnic === 'string' && cnic.trim()) ? cnic.trim() : 'N/A';
     const cleanDesc = (description && typeof description === 'string' && description.trim()) ? description.trim() : 'Registered Seller application.';
+    const cleanRole = (role === 'vendor') ? 'vendor' : 'seller';
 
     const newApp = {
       id: 'app_' + Date.now(),
       status: 'pending',
+      role: cleanRole,
       createdAt: new Date().toISOString(),
       ownerName: ownerName.trim(),
       storeName: storeName.trim(),
@@ -9247,6 +9249,7 @@ class DokanEngine {
 
     const newVendorRecord = {
       id: 'v_' + newApp.id.replace('app_', ''),
+      role: cleanRole,
       name: newApp.storeName,
       storeName: newApp.storeName,
       ownerName: newApp.ownerName,
@@ -12005,6 +12008,36 @@ class ESellerStoreApp {
     }
   }
 
+  openOnboardingSelection() {
+    this.closeModals();
+    this.openModal('onboardingSelectModalOverlay');
+  }
+
+  openSellerRegistration(role = 'seller') {
+    this.closeModals();
+    const roleInput = document.getElementById('vendorRegRole');
+    if (roleInput) roleInput.value = role;
+
+    const titleEl = document.getElementById('sellerRegModalTitle');
+    const subtitleEl = document.getElementById('sellerRegModalSubtitle');
+    const storeNameLabel = document.getElementById('vendorRegStoreNameLabel');
+    const storeNameInput = document.getElementById('vendorRegStoreName');
+
+    if (role === 'vendor') {
+      if (titleEl) titleEl.textContent = 'Vendor & Supplier Registration';
+      if (subtitleEl) subtitleEl.textContent = 'Apply as a Wholesale & Brand Partner to list multi-item catalogs';
+      if (storeNameLabel) storeNameLabel.textContent = 'Vendor / Company Name *';
+      if (storeNameInput) storeNameInput.placeholder = 'e.g. Nexus Wholesale Hub';
+    } else {
+      if (titleEl) titleEl.textContent = 'Seller Registration Portal';
+      if (subtitleEl) subtitleEl.textContent = 'Start selling your retail products with guaranteed 18%–30% profit margins';
+      if (storeNameLabel) storeNameLabel.textContent = 'Store Name *';
+      if (storeNameInput) storeNameInput.placeholder = 'e.g. Urban Style Store';
+    }
+
+    this.openModal('sellerRegModalOverlay');
+  }
+
   handleVendorRegistration(event) {
     if (event && event.preventDefault) event.preventDefault();
     const form = event && event.target ? event.target : document.querySelector('#sellerRegModalOverlay form');
@@ -12017,6 +12050,7 @@ class ESellerStoreApp {
     const storeName = form.storeName ? form.storeName.value.trim() : '';
     const mobile = form.mobile ? form.mobile.value.trim() : '';
     const description = form.description ? form.description.value.trim() : '';
+    const role = form.onboardingRole ? form.onboardingRole.value : 'seller';
 
     if (!ownerName || !email || !password || !storeName || !mobile) {
       alert('Please fill in all mandatory fields: Full Owner Name, Store Name, Mobile, Email, and Password.');
@@ -12024,15 +12058,16 @@ class ESellerStoreApp {
     }
 
     try {
-      const app = engine.submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description });
+      const app = engine.submitVendorApplication({ ownerName, cnic, email, password, storeName, mobile, description, role });
       this.closeModals();
       form.reset();
       this.renderAdminDashboard();
       this.renderAdminVendorsTable();
       this.updateCounters();
       const cnicDisplay = (app.cnic && app.cnic !== 'N/A') ? '\nCNIC: ' + app.cnic : '';
-      alert('🎉 APPLICATION SUBMITTED SUCCESSFULLY!\n\nStore Name: ' + app.storeName + '\nOwner: ' + app.ownerName + cnicDisplay + '\nEmail: ' + app.email + '\nStatus: PENDING ADMIN APPROVAL\n\nYour application has been placed in the Super Admin Pending Queue for review.');
-      this.showToast('📋 Vendor registration submitted for review');
+      const roleLabel = (role === 'vendor') ? 'Vendor & Brand Partner' : 'Retail Seller';
+      alert('🎉 APPLICATION SUBMITTED SUCCESSFULLY!\n\nRole: ' + roleLabel + '\nStore/Company: ' + app.storeName + '\nOwner: ' + app.ownerName + cnicDisplay + '\nEmail: ' + app.email + '\nStatus: PENDING ADMIN APPROVAL\n\nYour application has been placed in the Super Admin Pending Queue for review.');
+      this.showToast('📋 ' + roleLabel + ' registration submitted for review');
     } catch (err) {
       alert('Registration Error: ' + err.message);
     }
@@ -12921,3 +12956,5 @@ window.openAdminMasterCatalogImporter = function(id) { if (window.app) window.ap
 window.handleExecuteMasterCatalogAssign = function() { if (window.app) window.app.handleExecuteMasterCatalogAssign(); };
 window.handleToggleMasterCatalogSelectAll = function(c) { if (window.app) window.app.handleToggleMasterCatalogSelectAll(c); };
 window.renderAdminCsvTargetVendorSelect = function() { if (window.app) window.app.renderAdminCsvTargetVendorSelect(); };
+window.openOnboardingSelection = function() { if (window.app) window.app.openOnboardingSelection(); };
+window.openSellerRegistration = function(r) { if (window.app) window.app.openSellerRegistration(r); };
