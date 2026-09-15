@@ -1,4 +1,4 @@
-﻿/**
+/**
  * E Seller Store - Dokan Multi-Vendor & Headless Engine
  * Manages Onboarding with CNIC, Profit Calculation (18%-30%), Real-Time Activity Tracking,
  * Ad Campaigns Management Engine, Manual Live Chat Stream & Web Audio Notifications.
@@ -31,7 +31,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v4.5_ultra_luxury_storefront_otp';
+    const APP_VERSION = 'v4.7_clean_encoding_marketplace_hero';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -623,7 +623,7 @@ class DokanEngine {
 
     let displayVendorName = vendor ? vendor.name : 'Sanvicollection';
     if (publishTarget === 'official') {
-      displayVendorName = '🏢 E Seller Store Official Direct';
+      displayVendorName = '[CORP] E Seller Store Official Direct';
     } else if (publishTarget === 'both') {
       displayVendorName = (vendor ? vendor.name : 'Verified Seller') + ' (Official Partner)';
     }
@@ -680,7 +680,7 @@ class DokanEngine {
     const isOfficial = publishTarget === 'official' || publishTarget === 'both' || !!updatedData.isOfficial;
 
     if (publishTarget === 'official') {
-      vendorName = '🏢 E Seller Store Official Direct';
+      vendorName = '[CORP] E Seller Store Official Direct';
     } else if (publishTarget === 'both') {
       vendorName = (vendorName || 'Verified Seller') + ' (Official Partner)';
     }

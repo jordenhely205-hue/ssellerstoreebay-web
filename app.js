@@ -1,4 +1,4 @@
-﻿const APP_VERSION = 'v4.5_ultra_luxury_storefront_otp';
+const APP_VERSION = 'v4.7_clean_encoding_marketplace_hero';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -96,8 +96,8 @@ class ESellerStoreApp {
       this.renderAdminVendorsTable();
       this.renderVendorDashboard();
       this.updateCounters();
-      this.showToast(`âš¡ Re-indexed ${products.length} live products across storefront!`);
-      alert(`ðŸŽ‰ FORCE CATALOG SYNC COMPLETE!\n\nRe-indexed ${products.length} live products.\nAll imported, assigned, and edited items are synchronized across the storefront, Admin, and Vendor dashboards.`);
+      this.showToast(`[LIVE] Re-indexed ${products.length} live products across storefront!`);
+      alert(`[SUCCESS] FORCE CATALOG SYNC COMPLETE!\n\nRe-indexed ${products.length} live products.\nAll imported, assigned, and edited items are synchronized across the storefront, Admin, and Vendor dashboards.`);
     } catch (err) {
       alert('Sync Error: ' + err.message);
     }
@@ -188,9 +188,9 @@ class ESellerStoreApp {
 
       let badgeHtml = '';
       if (prod.publishTarget === 'official' || prod.isOfficial) {
-        badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;">ðŸ¢ OFFICIAL DIRECT</span>';
+        badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;"> OFFICIAL DIRECT</span>';
       } else if (prod.publishTarget === 'both') {
-        badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;">â­ OFFICIAL PARTNER</span>';
+        badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;"> OFFICIAL PARTNER</span>';
       } else if (prod.badge && prod.badge !== 'Bulk CSV' && prod.badge !== 'CSV Import') {
         badgeHtml = '<span class="product-badge">' + prod.badge + '</span>';
       }
@@ -204,16 +204,16 @@ class ESellerStoreApp {
 
           <div class="product-card-body">
             <h4 class="product-title" title="${title}">${title}</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">ðŸª Seller: ${seller}</div>
-            <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">â­ ${prod.rating || 5.0} (${prod.reviewsCount || 0})</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;"> Seller: ${seller}</div>
+            <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;"> ${prod.rating || 5.0} (${prod.reviewsCount || 0})</div>
             <div class="product-price">
               $${price.toFixed(2)}
               ${origPrice > 0 ? ('<span class="original">$' + origPrice.toFixed(2) + '</span>') : ''}
             </div>
 
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('${prod.id}')">âš¡ Buy Now</button>
-              <button class="btn-add-cart" onclick="app.addToCart('${prod.id}')">ðŸ›’ Add to Cart</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('${prod.id}')">[LIVE] Buy Now</button>
+              <button class="btn-add-cart" onclick="app.addToCart('${prod.id}')">🛒 Add to Cart</button>
             </div>
           </div>
         </div>
@@ -233,7 +233,7 @@ class ESellerStoreApp {
       this.showToast('Removed from Wishlist');
     } else {
       this.wishlist.push(productId);
-      this.showToast('â¤ï¸ Added to Wishlist!');
+      this.showToast(' Added to Wishlist!');
     }
     localStorage.setItem('esellerstore_wishlist', JSON.stringify(this.wishlist));
     this.updateCounters();
@@ -250,7 +250,7 @@ class ESellerStoreApp {
       }
       this.compare.push(productId);
       localStorage.setItem('esellerstore_compare', JSON.stringify(this.compare));
-      this.showToast('âš–ï¸ Added to Compare!');
+      this.showToast('&#9878; Added to Compare!');
       this.openCompareDrawer();
     }
   }
@@ -277,7 +277,7 @@ class ESellerStoreApp {
             <tbody>
               <tr><td><strong>Price</strong></td>${products.map(p => `<td>$${p.price.toFixed(2)}</td>`).join('')}</tr>
               <tr><td><strong>Brand</strong></td>${products.map(p => `<td>${p.brand}</td>`).join('')}</tr>
-              <tr><td><strong>Rating</strong></td>${products.map(p => `<td>â­ ${p.rating}</td>`).join('')}</tr>
+              <tr><td><strong>Rating</strong></td>${products.map(p => `<td> ${p.rating}</td>`).join('')}</tr>
               <tr>
                 <td><strong>Action</strong></td>
                 ${products.map(p => `<td><button class="btn-primary" style="padding:4px 10px; font-size:11px;" onclick="app.addToCart('${p.id}')">Add to Cart</button></td>`).join('')}
@@ -315,7 +315,7 @@ class ESellerStoreApp {
             ${product.description}
           </p>
           <button class="btn-primary" style="width:100%; justify-content:center; padding:12px;" onclick="app.addToCart('${product.id}'); app.closeModals();">
-            ðŸ›’ Add to Cart Now
+            🛒 Add to Cart Now
           </button>
         </div>
       </div>
@@ -347,7 +347,7 @@ class ESellerStoreApp {
     this.updateCounters();
     this.renderCartDrawer();
     this.openCartDrawer();
-    this.showToast('ðŸ›’ Added to Cart on E Seller Store!');
+    this.showToast('🛒 Added to Cart on E Seller Store!');
 
     engine.logActivity('Cart Item Added', `Product '${product.name}' added to cart`, 'info');
   }
@@ -384,7 +384,7 @@ class ESellerStoreApp {
     if (this.cart.length === 0) {
       body.innerHTML = `
         <div style="text-align:center; padding:40px 20px; color:#666;">
-          <div style="font-size:40px; margin-bottom:10px;">ðŸ›’</div>
+          <div style="font-size:40px; margin-bottom:10px;">🛒</div>
           <h4>Your Cart is empty</h4>
         </div>
       `;
@@ -437,7 +437,7 @@ class ESellerStoreApp {
       this.renderAdminDashboard();
       this.renderVendorDashboard();
 
-      alert(`ðŸŽ‰ E Seller Store ORDER CONFIRMED!\n\nOrder ID: ${order.id}\nTotal Paid: $${order.total}\n\nDokan Calculation:\nAdmin Commission Deducted: $${order.commissionDeducted}\nVendor Balance Credited!`);
+      alert(`[SUCCESS] E Seller Store ORDER CONFIRMED!\n\nOrder ID: ${order.id}\nTotal Paid: $${order.total}\n\nDokan Calculation:\nAdmin Commission Deducted: $${order.commissionDeducted}\nVendor Balance Credited!`);
     } catch (err) {
       alert('Error during checkout: ' + err.message);
     }
@@ -515,7 +515,7 @@ class ESellerStoreApp {
         ind.classList.toggle('completed', i < step);
       }
       if (circ) {
-        circ.textContent = (i < step ? 'âœ“' : i.toString());
+        circ.textContent = (i < step ? '[OK]' : i.toString());
       }
     }
 
@@ -548,7 +548,7 @@ class ESellerStoreApp {
       sendBtn.textContent = 'Sending...';
     }
     if (statusText) {
-      statusText.textContent = 'â³ Dispatching 6-digit verification OTP...';
+      statusText.textContent = ' Dispatching 6-digit verification OTP...';
       statusText.style.color = '#1a73e8';
     }
 
@@ -571,14 +571,14 @@ class ESellerStoreApp {
       if (data && data.success) {
         if (container) container.style.display = 'block';
         if (statusText) {
-          statusText.textContent = `âœ… OTP Code sent to ${email}`;
+          statusText.textContent = `[OK] OTP Code sent to ${email}`;
           statusText.style.color = '#16a34a';
         }
         if (resendBtn) resendBtn.style.display = 'none';
 
         // Display instant preview alert if running in sandbox/local
         if (data.otpPreview) {
-          this.showToast(`ðŸ“© OTP Code: ${data.otpPreview}`);
+          this.showToast(`[OTP] OTP Code: ${data.otpPreview}`);
         }
 
         // Start 60s countdown
@@ -665,14 +665,14 @@ class ESellerStoreApp {
         if (emailInput) emailInput.readOnly = true;
         if (otpInput) otpInput.readOnly = true;
         if (verifyBtn) {
-          verifyBtn.textContent = 'Verified âœ“';
+          verifyBtn.textContent = 'Verified [OK]';
           verifyBtn.style.background = '#16a34a';
           verifyBtn.disabled = true;
         }
         if (sendBtn) sendBtn.disabled = true;
         if (this.wizardOtpTimer) clearInterval(this.wizardOtpTimer);
 
-        this.showToast('âœ… Email address successfully verified!');
+        this.showToast('[OK] Email address successfully verified!');
         this.wizardValidatePasswords();
       } else {
         alert(data ? (data.error || 'Invalid OTP code') : 'Verification failed.');
@@ -704,19 +704,19 @@ class ESellerStoreApp {
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.color = '#dc2626';
-        feedback.textContent = 'âš ï¸ Password must be at least 6 characters long.';
+        feedback.textContent = '&#9888; Password must be at least 6 characters long.';
       }
     } else if (pass !== confirm) {
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.color = '#dc2626';
-        feedback.textContent = 'âŒ Passwords do not match.';
+        feedback.textContent = 'Œ Passwords do not match.';
       }
     } else {
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.color = '#16a34a';
-        feedback.textContent = 'âœ… Passwords match securely.';
+        feedback.textContent = '[OK] Passwords match securely.';
       }
       if (this.wizardOtpVerified) {
         isValid = true;
@@ -832,7 +832,7 @@ class ESellerStoreApp {
         refInput.style.background = '#fef2f2';
         refInput.focus();
       }
-      alert('âŒ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.');
+      alert('Œ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.');
       return;
     }
 
@@ -861,17 +861,17 @@ class ESellerStoreApp {
       this.updateCounters();
 
       const roleLabel = (role === 'vendor') ? 'Wholesale Vendor Partner' : 'Retail Seller';
-      alert(`ðŸŽ‰ 3-STEP WIZARD APPLICATION SUBMITTED!\n\n` +
+      alert(`[SUCCESS] 3-STEP WIZARD APPLICATION SUBMITTED!\n\n` +
             `Role: ${roleLabel}\n` +
             `Shop Name: ${appRecord.storeName}\n` +
             `Store URL: ssellerstorebay.com/store/${appRecord.slug}\n` +
             `Applicant: ${appRecord.ownerName} s/o ${appRecord.fatherName}\n` +
-            `Verified Email: ${appRecord.email} [OTP VERIFIED âœ…]\n` +
-            `Referral Sponsor Code: ${appRecord.referralCode} [VERIFIED âœ…]\n\n` +
+            `Verified Email: ${appRecord.email} [OTP VERIFIED [OK]]\n` +
+            `Referral Sponsor Code: ${appRecord.referralCode} [VERIFIED [OK]]\n\n` +
             `Your account password has been established.\n` +
             `Once Super Admin approves your application, you can log in immediately using your email and password!`);
       
-      this.showToast(`ðŸ“‹ ${roleLabel} application submitted [OTP Verified]`);
+      this.showToast(`[DOC] ${roleLabel} application submitted [OTP Verified]`);
     } catch (err) {
       alert('Registration Error: ' + err.message);
     }
@@ -923,24 +923,24 @@ class ESellerStoreApp {
     const vendor = vendors.find(v => v.email && v.email.toLowerCase() === email);
 
     if (!vendor) {
-      alert('âŒ No seller account found for email: ' + email + '\nPlease apply for an account using Apply Now.');
+      alert('Œ No seller account found for email: ' + email + '\nPlease apply for an account using Apply Now.');
       return;
     }
 
     if (vendor.password && vendor.password !== pass) {
-      alert('âŒ Incorrect password for seller account.');
+      alert('Œ Incorrect password for seller account.');
       return;
     }
 
     if (vendor.status === 'pending' || vendor.status === 'pending_verification') {
-      alert(`â³ ACCOUNT PENDING REVIEW\n\nYour store "${vendor.name}" application is currently awaiting Super Admin review.\nYou will receive full access once approved.`);
+      alert(` ACCOUNT PENDING REVIEW\n\nYour store "${vendor.name}" application is currently awaiting Super Admin review.\nYou will receive full access once approved.`);
       return;
     }
 
     this.activeVendorId = vendor.id;
     this.closeModals();
     this.setPersona('vendor');
-    this.showToast(`ðŸª Logged in as ${vendor.name}`);
+    this.showToast(` Logged in as ${vendor.name}`);
   }
 
   handleAdminLogin(event) {
@@ -955,9 +955,9 @@ class ESellerStoreApp {
     if (email === adminAuth.email.toLowerCase() && pass === adminAuth.password) {
       this.closeModals();
       this.setPersona('admin');
-      this.showToast('ðŸ”‘ Super Admin Access Granted');
+      this.showToast('[KEY] Super Admin Access Granted');
     } else {
-      alert('âŒ Invalid Super Admin credentials.');
+      alert('Œ Invalid Super Admin credentials.');
     }
   }
 
@@ -985,7 +985,7 @@ class ESellerStoreApp {
       form.reset();
       this.renderAdminDashboard();
       this.renderVendorDashboard();
-      alert(`ðŸ’° WALLET FUNDED SUCCESSFUL!\n\nAdded: $${res.log.amount.toFixed(2)}\nVendor: ${res.vendor.name}\nNew Wallet Balance: $${res.vendor.balance}`);
+      alert(`[WALLET] WALLET FUNDED SUCCESSFUL!\n\nAdded: $${res.log.amount.toFixed(2)}\nVendor: ${res.vendor.name}\nNew Wallet Balance: $${res.vendor.balance}`);
     } catch (err) {
       alert('Wallet Funding Error: ' + err.message);
     }
@@ -1012,7 +1012,7 @@ class ESellerStoreApp {
         <tr style="background:#fffdf5;">
           <td>
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:18px;">${appRecord.role === 'vendor' ? 'ðŸ¢' : 'ðŸ›ï¸'}</span>
+              <span style="font-size:18px;">${appRecord.role === 'vendor' ? '' : '›'}</span>
               <div>
                 <strong style="font-size:13px; color:#1e293b;">${appRecord.storeName || appRecord.name}</strong><br>
                 <small style="color:#0284c7; font-family:monospace;">/${appRecord.slug || 'store'}</small><br>
@@ -1035,17 +1035,17 @@ class ESellerStoreApp {
           </td>
           <td>
             <small style="color:#64748b; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${appRecord.address || appRecord.description || ''}">
-              ðŸ“ ${appRecord.address || 'Address on file'}
+              “ ${appRecord.address || 'Address on file'}
             </small>
-            ${appRecord.bankName ? `<small style="color:#475569; display:block; font-size:10.5px;">ðŸ¦ ${appRecord.bankName} (${appRecord.iban || 'IBAN'})</small>` : ''}
+            ${appRecord.bankName ? `<small style="color:#475569; display:block; font-size:10.5px;"> ${appRecord.bankName} (${appRecord.iban || 'IBAN'})</small>` : ''}
           </td>
           <td>
-            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">â³ PENDING</span>
+            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;"> PENDING</span>
           </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px;">
-              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981; color:#fff;" onclick="app.handleAdminApproveApplication('${appRecord.id}')">âœ… Approve Store</button>
-              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${appRecord.id}')">âŒ Reject</button>
+              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981; color:#fff;" onclick="app.handleAdminApproveApplication('${appRecord.id}')">[OK] Approve Store</button>
+              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${appRecord.id}')">Œ Reject</button>
             </div>
           </td>
         </tr>
@@ -1080,7 +1080,7 @@ class ESellerStoreApp {
         </td>
         <td style="text-align:right;">
           <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-            <button class="btn-primary" style="padding:4px 8px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">ðŸ“¦ Inventory</button>
+            <button class="btn-primary" style="padding:4px 8px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">[PACKAGE] Inventory</button>
           </div>
         </td>
       </tr>
@@ -1094,8 +1094,8 @@ class ESellerStoreApp {
       this.renderAdminVendorsTable();
       this.renderVendorDashboard();
       this.updateCounters();
-      this.showToast(`âœ… Store '${vendor.name}' approved & activated!`);
-      alert(`ðŸŽ‰ VENDOR APPLICATION APPROVED!\n\nStore "${vendor.name}" (${vendor.ownerName}) is now an active verified seller.\nThe vendor can immediately log in via the Seller Portal with email: ${vendor.email}`);
+      this.showToast(`[OK] Store '${vendor.name}' approved & activated!`);
+      alert(`[SUCCESS] VENDOR APPLICATION APPROVED!\n\nStore "${vendor.name}" (${vendor.ownerName}) is now an active verified seller.\nThe vendor can immediately log in via the Seller Portal with email: ${vendor.email}`);
     } catch (err) {
       alert('Approval Error: ' + err.message);
     }
@@ -1108,8 +1108,8 @@ class ESellerStoreApp {
       this.renderAdminDashboard();
       this.renderAdminVendorsTable();
       this.updateCounters();
-      this.showToast('âŒ Vendor application declined');
-      alert(`âš ï¸ VENDOR APPLICATION DECLINED\n\nApplication for "${appRecord.storeName || appRecord.name}" has been rejected.`);
+      this.showToast('Œ Vendor application declined');
+      alert(`&#9888; VENDOR APPLICATION DECLINED\n\nApplication for "${appRecord.storeName || appRecord.name}" has been rejected.`);
     } catch (err) {
       alert('Rejection Error: ' + err.message);
     }
@@ -1218,7 +1218,7 @@ class ESellerStoreApp {
         const count = engine.processCSVUpload(e.target.result, this.activeVendorId);
         this.renderHomepageSections();
         this.renderVendorDashboard();
-        alert(`ðŸ“¦ CSV BULK UPLOAD SUCCESSFUL!\n\nImported ${count} new products into E Seller Store catalog.`);
+        alert(`[PACKAGE] CSV BULK UPLOAD SUCCESSFUL!\n\nImported ${count} new products into E Seller Store catalog.`);
       } catch (err) {
         alert('CSV Parsing Error: ' + err.message);
       }
@@ -1362,7 +1362,7 @@ class ESellerStoreApp {
   updateCloudSyncBadge(lastSync) {
     const badge = document.getElementById('adminCloudSyncBadge');
     if (badge) {
-      badge.textContent = 'ðŸŸ¢ CLOUD SYNC LIVE';
+      badge.textContent = '[LIVE] CLOUD SYNC LIVE';
       badge.style.background = '#ecfdf5';
       badge.style.color = '#047857';
       badge.style.borderColor = '#a7f3d0';
@@ -1376,13 +1376,13 @@ class ESellerStoreApp {
 
   async handleForceCloudPush() {
     try {
-      this.showToast('â˜ï¸ Pushing local data to cloud backend...');
+      this.showToast(' Pushing local data to cloud backend...');
       const success = await engine.forceCloudPush();
       if (success) {
         this.updateCounters();
         this.updateCloudSyncBadge(new Date().toISOString());
-        this.showToast('âœ… Cloud database synchronized successfully!');
-        alert('ðŸŽ‰ CLOUD PUSH COMPLETE!\n\nAll current products, vendors, applications, and store orders have been uploaded and persisted to the global cloud database.');
+        this.showToast('[OK] Cloud database synchronized successfully!');
+        alert('[SUCCESS] CLOUD PUSH COMPLETE!\n\nAll current products, vendors, applications, and store orders have been uploaded and persisted to the global cloud database.');
       } else {
         alert('Cloud push failed. Check network connection.');
       }
@@ -1393,7 +1393,7 @@ class ESellerStoreApp {
 
   async handleForceCloudPull() {
     try {
-      this.showToast('ðŸ”„ Pulling latest data from cloud backend...');
+      this.showToast('[SYNC] Pulling latest data from cloud backend...');
       const snapshot = await engine.forceCloudPull();
       if (snapshot) {
         this.renderHomepageSections();
@@ -1403,8 +1403,8 @@ class ESellerStoreApp {
         this.renderVendorDashboard();
         this.updateCounters();
         this.updateCloudSyncBadge(snapshot.lastUpdated);
-        this.showToast('âœ… Local cache updated with latest cloud data!');
-        alert(`ðŸŽ‰ CLOUD PULL COMPLETE!\n\nSynchronized with cloud database.\nProducts: ${snapshot.products ? snapshot.products.length : 0}\nVendors: ${snapshot.vendors ? snapshot.vendors.length : 0}\nPending Applications: ${snapshot.vendor_applications ? snapshot.vendor_applications.length : 0}`);
+        this.showToast('[OK] Local cache updated with latest cloud data!');
+        alert(`[SUCCESS] CLOUD PULL COMPLETE!\n\nSynchronized with cloud database.\nProducts: ${snapshot.products ? snapshot.products.length : 0}\nVendors: ${snapshot.vendors ? snapshot.vendors.length : 0}\nPending Applications: ${snapshot.vendor_applications ? snapshot.vendor_applications.length : 0}`);
       } else {
         alert('No new cloud data or endpoint unreachable.');
       }
@@ -1416,11 +1416,11 @@ class ESellerStoreApp {
 
   startLivePlatformTicker() {
     const events = [
-      "âš¡ Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow â€¢ 99.98% Global SLA Active",
-      "ðŸš€ New Merchant 'Alpha Watch Vault' onboarded â€¢ Authorized Sponsor Code 00546 Verified",
-      "ðŸ›¡ï¸ Bank-grade 256-bit buyer escrow active â€¢ Automated 18%â€“30% vendor margin settlement",
-      "ðŸ“¦ Global brand shipment verified: 15x Apple iPhone 15 Pro Max dispatched to verified buyers",
-      "â­ 5.0 Star Merchant Milestone: 'Luxury Life Studio' completed 200+ verified customer orders"
+      "[LIVE] Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow • 99.98% Global SLA Active",
+      "[LAUNCH] New Merchant 'Alpha Watch Vault' onboarded • Authorized Sponsor Code 00546 Verified",
+      "&#128737; Bank-grade 256-bit buyer escrow active • Automated 18%-30% vendor margin settlement",
+      "[PACKAGE] Global brand shipment verified: 15x Apple iPhone 15 Pro Max dispatched to verified buyers",
+      " 5.0 Star Merchant Milestone: 'Luxury Life Studio' completed 200+ verified customer orders"
     ];
     let idx = 0;
     setInterval(() => {

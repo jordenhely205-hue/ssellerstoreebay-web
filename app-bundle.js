@@ -1,10 +1,10 @@
-﻿/**
+/**
  * E Seller Store - Complete Standalone Application Bundle
  * Multi-Vendor Marketplace Engine (Dokan-Compatible Architecture)
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v4.5_ultra_luxury_storefront_otp';
+const APP_VERSION = 'v4.7_clean_encoding_marketplace_hero';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -4865,7 +4865,7 @@ const INITIAL_PRODUCTS = [
     "category": "computers",
     "brand": "HP",
     "vendorId": "sanvicollection",
-    "vendorName": "🏢 E Seller Store Official Direct",
+    "vendorName": "[CORP] E Seller Store Official Direct",
     "price": 1449,
     "originalPrice": 1699,
     "rating": 5,
@@ -8158,7 +8158,7 @@ class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v4.5_ultra_luxury_storefront_otp';
+    const APP_VERSION = 'v4.7_clean_encoding_marketplace_hero';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -8713,7 +8713,7 @@ class DokanEngine {
 
     let displayVendorName = vendor ? vendor.name : 'Sanvicollection';
     if (publishTarget === 'official') {
-      displayVendorName = '🏢 E Seller Store Official Direct';
+      displayVendorName = '[CORP] E Seller Store Official Direct';
     } else if (publishTarget === 'both') {
       displayVendorName = (vendor ? vendor.name : 'Verified Seller') + ' (Official Partner)';
     }
@@ -8770,7 +8770,7 @@ class DokanEngine {
     const isOfficial = publishTarget === 'official' || publishTarget === 'both' || !!updatedData.isOfficial;
 
     if (publishTarget === 'official') {
-      vendorName = '🏢 E Seller Store Official Direct';
+      vendorName = '[CORP] E Seller Store Official Direct';
     } else if (publishTarget === 'both') {
       vendorName = (vendorName || 'Verified Seller') + ' (Official Partner)';
     }
@@ -10254,8 +10254,8 @@ class ESellerStoreApp {
     // Start Live Platform Event Ticker
     this.startLivePlatformTicker();
       
-      this.showToast('🔄 Synchronized Master Catalog (' + res.count + ' items added to ' + res.vendor.name + ')');
-      alert('🎉 1-CLICK MASTER CATALOG SYNC COMPLETE!\n\nTarget Store: ' + res.vendor.name + '\nProducts Cloned: ' + res.count + '\nAll items are active with customized SKUs and stock inventory.');
+      this.showToast('[SYNC] Synchronized Master Catalog (' + res.count + ' items added to ' + res.vendor.name + ')');
+      alert('[SUCCESS] 1-CLICK MASTER CATALOG SYNC COMPLETE!\n\nTarget Store: ' + res.vendor.name + '\nProducts Cloned: ' + res.count + '\nAll items are active with customized SKUs and stock inventory.');
     } catch (e) {
       alert('Sync Error: ' + e.message);
     }
@@ -10304,17 +10304,17 @@ class ESellerStoreApp {
     const updateEmail = document.getElementById('adminUpdateEmail') ? document.getElementById('adminUpdateEmail').value.trim() : '';
 
     if (!currentPass || !newPass || !confirmPass) {
-      alert('⚠️ Please fill in Current Password, New Password, and Confirm Password.');
+      alert('[!]️ Please fill in Current Password, New Password, and Confirm Password.');
       return;
     }
 
     if (newPass !== confirmPass) {
-      alert('❌ New Password and Confirm Password do not match!');
+      alert('[!] New Password and Confirm Password do not match!');
       return;
     }
 
     if (newPass.length < 6) {
-      alert('❌ New password must be at least 6 characters long.');
+      alert('[!] New password must be at least 6 characters long.');
       return;
     }
 
@@ -10324,10 +10324,10 @@ class ESellerStoreApp {
       if (document.getElementById('adminNewPassword')) document.getElementById('adminNewPassword').value = '';
       if (document.getElementById('adminConfirmPassword')) document.getElementById('adminConfirmPassword').value = '';
       this.renderAdminSecurityPanel();
-      alert('🎉 SUPER ADMIN PASSWORD UPDATED SUCCESSFULLY!\n\nNew Admin Email: ' + updated.email + '\nLast Updated: ' + updated.lastUpdated + '\n\nYour new master password is now active and stored securely.');
+      alert('[SUCCESS] SUPER ADMIN PASSWORD UPDATED SUCCESSFULLY!\n\nNew Admin Email: ' + updated.email + '\nLast Updated: ' + updated.lastUpdated + '\n\nYour new master password is now active and stored securely.');
       this.showToast('🔒 Admin credentials updated & secured');
     } catch (err) {
-      alert('❌ Password Update Error: ' + err.message);
+      alert('[!] Password Update Error: ' + err.message);
     }
   }
 
@@ -10403,12 +10403,12 @@ class ESellerStoreApp {
             <small style="color:#64748b;">${v.mobile || v.phone || ''}</small>
           </td>
           <td>
-            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING VERIFICATION</span>
+            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">[...] PENDING VERIFICATION</span>
           </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
               <button class="btn-primary" style="padding:6px 14px; font-size:12px; background:#10b981; font-weight:700;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve</button>
-              <button class="btn-primary" style="padding:6px 14px; font-size:12px; background:#ef4444; font-weight:700;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject</button>
+              <button class="btn-primary" style="padding:6px 14px; font-size:12px; background:#ef4444; font-weight:700;" onclick="app.handleAdminRejectVendor('${v.id}')">[!] Reject</button>
             </div>
           </td>
         </tr>
@@ -10437,7 +10437,7 @@ class ESellerStoreApp {
             <td>${v.email}<br><small style="color:#666;">${v.mobile || v.phone || ''}</small></td>
             <td>
               ${isPending
-                ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:3px 8px; border-radius:10px; border:1px solid #fde68a;">⏳ PENDING</span>`
+                ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:3px 8px; border-radius:10px; border:1px solid #fde68a;">[...] PENDING</span>`
                 : `<span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span>`
               }
             </td>
@@ -10448,7 +10448,7 @@ class ESellerStoreApp {
                 <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit</button>
                 ${isPending ? `
                   <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve</button>
-                  <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">❌ Reject</button>
+                  <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">[!] Reject</button>
                 ` : `
                   <button class="admin-act-btn ${v.status === 'suspended' || v.status === 'rejected' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' || v.status === 'rejected' ? 'verified' : 'suspended'}')">
                     ${v.status === 'suspended' || v.status === 'rejected' ? 'Unsuspend' : 'Suspend'}
@@ -10565,7 +10565,7 @@ class ESellerStoreApp {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    this.showToast('☁️ Cloud Database Schema Exported!');
+    this.showToast('[CLOUD]️ Cloud Database Schema Exported!');
   }
 
   renderAdminProductsTable() {
@@ -10633,14 +10633,14 @@ class ESellerStoreApp {
           <td>
             <strong style="font-size:13px; color:#1e293b;">${p.name}</strong><br>
             <small style="color:#64748b;">SKU: <strong>${p.sku || p.id}</strong></small>
-            ${p.isOfficial ? '<br><span class="official-badge-tag">🏢 OFFICIAL STORE</span>' : ''}
+            ${p.isOfficial ? '<br><span class="official-badge-tag">[CORP] OFFICIAL STORE</span>' : ''}
           </td>
           <td>
             <span class="admin-badge vendor" style="text-transform:capitalize;">${p.category}</span><br>
             <small style="font-weight:600; color:#334155;">${p.brand || 'Generic'}</small>
           </td>
           <td>
-            <span style="font-weight:700; color:#0369a1;">🏪 ${p.vendorName || 'Sanvicollection'}</span>
+            <span style="font-weight:700; color:#0369a1;">[STORE] ${p.vendorName || 'Sanvicollection'}</span>
           </td>
           <td>
             <strong style="color:var(--nav-red); font-size:13px;">$${p.price.toFixed(2)}</strong>
@@ -10651,14 +10651,14 @@ class ESellerStoreApp {
           </td>
           <td>
             <button class="admin-act-btn ${isLive ? 'toggle-on' : 'toggle-off'}" onclick="app.handleAdminTogglePublish('${p.id}')">
-              ${isLive ? '🟢 Live' : '🔴 Hidden'}
+              ${isLive ? '[LIVE] Live' : '🔴 Hidden'}
             </button>
           </td>
           <td>
             <div style="display:flex; gap:4px; flex-wrap:wrap;">
               <button class="admin-act-btn ${p.isFeatured ? 'toggle-on' : 'toggle-off'}" style="font-size:10px; padding:2px 6px;" title="Toggle Featured" onclick="app.handleAdminToggleFlag('${p.id}', 'isFeatured')">⭐ Feat</button>
               <button class="admin-act-btn ${p.isBestSelling ? 'toggle-on' : 'toggle-off'}" style="font-size:10px; padding:2px 6px;" title="Toggle Best Selling" onclick="app.handleAdminToggleFlag('${p.id}', 'isBestSelling')">🔥 Best</button>
-              <button class="admin-act-btn ${p.isNew ? 'toggle-on' : 'toggle-off'}" style="font-size:10px; padding:2px 6px;" title="Toggle New" onclick="app.handleAdminToggleFlag('${p.id}', 'isNew')">🚀 New</button>
+              <button class="admin-act-btn ${p.isNew ? 'toggle-on' : 'toggle-off'}" style="font-size:10px; padding:2px 6px;" title="Toggle New" onclick="app.handleAdminToggleFlag('${p.id}', 'isNew')">[LAUNCH] New</button>
             </div>
           </td>
           <td style="text-align:right;">
@@ -10951,7 +10951,7 @@ class ESellerStoreApp {
           }).join('');
         }
 
-        this.showToast('📋 CSV Parsed: ' + (rows.length - 1) + ' products detected.');
+        this.showToast('[DOC] CSV Parsed: ' + (rows.length - 1) + ' products detected.');
       } catch (err) {
         alert('Error parsing CSV: ' + err.message);
       }
@@ -10990,7 +10990,7 @@ class ESellerStoreApp {
     // Start Live Platform Event Ticker
     this.startLivePlatformTicker();
       this.switchAdminTab('products');
-      alert('🎉 BULK CSV IMPORT COMPLETE!\n\nSuccessfully added ' + result.count + ' new products to E Seller Store master catalog.\nAll products are live on the storefront.');
+      alert('[SUCCESS] BULK CSV IMPORT COMPLETE!\n\nSuccessfully added ' + result.count + ' new products to E Seller Store master catalog.\nAll products are live on the storefront.');
     } catch (e) {
       alert('Import Error: ' + e.message);
     }
@@ -11027,7 +11027,7 @@ class ESellerStoreApp {
         <tr style="background:#fffdf5;">
           <td>
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:18px;">${app.role === 'vendor' ? '🏢' : '🛍️'}</span>
+              <span style="font-size:18px;">${app.role === 'vendor' ? '[CORP]' : '[CART]️'}</span>
               <div>
                 <strong style="font-size:13px; color:#1e293b;">${app.storeName || app.name}</strong><br>
                 <small style="color:#0284c7; font-family:monospace;">/${app.slug || 'store'}</small><br>
@@ -11055,12 +11055,12 @@ class ESellerStoreApp {
             ${app.bankName ? `<small style="color:#475569; display:block; font-size:10.5px;">🏦 ${app.bankName} (${app.iban || 'IBAN'})</small>` : ''}
           </td>
           <td>
-            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING</span>
+            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">[...] PENDING</span>
           </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px;">
               <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981; color:#fff;" onclick="app.handleAdminApproveApplication('${app.id}')">✅ Approve Store</button>
-              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${app.id}')">❌ Reject</button>
+              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${app.id}')">[!] Reject</button>
             </div>
           </td>
         </tr>
@@ -11092,7 +11092,7 @@ class ESellerStoreApp {
     // Start Live Platform Event Ticker
     this.startLivePlatformTicker();
       this.showToast(`✅ Store '${vendor.name}' approved & activated!`);
-      alert(`🎉 VENDOR APPLICATION APPROVED!\n\nStore "${vendor.name}" (${vendor.ownerName}) is now an active verified seller.\nThe vendor can immediately log in via the Seller Portal with email: ${vendor.email}`);
+      alert(`[SUCCESS] VENDOR APPLICATION APPROVED!\n\nStore "${vendor.name}" (${vendor.ownerName}) is now an active verified seller.\nThe vendor can immediately log in via the Seller Portal with email: ${vendor.email}`);
     } catch (err) {
       alert('Approval Error: ' + err.message);
     }
@@ -11119,8 +11119,8 @@ class ESellerStoreApp {
 
     // Start Live Platform Event Ticker
     this.startLivePlatformTicker();
-      this.showToast('❌ Vendor application declined');
-      alert('⚠️ VENDOR APPLICATION DECLINED\n\nApplication for "' + (app.storeName || app.name) + '" has been rejected.');
+      this.showToast('[!] Vendor application declined');
+      alert('[!]️ VENDOR APPLICATION DECLINED\n\nApplication for "' + (app.storeName || app.name) + '" has been rejected.');
     } catch (err) {
       alert('Rejection Error: ' + err.message);
     }
@@ -11139,7 +11139,7 @@ class ESellerStoreApp {
     tbody.innerHTML = displayVendors.map(v => {
       const isPending = v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review';
       const statusBadgeHtml = isPending
-        ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">⏳ PENDING VERIFICATION</span>`
+        ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">[...] PENDING VERIFICATION</span>`
         : `<span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span>`;
 
       return `
@@ -11173,13 +11173,13 @@ class ESellerStoreApp {
           </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-              <button class="admin-act-btn primary" style="background:#0284c7; color:#fff;" onclick="app.openAdminMasterCatalogImporter('${v.id}')">⚡ List Master Catalog</button>
+              <button class="admin-act-btn primary" style="background:#0284c7; color:#fff;" onclick="app.openAdminMasterCatalogImporter('${v.id}')">[LIVE] List Master Catalog</button>
               <button class="admin-act-btn primary" style="background:#10b981; color:#fff;" onclick="app.openAdminAddProductModal('${v.id}')">➕ Add Product</button>
               <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
-              <button class="admin-act-btn primary" onclick="app.handleAdminVendorInventoryView('${v.id}')">📦 Inventory</button>
+              <button class="admin-act-btn primary" onclick="app.handleAdminVendorInventoryView('${v.id}')">[PACKAGE] Inventory</button>
               ${isPending ? `
                 <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveApplication('${v.id}')">✅ Approve Store</button>
-                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectApplication('${v.id}')">❌ Reject / Delete</button>
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectApplication('${v.id}')">[!] Reject / Delete</button>
               ` : `
                 <button class="admin-act-btn ${v.status === 'suspended' || v.status === 'rejected' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' || v.status === 'rejected' ? 'verified' : 'suspended'}')">
                   ${v.status === 'suspended' || v.status === 'rejected' ? 'Unsuspend' : '🚫 Suspend'}
@@ -11196,7 +11196,7 @@ class ESellerStoreApp {
     const select = document.getElementById('adminCsvTargetVendorSelect');
     if (!select) return;
     const vendors = engine.getVendors();
-    select.innerHTML = vendors.map(v => `<option value="${v.id}">${v.name} (${v.ownerName})` + (v.status === 'verified' ? ' ✅' : ' ⏳') + `</option>`).join('');
+    select.innerHTML = vendors.map(v => `<option value="${v.id}">${v.name} (${v.ownerName})` + (v.status === 'verified' ? ' ✅' : ' [...]') + `</option>`).join('');
   }
 
   openAdminMasterCatalogImporter(vendorId) {
@@ -11208,7 +11208,7 @@ class ESellerStoreApp {
     if (nameEl) nameEl.textContent = vendor.name + ' (' + vendor.ownerName + ')';
 
     const assignBtn = document.getElementById('adminMasterCatalogAssignBtn');
-    if (assignBtn) assignBtn.textContent = '⚡ Bulk Assign Selected Products to ' + vendor.name;
+    if (assignBtn) assignBtn.textContent = '[LIVE] Bulk Assign Selected Products to ' + vendor.name;
 
     const allProducts = engine.getProducts();
     const masterItems = allProducts && allProducts.length > 0 ? allProducts : (typeof MASTER_CATALOG_REPOSITORY !== 'undefined' ? MASTER_CATALOG_REPOSITORY : []);
@@ -11337,8 +11337,8 @@ class ESellerStoreApp {
 
     // Start Live Platform Event Ticker
     this.startLivePlatformTicker();
-    this.showToast(`⚡ Successfully assigned ${clonedProducts.length} master products to ${vendor.name}!`);
-    alert(`🎉 MASTER CATALOG ASSIGNMENT COMPLETE!\n\nSuccessfully linked and published ${clonedProducts.length} items directly to ${vendor.name}'s inventory.\nProducts are instantly live on the storefront and vendor dashboard.`);
+    this.showToast(`[LIVE] Successfully assigned ${clonedProducts.length} master products to ${vendor.name}!`);
+    alert(`[SUCCESS] MASTER CATALOG ASSIGNMENT COMPLETE!\n\nSuccessfully linked and published ${clonedProducts.length} items directly to ${vendor.name}'s inventory.\nProducts are instantly live on the storefront and vendor dashboard.`);
   }
 
   handleAdminApproveVendor(vendorId) {
@@ -11419,7 +11419,7 @@ class ESellerStoreApp {
             <td>
               <strong>${p.name}</strong><br>
               <small>SKU: ${p.sku || p.id}</small>
-              ${p.isOfficial ? '<br><span class="official-badge-tag">🏢 OFFICIAL STORE</span>' : ''}
+              ${p.isOfficial ? '<br><span class="official-badge-tag">[CORP] OFFICIAL STORE</span>' : ''}
             </td>
             <td><span class="admin-badge vendor">${p.category}</span></td>
             <td><strong>$${p.price.toFixed(2)}</strong></td>
@@ -11456,7 +11456,7 @@ class ESellerStoreApp {
       form.reset();
       this.renderAdminDashboard();
       this.renderVendorDashboard();
-      alert('💰 WALLET TRANSACTION SUCCESSFUL!\n\nAction: ' + type.toUpperCase() + '\nAmount: $' + parseFloat(amount).toFixed(2) + '\nVendor: ' + res.vendor.name + '\nUpdated Wallet Balance: $' + res.vendor.balance);
+      alert('[WALLET] WALLET TRANSACTION SUCCESSFUL!\n\nAction: ' + type.toUpperCase() + '\nAmount: $' + parseFloat(amount).toFixed(2) + '\nVendor: ' + res.vendor.name + '\nUpdated Wallet Balance: $' + res.vendor.balance);
     } catch (err) {
       alert('Transaction Error: ' + err.message);
     }
@@ -11561,7 +11561,7 @@ class ESellerStoreApp {
         <td>${ad.createdDate}</td>
         <td>
           <button class="admin-act-btn ${ad.active ? 'toggle-on' : 'toggle-off'}" onclick="app.toggleAdStatus('${ad.id}')">
-            ${ad.active ? '🟢 ON' : '🔴 OFF'}
+            ${ad.active ? '[LIVE] ON' : '🔴 OFF'}
           </button>
         </td>
         <td>
@@ -11634,7 +11634,7 @@ class ESellerStoreApp {
     if (actionBox && actionText) {
       if (detectedOrderId) {
         actionBox.style.display = 'flex';
-        actionText.innerHTML = '📦 <strong>Order Ref: #' + detectedOrderId + '</strong> &mdash; Payment Proof Attachment Received';
+        actionText.innerHTML = '[PACKAGE] <strong>Order Ref: #' + detectedOrderId + '</strong> &mdash; Payment Proof Attachment Received';
         this.activeChatOrderId = detectedOrderId;
       } else {
         actionBox.style.display = 'none';
@@ -11646,7 +11646,7 @@ class ESellerStoreApp {
     } else {
       msgStreamEl.innerHTML = messages.map(m => `
         <div class="ai-msg ${m.sender === 'admin' ? 'admin-reply' : 'user'}">
-          <strong style="font-size:10px; opacity:0.8;">${m.sender === 'admin' ? '🛡️ Admin Support' : '👤 ' + (m.clientName || 'Buyer')}</strong><br>
+          <strong style="font-size:10px; opacity:0.8;">${m.sender === 'admin' ? '[SECURE]️ Admin Support' : '👤 ' + (m.clientName || 'Buyer')}</strong><br>
           ${m.message}
           ${m.attachmentUrl ? `
             <div style="margin-top:6px;">
@@ -11690,7 +11690,7 @@ class ESellerStoreApp {
     const messages = engine.getChatMessages();
     body.innerHTML = messages.map(m => `
       <div class="ai-msg ${m.sender === 'admin' ? 'admin-reply' : 'user'}">
-        <strong style="font-size:10px; opacity:0.9;">${m.sender === 'admin' ? '🛡️ Admin Support' : '👤 ' + (m.clientName || 'You')}</strong><br>
+        <strong style="font-size:10px; opacity:0.9;">${m.sender === 'admin' ? '[SECURE]️ Admin Support' : '👤 ' + (m.clientName || 'You')}</strong><br>
         ${m.message}
         ${m.attachmentUrl ? `
           <div style="margin-top:6px;">
@@ -11842,8 +11842,8 @@ class ESellerStoreApp {
 
     // Start Live Platform Event Ticker
     this.startLivePlatformTicker();
-      this.showToast(`⚡ Re-indexed ${products.length} live products across storefront!`);
-      alert(`🎉 FORCE CATALOG SYNC COMPLETE!\n\nRe-indexed ${products.length} live products.\nAll imported, assigned, and edited items are synchronized across the storefront, Admin, and Vendor dashboards.`);
+      this.showToast(`[LIVE] Re-indexed ${products.length} live products across storefront!`);
+      alert(`[SUCCESS] FORCE CATALOG SYNC COMPLETE!\n\nRe-indexed ${products.length} live products.\nAll imported, assigned, and edited items are synchronized across the storefront, Admin, and Vendor dashboards.`);
     } catch (err) {
       alert('Sync Error: ' + err.message);
     }
@@ -11920,7 +11920,7 @@ class ESellerStoreApp {
 
       let badgeHtml = '';
       if (prod.publishTarget === 'official' || prod.isOfficial) {
-        badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;">🏢 OFFICIAL DIRECT</span>';
+        badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;">[CORP] OFFICIAL DIRECT</span>';
       } else if (prod.publishTarget === 'both') {
         badgeHtml = '<span class="official-badge-tag" style="margin-bottom:4px;">⭐ OFFICIAL PARTNER</span>';
       } else if (prod.badge && prod.badge !== 'Bulk CSV' && prod.badge !== 'CSV Import') {
@@ -11936,7 +11936,7 @@ class ESellerStoreApp {
 
           <div class="product-card-body">
             <h4 class="product-title" title="${title}">${title}</h4>
-            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">🏪 Seller: ${seller}</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:700; margin-bottom:4px;">[STORE] Seller: ${seller}</div>
             <div style="font-size:12px; color:#f59e0b; margin-bottom:6px;">⭐ ${prod.rating || 5.0} (${prod.reviewsCount || 0})</div>
             <div class="product-price">
               $${price.toFixed(2)}
@@ -11944,7 +11944,7 @@ class ESellerStoreApp {
             </div>
 
             <div class="product-card-actions-row">
-              <button class="btn-buy-now" onclick="app.directBuyNow('${prod.id}')">⚡ Buy Now</button>
+              <button class="btn-buy-now" onclick="app.directBuyNow('${prod.id}')">[LIVE] Buy Now</button>
               <button class="btn-add-cart" onclick="app.addToCart('${prod.id}')">🛒 Add to Cart</button>
             </div>
           </div>
@@ -12136,7 +12136,7 @@ class ESellerStoreApp {
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
               <div>
                 <strong style="font-size:13px; color:#222733;">${item.name}</strong> × ${item.quantity}<br>
-                <span class="checkout-vendor-badge">🏪 Seller: ${item.vendorName || 'Sanvicollection'}</span>
+                <span class="checkout-vendor-badge">[STORE] Seller: ${item.vendorName || 'Sanvicollection'}</span>
               </div>
               <span style="font-weight:700; font-size:13px; color:#222733;">$${lineTotal.toFixed(2)}</span>
             </div>
@@ -12268,7 +12268,7 @@ class ESellerStoreApp {
       ? order.items.map(i => `${i.name} (x${i.quantity})`).join(', ')
       : 'Product Order';
 
-    const msg = `📦 [ADMIN FULFILLMENT REQUEST] Order #${order.id}\n` +
+    const msg = `[PACKAGE] [ADMIN FULFILLMENT REQUEST] Order #${order.id}\n` +
                 `• Store: ${vendorName}\n` +
                 `• Customer: ${order.customerName} (${order.customerPhone || ''})\n` +
                 `• Delivery Address: ${order.customerAddress || ''}\n` +
@@ -12301,8 +12301,8 @@ class ESellerStoreApp {
     const password = passEl ? passEl.value.trim() : '';
 
     if (!email || !password) {
-      alert('⚠️ Please enter both your registered seller email and password.');
-      this.showToast('⚠️ Email and password required');
+      alert('[!]️ Please enter both your registered seller email and password.');
+      this.showToast('[!]️ Email and password required');
       return;
     }
 
@@ -12313,27 +12313,27 @@ class ESellerStoreApp {
     const matchedApp = applications.find(a => a.email && a.email.toLowerCase() === email);
 
     if (matchedApp && matchedApp.status === 'pending') {
-      alert('⏳ APPLICATION PENDING APPROVAL:\n\nYour seller registration for "' + (matchedApp.storeName || matchedApp.name) + '" is currently awaiting Super Admin review and approval.\nPlease check back shortly once verified.');
-      this.showToast('⏳ Seller account pending approval');
+      alert('[...] APPLICATION PENDING APPROVAL:\n\nYour seller registration for "' + (matchedApp.storeName || matchedApp.name) + '" is currently awaiting Super Admin review and approval.\nPlease check back shortly once verified.');
+      this.showToast('[...] Seller account pending approval');
       return;
     }
 
     if (matchedApp && matchedApp.status === 'rejected') {
-      alert('❌ APPLICATION DECLINED:\n\nYour seller application was declined. Please contact marketplace administration for further information.');
-      this.showToast('❌ Seller application declined');
+      alert('[!] APPLICATION DECLINED:\n\nYour seller application was declined. Please contact marketplace administration for further information.');
+      this.showToast('[!] Seller application declined');
       return;
     }
 
     if (!matchedVendor) {
       if (passEl) passEl.value = '';
-      alert('❌ Authentication Failed: No registered seller account found for "' + email + '".');
-      this.showToast('❌ Seller account not found');
+      alert('[!] Authentication Failed: No registered seller account found for "' + email + '".');
+      this.showToast('[!] Seller account not found');
       return;
     }
 
     if (matchedVendor.status === 'pending_verification' || matchedVendor.status === 'pending') {
-      alert('⏳ APPLICATION PENDING APPROVAL:\n\nYour store account is awaiting Super Admin verification.\nYou will gain full access immediately upon approval.');
-      this.showToast('⏳ Account pending verification');
+      alert('[...] APPLICATION PENDING APPROVAL:\n\nYour store account is awaiting Super Admin verification.\nYou will gain full access immediately upon approval.');
+      this.showToast('[...] Account pending verification');
       return;
     }
 
@@ -12343,8 +12343,8 @@ class ESellerStoreApp {
 
     if (!isCorrectPassword) {
       if (passEl) passEl.value = '';
-      alert('❌ Authentication Failed: Incorrect password for store "' + matchedVendor.name + '".');
-      this.showToast('❌ Incorrect password');
+      alert('[!] Authentication Failed: Incorrect password for store "' + matchedVendor.name + '".');
+      this.showToast('[!] Incorrect password');
       return;
     }
 
@@ -12354,7 +12354,7 @@ class ESellerStoreApp {
     this.closeModals();
     this.setPersona('vendor');
     this.renderVendorDashboard();
-    this.showToast('🏪 Logged in to Seller: ' + matchedVendor.name);
+    this.showToast('[STORE] Logged in to Seller: ' + matchedVendor.name);
   }
 
   loginAsVendor(vendorId) {
@@ -12363,7 +12363,7 @@ class ESellerStoreApp {
     this.setPersona('vendor');
     const vendor = engine.getVendorById ? engine.getVendorById(vendorId) : null;
     const vendorName = vendor ? vendor.name : 'Seller Store';
-    this.showToast('🏪 Active Seller: ' + vendorName);
+    this.showToast('[STORE] Active Seller: ' + vendorName);
   }
 
   handleAdminLogin(event) {
@@ -12374,8 +12374,8 @@ class ESellerStoreApp {
     const password = passEl ? passEl.value.trim() : '';
 
     if (!email || !password) {
-      alert('⚠️ Please enter both the Super Admin email and password.');
-      this.showToast('⚠️ Admin credentials required');
+      alert('[!]️ Please enter both the Super Admin email and password.');
+      this.showToast('[!]️ Admin credentials required');
       return;
     }
 
@@ -12388,11 +12388,11 @@ class ESellerStoreApp {
       if (passEl) passEl.value = '';
       this.closeModals();
       this.setPersona('admin');
-      this.showToast('🔑 Super Admin Master Access Granted!');
+      this.showToast('[KEY] Super Admin Master Access Granted!');
     } else {
       if (passEl) passEl.value = '';
-      alert('❌ Access Denied: Invalid Super Admin email or password.');
-      this.showToast('❌ Invalid admin credentials');
+      alert('[!] Access Denied: Invalid Super Admin email or password.');
+      this.showToast('[!] Invalid admin credentials');
     }
   }
 
@@ -12468,7 +12468,7 @@ class ESellerStoreApp {
         ind.classList.toggle('completed', i < step);
       }
       if (circ) {
-        circ.textContent = (i < step ? 'âœ“' : i.toString());
+        circ.textContent = (i < step ? '[OK]' : i.toString());
       }
     }
 
@@ -12501,7 +12501,7 @@ class ESellerStoreApp {
       sendBtn.textContent = 'Sending...';
     }
     if (statusText) {
-      statusText.textContent = 'â³ Dispatching 6-digit verification OTP...';
+      statusText.textContent = ' Dispatching 6-digit verification OTP...';
       statusText.style.color = '#1a73e8';
     }
 
@@ -12523,13 +12523,13 @@ class ESellerStoreApp {
       if (data && data.success) {
         if (container) container.style.display = 'block';
         if (statusText) {
-          statusText.textContent = `âœ… OTP Code sent to ${email}`;
+          statusText.textContent = `[OK] OTP Code sent to ${email}`;
           statusText.style.color = '#16a34a';
         }
         if (resendBtn) resendBtn.style.display = 'none';
 
         if (data.otpPreview) {
-          this.showToast(`ðŸ“© OTP Code: ${data.otpPreview}`);
+          this.showToast(`[OTP] OTP Code: ${data.otpPreview}`);
         }
 
         this.wizardOtpCountdownVal = 60;
@@ -12614,14 +12614,14 @@ class ESellerStoreApp {
         if (emailInput) emailInput.readOnly = true;
         if (otpInput) otpInput.readOnly = true;
         if (verifyBtn) {
-          verifyBtn.textContent = 'Verified âœ“';
+          verifyBtn.textContent = 'Verified [OK]';
           verifyBtn.style.background = '#16a34a';
           verifyBtn.disabled = true;
         }
         if (sendBtn) sendBtn.disabled = true;
         if (this.wizardOtpTimer) clearInterval(this.wizardOtpTimer);
 
-        this.showToast('âœ… Email address successfully verified!');
+        this.showToast('[OK] Email address successfully verified!');
         this.wizardValidatePasswords();
       } else {
         alert(data ? (data.error || 'Invalid OTP code') : 'Verification failed.');
@@ -12653,19 +12653,19 @@ class ESellerStoreApp {
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.color = '#dc2626';
-        feedback.textContent = 'âš ï¸ Password must be at least 6 characters long.';
+        feedback.textContent = '&#9888; Password must be at least 6 characters long.';
       }
     } else if (pass !== confirm) {
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.color = '#dc2626';
-        feedback.textContent = 'âŒ Passwords do not match.';
+        feedback.textContent = 'Œ Passwords do not match.';
       }
     } else {
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.color = '#16a34a';
-        feedback.textContent = 'âœ… Passwords match securely.';
+        feedback.textContent = '[OK] Passwords match securely.';
       }
       if (this.wizardOtpVerified) {
         isValid = true;
@@ -12778,7 +12778,7 @@ class ESellerStoreApp {
         refInput.style.background = '#fef2f2';
         refInput.focus();
       }
-      alert('âŒ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.');
+      alert('Œ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.');
       return;
     }
 
@@ -12821,17 +12821,17 @@ class ESellerStoreApp {
     this.startLivePlatformTicker();
 
       const roleLabel = (role === 'vendor') ? 'Wholesale Vendor Partner' : 'Retail Seller';
-      alert(`ðŸŽ‰ 3-STEP WIZARD APPLICATION SUBMITTED!\n\n` +
+      alert(`[SUCCESS] 3-STEP WIZARD APPLICATION SUBMITTED!\n\n` +
             `Role: ${roleLabel}\n` +
             `Shop Name: ${appRecord.storeName}\n` +
             `Store URL: ssellerstorebay.com/store/${appRecord.slug}\n` +
             `Applicant: ${appRecord.ownerName} s/o ${appRecord.fatherName}\n` +
-            `Verified Email: ${appRecord.email} [OTP VERIFIED âœ…]\n` +
-            `Referral Sponsor Code: ${appRecord.referralCode} [VERIFIED âœ…]\n\n` +
+            `Verified Email: ${appRecord.email} [OTP VERIFIED [OK]]\n` +
+            `Referral Sponsor Code: ${appRecord.referralCode} [VERIFIED [OK]]\n\n` +
             `Your account password has been established.\n` +
             `Once Super Admin approves your application, you can log in immediately using your email and password!`);
       
-      this.showToast(`ðŸ“‹ ${roleLabel} application submitted [OTP Verified]`);
+      this.showToast(`[DOC] ${roleLabel} application submitted [OTP Verified]`);
     } catch (err) {
       alert('Registration Error: ' + err.message);
     }
@@ -13063,7 +13063,7 @@ class ESellerStoreApp {
                   <img src="${p.image}" width="32" height="32" style="object-fit:cover; border-radius:4px;">
                   <div>
                     <strong>${p.name}</strong>
-                    ${p.isOfficial ? '<br><span class="official-badge-tag">🏢 OFFICIAL STORE</span>' : ''}
+                    ${p.isOfficial ? '<br><span class="official-badge-tag">[CORP] OFFICIAL STORE</span>' : ''}
                   </div>
                 </div>
               </td>
@@ -13264,7 +13264,7 @@ class ESellerStoreApp {
         const count = engine.processCSVUpload(e.target.result, this.activeVendorId);
         this.renderHomepageSections();
         this.renderVendorDashboard();
-        alert('📦 CSV BULK UPLOAD SUCCESSFUL!\n\nImported ' + count + ' new products into E Seller Store catalog.');
+        alert('[PACKAGE] CSV BULK UPLOAD SUCCESSFUL!\n\nImported ' + count + ' new products into E Seller Store catalog.');
       } catch (err) {
         alert('CSV Parsing Error: ' + err.message);
       }
@@ -13477,11 +13477,11 @@ class ESellerStoreApp {
 
   startLivePlatformTicker() {
     const events = [
-      "âš¡ Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow â€¢ 99.98% Global SLA Active",
-      "ðŸš€ New Merchant 'Alpha Watch Vault' onboarded â€¢ Authorized Sponsor Code 00546 Verified",
-      "ðŸ›¡ï¸ Bank-grade 256-bit buyer escrow active â€¢ Automated 18%â€“30% vendor margin settlement",
-      "ðŸ“¦ Global brand shipment verified: 15x Apple iPhone 15 Pro Max dispatched to verified buyers",
-      "â­ 5.0 Star Merchant Milestone: 'Luxury Life Studio' completed 200+ verified customer orders"
+      "[LIVE] Verified Vendor 'Sanvicollection' settled $4,850.00 payout via 256-bit Escrow • 99.98% Global SLA Active",
+      "[LAUNCH] New Merchant 'Alpha Watch Vault' onboarded • Authorized Sponsor Code 00546 Verified",
+      "&#128737; Bank-grade 256-bit buyer escrow active • Automated 18%-30% vendor margin settlement",
+      "[PACKAGE] Global brand shipment verified: 15x Apple iPhone 15 Pro Max dispatched to verified buyers",
+      " 5.0 Star Merchant Milestone: 'Luxury Life Studio' completed 200+ verified customer orders"
     ];
     let idx = 0;
     setInterval(() => {
@@ -13668,7 +13668,7 @@ class ESellerStoreApp {
   updateCloudSyncBadge(lastSync) {
     const badge = document.getElementById('adminCloudSyncBadge');
     if (badge) {
-      badge.textContent = '🟢 CLOUD SYNC LIVE';
+      badge.textContent = '[LIVE] CLOUD SYNC LIVE';
       badge.style.background = '#ecfdf5';
       badge.style.color = '#047857';
       badge.style.borderColor = '#a7f3d0';
@@ -13682,7 +13682,7 @@ class ESellerStoreApp {
 
   async handleForceCloudPush() {
     try {
-      this.showToast('☁️ Pushing local data to cloud backend...');
+      this.showToast('[CLOUD]️ Pushing local data to cloud backend...');
       const success = await engine.forceCloudPush();
       if (success) {
         this.updateCounters();
@@ -13702,7 +13702,7 @@ class ESellerStoreApp {
     this.startLivePlatformTicker();
         this.updateCloudSyncBadge(new Date().toISOString());
         this.showToast('✅ Cloud database synchronized successfully!');
-        alert('🎉 CLOUD PUSH COMPLETE!\n\nAll current products, vendors, applications, and store orders have been uploaded and persisted to the global cloud database.');
+        alert('[SUCCESS] CLOUD PUSH COMPLETE!\n\nAll current products, vendors, applications, and store orders have been uploaded and persisted to the global cloud database.');
       } else {
         alert('Cloud push failed. Check network connection.');
       }
@@ -13713,7 +13713,7 @@ class ESellerStoreApp {
 
   async handleForceCloudPull() {
     try {
-      this.showToast('🔄 Pulling latest data from cloud backend...');
+      this.showToast('[SYNC] Pulling latest data from cloud backend...');
       const snapshot = await engine.forceCloudPull();
       if (snapshot) {
         this.renderHomepageSections();
@@ -13739,7 +13739,7 @@ class ESellerStoreApp {
     this.startLivePlatformTicker();
         this.updateCloudSyncBadge(snapshot.lastUpdated);
         this.showToast('✅ Local cache updated with latest cloud data!');
-        alert(`🎉 CLOUD PULL COMPLETE!\n\nSynchronized with cloud database.\nProducts: ${snapshot.products ? snapshot.products.length : 0}\nVendors: ${snapshot.vendors ? snapshot.vendors.length : 0}\nPending Applications: ${snapshot.vendor_applications ? snapshot.vendor_applications.length : 0}`);
+        alert(`[SUCCESS] CLOUD PULL COMPLETE!\n\nSynchronized with cloud database.\nProducts: ${snapshot.products ? snapshot.products.length : 0}\nVendors: ${snapshot.vendors ? snapshot.vendors.length : 0}\nPending Applications: ${snapshot.vendor_applications ? snapshot.vendor_applications.length : 0}`);
       } else {
         alert('No new cloud data or endpoint unreachable.');
       }
@@ -13814,9 +13814,9 @@ class ESellerStoreApp {
     if (!msgEl) return;
 
     if (clean === '00546') {
-      msgEl.innerHTML = '<div class="referral-success-msg">✓ Valid Vendor Referral Code verified: 00546</div>';
+      msgEl.innerHTML = '<div class="referral-success-msg">[OK] Valid Vendor Referral Code verified: 00546</div>';
     } else if (clean.length === 5) {
-      msgEl.innerHTML = '<div class="referral-error-msg">✖ Invalid Referral Code. Must be exactly 00546.</div>';
+      msgEl.innerHTML = '<div class="referral-error-msg">[!] Invalid Referral Code. Must be exactly 00546.</div>';
     } else if (clean.length > 0) {
       msgEl.innerHTML = '<div style="font-size:11px; color:#64748b; margin-top:4px;">Enter 5 digits (Referral code: 00546)</div>';
     } else {
@@ -13839,7 +13839,7 @@ class ESellerStoreApp {
   handleLostPassword() {
     const email = prompt('Enter your registered email address to receive a password reset link:');
     if (email && email.includes('@')) {
-      alert(`🔑 Password Reset Link Sent!\n\nA secure password reset link has been dispatched to: ${email}`);
+      alert(`[KEY] Password Reset Link Sent!\n\nA secure password reset link has been dispatched to: ${email}`);
     } else if (email) {
       alert('Please enter a valid email address.');
     }
@@ -13861,7 +13861,7 @@ class ESellerStoreApp {
     const adminAuth = engine.getAdminAuth ? engine.getAdminAuth() : { email: 'admin@esellerstore.com', password: 'Abbas@123' };
     if (login === adminAuth.email.toLowerCase() && pass === adminAuth.password) {
       this.setPersona('admin');
-      this.showToast('🔑 Super Admin Access Granted');
+      this.showToast('[KEY] Super Admin Access Granted');
       return;
     }
 
@@ -13874,32 +13874,32 @@ class ESellerStoreApp {
       const app = apps.find(a => a.email && a.email.toLowerCase() === login);
       if (app) {
         if (app.verificationStatus === 'activation_sent' && !app.password) {
-          if (confirm(`⏳ ACCOUNT ACTIVATION REQUIRED\n\nYour account has been registered but password is not yet set.\n\nWould you like to open the Set Password activation dialog now?`)) {
+          if (confirm(`[...] ACCOUNT ACTIVATION REQUIRED\n\nYour account has been registered but password is not yet set.\n\nWould you like to open the Set Password activation dialog now?`)) {
             this.openSetPasswordModal(app.activationToken || ('act_' + Date.now()), app.email);
           }
           return;
         }
-        alert(`⏳ ACCOUNT PENDING REVIEW\n\nYour store "${app.storeName}" application is currently under Super Admin review.`);
+        alert(`[...] ACCOUNT PENDING REVIEW\n\nYour store "${app.storeName}" application is currently under Super Admin review.`);
         return;
       }
 
-      alert(`❌ No account found matching "${login}".\nPlease register for an account.`);
+      alert(`[!] No account found matching "${login}".\nPlease register for an account.`);
       return;
     }
 
     if (vendor.password && vendor.password !== pass) {
-      alert('❌ Incorrect password. Please try again or click "Lost your password?".');
+      alert('[!] Incorrect password. Please try again or click "Lost your password?".');
       return;
     }
 
     if (vendor.status === 'pending' || vendor.status === 'pending_verification') {
-      alert(`⏳ ACCOUNT PENDING REVIEW\n\nYour store "${vendor.name}" application is currently awaiting Super Admin review.\nYou will receive full access once approved.`);
+      alert(`[...] ACCOUNT PENDING REVIEW\n\nYour store "${vendor.name}" application is currently awaiting Super Admin review.\nYou will receive full access once approved.`);
       return;
     }
 
     this.activeVendorId = vendor.id;
     this.setPersona('vendor');
-    this.showToast(`🏪 Logged in as ${vendor.name}`);
+    this.showToast(`[STORE] Logged in as ${vendor.name}`);
   }
 
   async handleAccountRegister(event) {
@@ -13939,7 +13939,7 @@ class ESellerStoreApp {
         return;
       }
       if (referralCode !== '00546') {
-        alert('❌ Invalid referral code! Please enter the required 5-digit vendor referral code (00546).');
+        alert('[!] Invalid referral code! Please enter the required 5-digit vendor referral code (00546).');
         return;
       }
       if (!phoneNum) {
@@ -13969,7 +13969,7 @@ class ESellerStoreApp {
     const submitBtn = document.getElementById('btnAccountRegisterSubmit');
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '⏳ Generating Activation Link...';
+      submitBtn.innerHTML = '[...] Generating Activation Link...';
     }
 
     try {
@@ -13992,7 +13992,7 @@ class ESellerStoreApp {
 
       const activationLink = result.activationLink || result.activationLinkPreview || `${window.location.origin}/my-account/set-password?token=${result.activationToken}&email=${encodeURIComponent(email)}`;
 
-      alert(`🎉 REGISTRATION SUBMITTED SUCCESSFULLY!\n\nAn automated activation link has been sent to:\n📧 ${email}\n\nActivation Link:\n${activationLink}\n\nClick OK to configure your permanent store password now.`);
+      alert(`[SUCCESS] REGISTRATION SUBMITTED SUCCESSFULLY!\n\nAn automated activation link has been sent to:\n📧 ${email}\n\nActivation Link:\n${activationLink}\n\nClick OK to configure your permanent store password now.`);
 
       this.openSetPasswordModal(result.activationToken, email);
 
@@ -14043,7 +14043,7 @@ class ESellerStoreApp {
     const btn = document.getElementById('btnSetPasswordSubmit');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '⏳ Activating Account...';
+      btn.innerHTML = '[...] Activating Account...';
     }
 
     try {
@@ -14060,7 +14060,7 @@ class ESellerStoreApp {
       }
 
       this.closeModals();
-      alert(`🎉 ACCOUNT ACTIVATED SUCCESSFULLY!\n\nYour store password has been established for ${email}.\nYou may now sign in.`);
+      alert(`[SUCCESS] ACCOUNT ACTIVATED SUCCESSFULLY!\n\nYour store password has been established for ${email}.\nYou may now sign in.`);
       
       this.openMyAccount('login');
       const userEl = document.getElementById('accountLoginUsername');
@@ -14071,7 +14071,7 @@ class ESellerStoreApp {
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '🚀 Set Password &amp; Activate Account';
+        btn.innerHTML = '[LAUNCH] Set Password &amp; Activate Account';
       }
     }
   }
