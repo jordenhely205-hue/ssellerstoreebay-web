@@ -4396,3 +4396,21 @@ html, body {
 .drawer-nav-auth:hover .drawer-auth-icon {
   stroke: #e54660;
 }
+
+
+/* Vendor Sub-Milestones Grid Responsive */
+.vendor-sub-milestones-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media screen and (max-width: 768px) {
+  .vendor-sub-milestones-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media screen and (max-width: 480px) {
+  .vendor-sub-milestones-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

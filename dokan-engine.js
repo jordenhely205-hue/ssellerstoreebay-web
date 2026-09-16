@@ -1508,6 +1508,51 @@ export class DokanEngine {
     return { vendor, log: newLog };
   }
 
+  requestVendorWithdrawal(vendorId, amount, method = 'USDT (TRC20)', accountAddress = '') {
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      throw new Error('Please enter a valid positive dollar amount.');
+    }
+
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => v.id === vendorId);
+    if (!vendor) throw new Error('Vendor store not found.');
+
+    if (vendor.accountStatus === 'Frozen' || vendor.accountStatus === 'Suspended') {
+      throw new Error('Your store is currently restricted. Order processing and wallet withdrawals are temporarily paused. Contact Support.');
+    }
+
+    const currentBal = parseFloat(vendor.balance || 0);
+    if (numAmount > currentBal) {
+      throw new Error(`Withdrawal amount ($${numAmount.toFixed(2)}) cannot exceed available wallet balance ($${currentBal.toFixed(2)}).`);
+    }
+
+    if (!accountAddress || !accountAddress.trim()) {
+      throw new Error('Please provide your payout account or wallet address.');
+    }
+
+    vendor.balance = (currentBal - numAmount).toFixed(2);
+    this.saveVendors(vendors);
+
+    const logs = JSON.parse(localStorage.getItem(this.storageKeyWalletLogs)) || [];
+    const newLog = {
+      id: 'w_' + Date.now(),
+      vendorId: vendor.id,
+      vendorName: vendor.name,
+      amount: numAmount,
+      type: 'debit',
+      note: `Payout Request (${method} - ${accountAddress.trim()})`,
+      status: 'Pending',
+      date: new Date().toLocaleString()
+    };
+    logs.unshift(newLog);
+    localStorage.setItem(this.storageKeyWalletLogs, JSON.stringify(logs));
+
+    this.logActivity('Wallet Payout Request', `Requested $${numAmount.toFixed(2)} payout via ${method} for '${vendor.name}'`, 'info');
+    return { vendor, log: newLog };
+  }
+
+
   logActivity(title, detail, type = 'info') {
     const logs = JSON.parse(localStorage.getItem(this.storageKeyActivityLogs)) || [];
     const newEntry = {

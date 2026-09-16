@@ -1,4 +1,4 @@
-const APP_VERSION = 'v6.7_purge_mock_stores';
+const APP_VERSION = 'v6.9_vendor_substrip_payout_modal';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -2292,52 +2292,162 @@ window.wizardGoToStep = function(step) { if (window.app) window.app.wizardGoToSt
     this.showToast('⚡ Autofilled demo shipping address: ' + pick.city + ', ' + pick.country);
   }
 
-  handleVendorRequestPayout() {
+  openVendorWithdrawModal() {
     const vendor = engine.getVendorById(this.activeVendorId) || engine.getVendors()[0];
     if (vendor && (vendor.accountStatus === 'Frozen' || vendor.accountStatus === 'Suspended')) {
       alert('Your store is currently restricted. Order processing and wallet withdrawals are temporarily paused. Contact Support.');
       return;
     }
     const balance = parseFloat(vendor ? vendor.balance : 0);
-    if (balance <= 0) {
-      alert('No available wallet balance to withdraw ($0.00).');
+    const availEl = document.getElementById('vendorWithdrawAvailableDisplay');
+    if (availEl) availEl.textContent = '$' + balance.toFixed(2);
+    const amountInput = document.getElementById('vendorWithdrawAmount');
+    if (amountInput) {
+      amountInput.value = '';
+      amountInput.max = balance;
+    }
+    const addrInput = document.getElementById('vendorWithdrawAccountAddress');
+    if (addrInput) addrInput.value = '';
+    this.openModal('vendorWithdrawModalOverlay');
+  }
+
+  setWithdrawMaxAmount() {
+    const vendor = engine.getVendorById(this.activeVendorId) || engine.getVendors()[0];
+    const balance = parseFloat(vendor ? vendor.balance : 0);
+    const amountInput = document.getElementById('vendorWithdrawAmount');
+    if (amountInput) {
+      amountInput.value = balance > 0 ? balance.toFixed(2) : '0.00';
+    }
+  }
+
+  handleVendorWithdrawSubmit(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const vendor = engine.getVendorById(this.activeVendorId) || engine.getVendors()[0];
+    if (!vendor) {
+      alert('Vendor store not found.');
       return;
     }
-    this.showToast('Withdrawal request of $' + balance.toFixed(2) + ' submitted for 256-bit Escrow processing.');
+
+    if (vendor.accountStatus === 'Frozen' || vendor.accountStatus === 'Suspended') {
+      alert('Your store is currently restricted. Order processing and wallet withdrawals are temporarily paused. Contact Support.');
+      return;
+    }
+
+    const amountInput = document.getElementById('vendorWithdrawAmount');
+    const methodSelect = document.getElementById('vendorWithdrawMethod');
+    const addressInput = document.getElementById('vendorWithdrawAccountAddress');
+
+    const amount = parseFloat(amountInput ? amountInput.value : 0);
+    const method = methodSelect ? methodSelect.value : 'USDT (TRC20)';
+    const accountAddress = addressInput ? addressInput.value.trim() : '';
+
+    if (isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid withdrawal amount greater than $0.00.');
+      return;
+    }
+
+    const currentBal = parseFloat(vendor.balance || 0);
+    if (amount > currentBal) {
+      alert(`Withdrawal amount ($${amount.toFixed(2)}) cannot exceed your available balance ($${currentBal.toFixed(2)}).`);
+      return;
+    }
+
+    if (!accountAddress) {
+      alert('Please enter a valid destination account or wallet address.');
+      return;
+    }
+
+    try {
+      if (typeof engine.requestVendorWithdrawal === 'function') {
+        engine.requestVendorWithdrawal(vendor.id, amount, method, accountAddress);
+      } else {
+        vendor.balance = (currentBal - amount).toFixed(2);
+        const allVendors = engine.getVendors();
+        const vIdx = allVendors.findIndex(v => v.id === vendor.id);
+        if (vIdx !== -1) {
+          allVendors[vIdx].balance = vendor.balance;
+          engine.saveVendors(allVendors);
+        }
+        const logs = JSON.parse(localStorage.getItem('esellerstore_wallet_logs')) || [];
+        logs.unshift({
+          id: 'w_' + Date.now(),
+          vendorId: vendor.id,
+          vendorName: vendor.name,
+          amount: amount,
+          type: 'debit',
+          note: `Payout Request (${method} - ${accountAddress})`,
+          status: 'Pending',
+          date: new Date().toLocaleString()
+        });
+        localStorage.setItem('esellerstore_wallet_logs', JSON.stringify(logs));
+        if (typeof engine.logActivity === 'function') {
+          engine.logActivity('Wallet Payout Request', `Withdrawal of $${amount.toFixed(2)} requested via ${method} for '${vendor.name}'`, 'info');
+        }
+      }
+
+      this.showToast(`💸 Withdrawal request of $${amount.toFixed(2)} submitted successfully! Processing via Escrow.`);
+      this.closeModals();
+      this.renderVendorDashboard();
+      if (typeof this.renderAdminDashboard === 'function') {
+        this.renderAdminDashboard();
+      }
+    } catch (err) {
+      alert(err.message || 'Error submitting withdrawal request.');
+    }
+  }
+
+  handleVendorRequestPayout() {
+    this.openVendorWithdrawModal();
   }
 
   copyReferralCode() {
+    let code = '';
     const input = document.getElementById('vendorReferralCodeDisplay');
-    if (!input || !input.value) return;
+    if (input && input.value) {
+      code = input.value;
+    } else {
+      const codeEl = document.getElementById('vendorSubHeaderRefCode');
+      if (codeEl) code = codeEl.textContent.trim();
+      if (!code) {
+        const vendor = engine.getVendorById(this.activeVendorId) || engine.getVendors()[0];
+        if (vendor && vendor.referralCode) code = vendor.referralCode;
+      }
+    }
+    if (!code) return;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(input.value).then(() => {
-        this.showToast('📋 Referral code copied to clipboard: ' + input.value);
+      navigator.clipboard.writeText(code).then(() => {
+        this.showToast('📋 Referral code copied to clipboard: ' + code);
       }).catch(() => {
-        input.select();
-        document.execCommand('copy');
-        this.showToast('📋 Referral code copied: ' + input.value);
+        this.showToast('📋 Referral code copied: ' + code);
       });
     } else {
-      input.select();
-      document.execCommand('copy');
-      this.showToast('📋 Referral code copied: ' + input.value);
+      this.showToast('📋 Referral code copied: ' + code);
     }
   }
 
   copyReferralLink() {
+    let link = '';
     const input = document.getElementById('vendorReferralLinkDisplay');
-    if (!input || !input.value) return;
+    if (input && input.value) {
+      link = input.value;
+    } else {
+      let code = '';
+      const codeEl = document.getElementById('vendorSubHeaderRefCode');
+      if (codeEl) code = codeEl.textContent.trim();
+      if (!code) {
+        const vendor = engine.getVendorById(this.activeVendorId) || engine.getVendors()[0];
+        if (vendor && vendor.referralCode) code = vendor.referralCode;
+      }
+      link = 'https://ssellerstorebay.com/?ref=' + (code || 'VN782');
+    }
+    if (!link) return;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(input.value).then(() => {
+      navigator.clipboard.writeText(link).then(() => {
         this.showToast('🔗 Referral invitation link copied to clipboard!');
       }).catch(() => {
-        input.select();
-        document.execCommand('copy');
         this.showToast('🔗 Referral invitation link copied!');
       });
     } else {
-      input.select();
-      document.execCommand('copy');
       this.showToast('🔗 Referral invitation link copied!');
     }
   }
@@ -2397,5 +2507,8 @@ window.autofillCheckoutAddress = function() { if (window.app) window.app.autofil
 window.openAdminManageAccountModal = function(id) { if (window.app) window.app.openAdminManageAccountModal(id); };
 window.handleAdminSaveVendorAccount = function(e) { if (window.app) window.app.handleAdminSaveVendorAccount(e); };
 window.handleVendorRequestPayout = function() { if (window.app) window.app.handleVendorRequestPayout(); };
+window.openVendorWithdrawModal = function() { if (window.app) window.app.openVendorWithdrawModal(); };
+window.handleVendorWithdrawSubmit = function(e) { if (window.app) window.app.handleVendorWithdrawSubmit(e); };
+window.setWithdrawMaxAmount = function() { if (window.app) window.app.setWithdrawMaxAmount(); };
 window.copyReferralCode = function() { if (window.app) window.app.copyReferralCode(); };
 window.copyReferralLink = function() { if (window.app) window.app.copyReferralLink(); };
