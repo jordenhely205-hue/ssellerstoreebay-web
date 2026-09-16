@@ -1,0 +1,9 @@
+{
+  "name": "esellerstorebay-web",
+  "version": "6.5.0",
+  "description": "E Seller Store Marketplace",
+  "main": "app.js",
+  "dependencies": {
+    "nodemailer": "^6.9.13"
+  }
+}

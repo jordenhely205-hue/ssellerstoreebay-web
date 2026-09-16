@@ -35,9 +35,9 @@
   <meta name="twitter:image" content="https://www.ssellerstorebay.com/og-preview.png">
 
   <!-- Favicon & Touch Icons -->
-  <link rel="icon" type="image/png" href="favicon.png?v=6.4">
-  <link rel="shortcut icon" type="image/png" href="favicon.png?v=6.4">
-  <link rel="apple-touch-icon" href="og-preview.png?v=6.4">
+  <link rel="icon" type="image/png" href="favicon.png?v=6.5">
+  <link rel="shortcut icon" type="image/png" href="favicon.png?v=6.5">
+  <link rel="apple-touch-icon" href="og-preview.png?v=6.5">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +45,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=6.4">
+  <link rel="stylesheet" href="styles.css?v=6.5">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -167,7 +167,7 @@
 
         <!-- Center: Centered Brand Logo -->
         <a href="#" class="dokan-logo-wrap mobile-centered-logo" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-          <img src="logo.png?v=6.4" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+          <img src="logo.png?v=6.5" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
         </a>
 
         <!-- Right: Become A Vendor CTA -->
@@ -178,7 +178,7 @@
 
       <!-- Desktop Brand Logo (Left, hidden on mobile) -->
       <a href="#" class="dokan-logo-wrap desktop-only-flex" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-        <img src="logo.png?v=6.4" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
+        <img src="logo.png?v=6.5" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
       </a>
 
       <!-- Desktop Contact & Cart Widgets (Right, hidden on mobile) -->
@@ -993,13 +993,37 @@
             <h2 class="dokan-auth-col-title">Register</h2>
             <form id="dokanAccountRegisterForm" onsubmit="app.handleAccountRegister(event)">
               
-              <!-- Email Field -->
+              <!-- Email Field with OTP Verification -->
               <div class="dokan-form-group">
                 <label for="accountRegEmail">Email address <span class="required">*</span></label>
-                <input type="email" id="accountRegEmail" class="dokan-form-input" required autocomplete="email" placeholder="merchant@domain.com">
-                <small class="form-help-text" style="color:#0284c7; margin-top:5px; display:block;">
-                  ✉️ A secure link to set your password and activate your account will be sent to this email address.
+                <div style="display:flex; gap:8px;">
+                  <input type="email" id="accountRegEmail" class="dokan-form-input" required autocomplete="email" placeholder="merchant@domain.com" style="flex:1;" oninput="app.accountRegHandleEmailInput(this.value)">
+                  <button type="button" id="btnAccountRegSendOtp" class="btn-hero-primary" style="padding:8px 14px; font-size:12px; white-space:nowrap; border-radius:6px;" onclick="app.accountRegSendOtp()">
+                    Send OTP
+                  </button>
+                </div>
+                <small id="accountRegOtpStatusText" class="form-help-text" style="color:#0284c7; margin-top:5px; display:block;">
+                  ✉️ Verification code will be sent to this email address.
                 </small>
+              </div>
+
+              <!-- OTP Code Input Container for Account Register -->
+              <div id="accountRegOtpInputContainer" style="display:none; margin-bottom:15px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                <label for="accountRegOtpCodeInput" style="font-size:11.5px; font-weight:700; color:#1e293b; display:block; margin-bottom:4px;">Enter 6-Digit Verification Passcode *</label>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <input type="text" id="accountRegOtpCodeInput" maxlength="6" placeholder="" style="font-size:18px; font-weight:800; letter-spacing:6px; text-align:center; flex:1; font-family:monospace;" oninput="app.accountRegHandleOtpInput(this.value)" autocomplete="one-time-code">
+                  <button type="button" id="btnAccountRegVerifyOtp" class="btn-primary" style="padding:9px 16px; font-size:12px; border-radius:6px; background:#10B981;" onclick="app.accountRegVerifyOtp()">
+                    Verify OTP
+                  </button>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                  <span id="accountRegOtpTimerText" style="font-size:11px; color:#64748b;">Code expires in: <strong id="accountRegOtpCountdown">600s</strong></span>
+                  <button type="button" id="btnAccountRegResendOtp" style="background:none; border:none; color:#4F46E5; font-size:11.5px; font-weight:700; cursor:pointer; display:none;" onclick="app.accountRegSendOtp()">Resend Passcode</button>
+                </div>
+                <div id="accountRegOtpVerifiedBadge" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:8px 12px; border-radius:6px; font-size:12px; font-weight:700; margin-top:8px;">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="#15803d" style="vertical-align:middle; margin-right:4px;"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Email authenticated &amp; verified successfully!
+                </div>
               </div>
 
               <!-- Role Selection Radios -->
@@ -1111,7 +1135,7 @@
                 Your personal data will be used to support your experience throughout this website, to manage access to your account, and for other purposes described in our <a href="#" style="color:#dc2626; text-decoration:underline;">privacy policy</a>.
               </p>
 
-              <button type="submit" class="btn-dokan-auth-submit" id="btnAccountRegisterSubmit">
+              <button type="submit" class="btn-dokan-auth-submit" id="btnAccountRegisterSubmit" disabled style="opacity:0.6; cursor:not-allowed;">
                 Register &rsaquo;
               </button>
             </form>
@@ -2771,7 +2795,7 @@
               </button>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-              <span id="wizardOtpTimerText" style="font-size:11px; color:#64748b;">Code expires in: <strong id="wizardOtpCountdown">300s</strong></span>
+              <span id="wizardOtpTimerText" style="font-size:11px; color:#64748b;">Code expires in: <strong id="wizardOtpCountdown">600s</strong></span>
               <button type="button" id="btnWizardResendOtp" style="background:none; border:none; color:#4F46E5; font-size:11.5px; font-weight:700; cursor:pointer; display:none;" onclick="app.wizardSendOtp()">Resend Passcode</button>
             </div>
             <div id="wizardOtpVerifiedBadge" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:8px 12px; border-radius:6px; font-size:12px; font-weight:700; margin-top:8px;">
@@ -2965,7 +2989,7 @@
       <!-- Drawer Header (Logo & Close Button) -->
       <div class="mobile-drawer-header">
         <a href="#" onclick="app.switchInfoPage('home'); app.closeMobileDrawer(); return false;" title="ESS by eBay">
-          <img src="logo.png?v=6.4" alt="ESS by eBay | E-Seller Store Marketplace" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+          <img src="logo.png?v=6.5" alt="ESS by eBay | E-Seller Store Marketplace" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
         </a>
         <button class="mobile-drawer-close" onclick="app.closeMobileDrawer()" aria-label="Close Menu">&times;</button>
       </div>
@@ -3048,7 +3072,12 @@
         </ul>
       </div>
       <div>
-        <h4>Newsletter</h4>
+        <h4>Customer Support</h4>
+        <ul style="list-style:none; padding:0; margin:0 0 14px 0; font-size:12.5px; color:#a9b2c3; line-height:1.8;">
+          <li>Support: <a href="mailto:support@ssellerstorebay.com" style="color:#a9b2c3; text-decoration:underline;">support@ssellerstorebay.com</a></li>
+          <li>Info: <a href="mailto:info@ssellerstorebay.com" style="color:#a9b2c3; text-decoration:underline;">info@ssellerstorebay.com</a></li>
+        </ul>
+        <h4 style="margin-top:10px;">Newsletter</h4>
         <input type="email" placeholder="Enter email..." style="padding:8px; border-radius:4px; border:none; width:100%; margin-bottom:8px;">
         <button class="btn-primary" style="width:100%;" onclick="alert('Thank you for subscribing to E Seller Store!');">Subscribe</button>
       </div>
@@ -3059,7 +3088,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=6.4"></script>
+  <script src="app-bundle.js?v=6.5"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">

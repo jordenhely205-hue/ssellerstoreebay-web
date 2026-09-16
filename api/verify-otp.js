@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
   if (req.method === 'POST') {
     try {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-      const email = (body.email || '').trim().toLowerCase();
+      const email = (body.email || '').toString().trim().toLowerCase();
       const enteredOtp = (body.otp || '').toString().trim();
 
       if (!email || !enteredOtp) {
