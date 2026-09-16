@@ -35,9 +35,9 @@
   <meta name="twitter:image" content="https://www.ssellerstorebay.com/og-preview.png">
 
   <!-- Favicon & Touch Icons -->
-  <link rel="icon" type="image/png" href="favicon.png?v=6.9">
-  <link rel="shortcut icon" type="image/png" href="favicon.png?v=6.9">
-  <link rel="apple-touch-icon" href="og-preview.png?v=6.9">
+  <link rel="icon" type="image/png" href="favicon.png?v=4.6">
+  <link rel="shortcut icon" type="image/png" href="favicon.png?v=4.6">
+  <link rel="apple-touch-icon" href="og-preview.png?v=4.6">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +45,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=6.9">
+  <link rel="stylesheet" href="styles.css?v=4.6">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -157,7 +157,7 @@
       <!-- Mobile Top Bar Controls (Visible on <= 768px) -->
       <div class="mobile-header-top-row mobile-only-flex">
         <!-- Left: Hamburger Icon -->
-        <button type="button" class="mobile-hamburger-btn" onclick="app.openMobileDrawer()" aria-label="Open Menu">
+        <button type="button" class="mobile-hamburger-btn three-bar-icon" onclick="app.openMobileDrawer()" aria-label="Open Menu">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -167,7 +167,7 @@
 
         <!-- Center: Centered Brand Logo -->
         <a href="#" class="dokan-logo-wrap mobile-centered-logo" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-          <img src="logo.png?v=6.9" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+          <img src="logo.png?v=4.6" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
         </a>
 
         <!-- Right: Become A Vendor CTA -->
@@ -178,7 +178,7 @@
 
       <!-- Desktop Brand Logo (Left, hidden on mobile) -->
       <a href="#" class="dokan-logo-wrap desktop-only-flex" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-        <img src="logo.png?v=6.9" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
+        <img src="logo.png?v=4.6" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
       </a>
 
       <!-- Desktop Contact & Cart Widgets (Right, hidden on mobile) -->
@@ -3167,14 +3167,14 @@
     <p>We use cookies for a seamless shopping experience.</p>
     <button class="cookie-accept-btn" onclick="document.getElementById('cookieConsentCard').style.display='none';">Accept &amp; Continue</button>
   </div>
-  <!-- OFF-CANVAS MOBILE DRAWER -->
-  <div class="mobile-drawer-overlay" id="mobileNavDrawerOverlay" onclick="app.closeMobileDrawer()">
-    <div class="mobile-drawer" onclick="event.stopPropagation()">
+  <!-- OFF-CANVAS MOBILE DRAWER BACKDROP & PANEL -->
+  <div class="mobile-drawer-overlay ps-site-overlay drawer-backdrop" id="mobileNavDrawerOverlay" onclick="app.closeMobileDrawer()">
+    <div class="mobile-drawer mobile-menu-drawer ws-mobile-nav" id="mobileNavDrawerPanel" onclick="event.stopPropagation()">
       
       <!-- Drawer Header (Logo & Close Button) -->
       <div class="mobile-drawer-header">
         <a href="#" onclick="app.switchInfoPage('home'); app.closeMobileDrawer(); return false;" title="ESS by eBay">
-          <img src="logo.png?v=6.9" alt="ESS by eBay | E-Seller Store Marketplace" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+          <img src="logo.png?v=4.6" alt="ESS by eBay | E-Seller Store Marketplace" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
         </a>
         <button class="mobile-drawer-close" onclick="app.closeMobileDrawer()" aria-label="Close Menu">&times;</button>
       </div>
@@ -3273,7 +3273,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=6.9"></script>
+  <script src="app-bundle.js?v=4.6"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
@@ -3291,7 +3291,7 @@
   <!-- STICKY BOTTOM MOBILE NAVIGATION BAR -->
   <div class="sticky-mobile-bottom-bar mobile-only-flex">
     <!-- Item 1: Menu -->
-    <a href="#" class="mobile-bottom-item" onclick="app.openMobileDrawer(); return false;">
+    <a href="#" class="mobile-bottom-item three-bar-icon" onclick="app.openMobileDrawer(); return false;">
       <div class="mobile-bottom-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="6" x2="21" y2="6"></line>

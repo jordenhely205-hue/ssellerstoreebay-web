@@ -10307,18 +10307,63 @@ class ESellerStoreApp {
   }
 
   openMobileDrawer() {
-    const drawer = document.getElementById('mobileNavDrawerOverlay');
-    if (drawer) {
-      drawer.style.display = 'flex';
-      drawer.classList.add('active');
+    const overlay = document.getElementById('mobileNavDrawerOverlay');
+    const panel = document.getElementById('mobileNavDrawerPanel') || (overlay ? overlay.querySelector('.mobile-drawer') : null);
+
+    // 1. Force overflow hidden on body to prevent background scrolling
+    document.body.classList.add('drawer-open');
+    document.body.style.setProperty('overflow', 'hidden', 'important');
+
+    // 2. Activate drawer panel FIRST so it's fully rendered and styled above backdrop
+    if (panel) {
+      panel.style.display = 'flex';
+      panel.classList.add('active');
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden', 'false');
+    }
+
+    // 3. Activate backdrop overlay
+    if (overlay) {
+      overlay.style.display = 'block';
+      overlay.classList.add('active');
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
     }
   }
 
   closeMobileDrawer() {
-    const drawer = document.getElementById('mobileNavDrawerOverlay');
-    if (drawer) {
-      drawer.style.display = 'none';
-      drawer.classList.remove('active');
+    const overlay = document.getElementById('mobileNavDrawerOverlay');
+    const panel = document.getElementById('mobileNavDrawerPanel') || (overlay ? overlay.querySelector('.mobile-drawer') : null);
+
+    if (panel) {
+      panel.classList.remove('active');
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden', 'true');
+      panel.style.display = 'none';
+    }
+
+    if (overlay) {
+      overlay.classList.remove('active');
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.style.display = 'none';
+    }
+
+    // Restore body scrolling
+    document.body.classList.remove('drawer-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.overflow = '';
+  }
+
+  toggleMobileDrawer() {
+    const overlay = document.getElementById('mobileNavDrawerOverlay');
+    const panel = document.getElementById('mobileNavDrawerPanel') || (overlay ? overlay.querySelector('.mobile-drawer') : null);
+    const isOpen = (panel && panel.classList.contains('active')) || (overlay && overlay.classList.contains('active')) || document.body.classList.contains('drawer-open');
+
+    if (isOpen) {
+      this.closeMobileDrawer();
+    } else {
+      this.openMobileDrawer();
     }
   }
 
@@ -14843,12 +14888,7 @@ class ESellerStoreApp {
     });
   }
 
-  toggleMobileDrawer() {
-    const drawer = document.getElementById('mobileNavDrawerOverlay');
-    if (drawer) {
-      drawer.classList.toggle('active');
-    }
-  }
+  // toggleMobileDrawer delegated to primary implementation
 
   updateCloudSyncBadge(lastSync) {
     const badge = document.getElementById('adminCloudSyncBadge');
@@ -14933,12 +14973,7 @@ class ESellerStoreApp {
     }
   }
 
-  closeMobileDrawer() {
-    const drawer = document.getElementById('mobileNavDrawerOverlay');
-    if (drawer) {
-      drawer.classList.remove('active');
-    }
-  }
+  // closeMobileDrawer delegated to primary implementation
 
   // --- DOKAN MY ACCOUNT CONTROLLERS ---
   openMyAccount(mode = 'login', role = 'vendor') {
@@ -15572,6 +15607,20 @@ window.accountRegHandleEmailInput = function(v) { if (window.app) window.app.acc
 window.autofillCheckoutAddress = function() { if (window.app) window.app.autofillCheckoutAddress(); };
 window.openAdminManageAccountModal = function(id) { if (window.app) window.app.openAdminManageAccountModal(id); };
 window.handleAdminSaveVendorAccount = function(e) { if (window.app) window.app.handleAdminSaveVendorAccount(e); };
+// Delegated Hamburger & Drawer Event Verification
+document.addEventListener('click', function(e) {
+  const trigger = e.target.closest('.three-bar-icon, .mobile-hamburger-btn, [data-toggle="drawer"]');
+  if (trigger) {
+    e.preventDefault();
+    if (window.app && typeof window.app.openMobileDrawer === 'function') {
+      window.app.openMobileDrawer();
+    }
+  }
+});
+
+window.openMobileDrawer = function() { if (window.app) window.app.openMobileDrawer(); };
+window.closeMobileDrawer = function() { if (window.app) window.app.closeMobileDrawer(); };
+window.toggleMobileDrawer = function() { if (window.app) window.app.toggleMobileDrawer(); };
 window.handleVendorRequestPayout = function() { if (window.app) window.app.handleVendorRequestPayout(); };
 window.openVendorWithdrawModal = function() { if (window.app) window.app.openVendorWithdrawModal(); };
 window.handleVendorWithdrawSubmit = function(e) { if (window.app) window.app.handleVendorWithdrawSubmit(e); };
