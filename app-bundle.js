@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v6.7_purge_mock_stores';
+const APP_VERSION = 'v6.8_vendor_milestones_health_badges';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -24,6 +24,47 @@ function isMockVendor(v) {
   if (owner.includes('yogesh') || name.includes('yupa') || name.includes('hubdad')) return true;
   return false;
 }
+
+function normalizeVendor(v) {
+  if (!v) return v;
+  if (!v.accountStatus) {
+    if (v.status === 'suspended') v.accountStatus = 'Suspended';
+    else if (v.status === 'frozen') v.accountStatus = 'Frozen';
+    else if (v.status === 'pending') v.accountStatus = 'Pending';
+    else v.accountStatus = 'Active';
+  }
+  if (typeof v.storeScore !== 'number') {
+    v.storeScore = (v.id === 'sanvicollection') ? 95 : 100;
+  }
+  if (typeof v.completedOrders !== 'number') {
+    v.completedOrders = (v.id === 'sanvicollection') ? 32 : 0;
+  }
+  if (v.completedOrders >= 30) {
+    v.tier = 'Platinum';
+  } else if (v.completedOrders >= 16) {
+    v.tier = 'Gold';
+  } else if (v.completedOrders >= 6) {
+    v.tier = 'Silver';
+  } else {
+    v.tier = 'Bronze';
+  }
+  v.referralCodeUnlocked = (v.tier === 'Platinum');
+  if (v.referralCodeUnlocked) {
+    if (!v.referralCode) {
+      v.referralCode = (v.id === 'sanvicollection') ? 'VN782' : ('VN' + Math.floor(100 + Math.random() * 900));
+    }
+  } else {
+    v.referralCode = v.referralCode || null;
+  }
+  if (typeof v.referredCount !== 'number') {
+    v.referredCount = (v.id === 'sanvicollection') ? 3 : 0;
+  }
+  if (typeof v.referralEarnings !== 'number') {
+    v.referralEarnings = (v.id === 'sanvicollection') ? 450 : (v.referredCount * 150);
+  }
+  return v;
+}
+
 
 const MASTER_CATALOG_REPOSITORY = [
   {
@@ -157,6 +198,14 @@ const INITIAL_VENDORS = [
     "password": "Sanvi@123",
     "description": "Exclusive official vendor of luxury fashion, modern technology, lifestyle accessories, and premium home essentials.",
     "status": "verified",
+    "accountStatus": "Active",
+    "storeScore": 95,
+    "completedOrders": 32,
+    "tier": "Platinum",
+    "referralCodeUnlocked": true,
+    "referralCode": "VN782",
+    "referredCount": 3,
+    "referralEarnings": 450,
     "balance": 3420.5,
     "totalSales": 18750,
     "profitEarned": 4685,
@@ -9224,25 +9273,25 @@ class DokanEngine {
       const raw = localStorage.getItem(this.storageKeyVendors);
       let data = raw ? JSON.parse(raw) : null;
       if (!data || !Array.isArray(data) || data.length === 0) {
-        localStorage.setItem(this.storageKeyVendors, JSON.stringify(INITIAL_VENDORS));
-        return INITIAL_VENDORS;
+        const normalizedInit = INITIAL_VENDORS.map(v => normalizeVendor(v));
+        localStorage.setItem(this.storageKeyVendors, JSON.stringify(normalizedInit));
+        return normalizedInit;
       }
       const cleaned = data.filter(v => !isMockVendor(v));
       const hasSanvi = cleaned.some(v => (v.id === 'sanvicollection' || (v.email && v.email.toLowerCase() === 'sanvi@sanvicollection.com')));
       if (!hasSanvi) {
         cleaned.unshift(...INITIAL_VENDORS);
       }
-      if (cleaned.length !== data.length) {
-        localStorage.setItem(this.storageKeyVendors, JSON.stringify(cleaned));
-      }
-      return cleaned;
+      const normalized = cleaned.map(v => normalizeVendor(v));
+      localStorage.setItem(this.storageKeyVendors, JSON.stringify(normalized));
+      return normalized;
     } catch (e) {
-      return INITIAL_VENDORS;
+      return INITIAL_VENDORS.map(v => normalizeVendor(v));
     }
   }
 
   saveVendors(vendors) {
-    const cleaned = (vendors || []).filter(v => !isMockVendor(v));
+    const cleaned = (vendors || []).filter(v => !isMockVendor(v)).map(v => normalizeVendor(v));
     try {
       localStorage.setItem(this.storageKeyVendors, JSON.stringify(cleaned));
     } catch (e) {}
@@ -9292,7 +9341,70 @@ class DokanEngine {
   }
 
   getVendorById(id) {
-    return this.getVendors().find(v => v.id === id);
+    const found = this.getVendors().find(v => v.id === id);
+    return found ? normalizeVendor(found) : null;
+  }
+
+  updateVendorAccount(vendorId, updates = {}) {
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => v.id === vendorId);
+    if (!vendor) return null;
+
+    if (updates.accountStatus) {
+      vendor.accountStatus = updates.accountStatus;
+      if (updates.accountStatus === 'Active') vendor.status = 'verified';
+      else if (updates.accountStatus === 'Suspended') vendor.status = 'suspended';
+      else if (updates.accountStatus === 'Frozen') vendor.status = 'frozen';
+      else if (updates.accountStatus === 'Pending') vendor.status = 'pending';
+    }
+
+    if (updates.storeScore !== undefined && updates.storeScore !== null) {
+      const parsedScore = parseInt(updates.storeScore, 10);
+      if (!isNaN(parsedScore)) {
+        vendor.storeScore = Math.max(0, Math.min(100, parsedScore));
+      }
+    }
+
+    if (updates.completedOrders !== undefined && updates.completedOrders !== null) {
+      const parsedOrders = parseInt(updates.completedOrders, 10);
+      if (!isNaN(parsedOrders)) {
+        vendor.completedOrders = Math.max(0, parsedOrders);
+        if (vendor.completedOrders >= 30) {
+          vendor.tier = 'Platinum';
+          vendor.referralCodeUnlocked = true;
+          if (!vendor.referralCode) {
+            vendor.referralCode = (vendor.id === 'sanvicollection') ? 'VN782' : ('VN' + Math.floor(100 + Math.random() * 900));
+          }
+        } else if (vendor.completedOrders >= 16) {
+          vendor.tier = 'Gold';
+          vendor.referralCodeUnlocked = false;
+        } else if (vendor.completedOrders >= 6) {
+          vendor.tier = 'Silver';
+          vendor.referralCodeUnlocked = false;
+        } else {
+          vendor.tier = 'Bronze';
+          vendor.referralCodeUnlocked = false;
+        }
+      }
+    }
+
+    normalizeVendor(vendor);
+    this.saveVendors(vendors);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('vendor_updated', { detail: vendor }));
+    }
+
+    try { this.syncVendorsToCloudBackend(vendors); } catch (e) {}
+    return vendor;
+  }
+
+  isValidReferralCode(code) {
+    if (!code) return false;
+    const clean = code.toString().trim().toUpperCase();
+    if (clean === '00546') return true;
+    const vendors = this.getVendors();
+    return vendors.some(v => v.referralCodeUnlocked && v.referralCode && v.referralCode.toString().trim().toUpperCase() === clean);
   }
 
   // --- VENDOR REGISTRATION & APPLICATION PIPELINE ---
@@ -10022,6 +10134,14 @@ class DokanEngine {
       globalCommissionRatePercent: 15,
       totalOrdersProcessed: 126
     };
+
+    // Restriction check: halt checkout if store is Frozen or Suspended
+    for (const item of cartItems) {
+      const vendor = vendors.find(v => v.id === item.vendorId) || vendors[0];
+      if (vendor && (vendor.accountStatus === 'Frozen' || vendor.accountStatus === 'Suspended')) {
+        throw new Error('The store "' + (vendor.storeName || vendor.name) + '" is currently restricted. Order processing and wallet withdrawals are temporarily paused. Contact Support.');
+      }
+    }
 
     let orderTotal = 0;
     let totalAdminCommission = 0;
@@ -11472,9 +11592,14 @@ class ESellerStoreApp {
               <small style="color:#64748b;">${v.mobile || v.phone || 'N/A'}</small>
             </td>
             <td>
-              <span class="status-badge verified" style="background:#f0fdf4; color:#15803d; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #bbf7d0; display:inline-flex; align-items:center;">
-                ${checkIcon} VERIFIED
-              </span>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <span class="status-badge ${v.accountStatus === 'Active' ? 'verified' : (v.accountStatus === 'Suspended' ? 'danger' : (v.accountStatus === 'Frozen' ? 'warning' : 'pending_verification'))}" style="font-weight:800; padding:3px 8px; border-radius:8px; font-size:11px; display:inline-flex; align-items:center; width:fit-content; ${v.accountStatus === 'Active' ? 'background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;' : (v.accountStatus === 'Frozen' ? 'background:#e0f2fe; color:#0369a1; border:1px solid #7dd3fc;' : (v.accountStatus === 'Suspended' ? 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;' : 'background:#fef9c3; color:#854d0e; border:1px solid #fde047;'))}">
+                  ${v.accountStatus === 'Active' ? checkIcon + ' ACTIVE' : (v.accountStatus === 'Frozen' ? '❄️ FROZEN' : (v.accountStatus === 'Suspended' ? '⛔ SUSPENDED' : '⏳ PENDING'))}
+                </span>
+                <span style="font-size:10.5px; color:${v.storeScore >= 85 ? '#15803d' : (v.storeScore >= 60 ? '#b45309' : '#b91c1c')}; font-weight:700;">
+                  Score: ${typeof v.storeScore === 'number' ? v.storeScore : 100}/100
+                </span>
+              </div>
             </td>
             <td>
               <strong style="color:#137333;">${v.commissionRate || 15}% Fee</strong><br>
@@ -11483,6 +11608,7 @@ class ESellerStoreApp {
             <td><strong style="font-size:14px; color:var(--nav-red);">$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
             <td style="text-align:right;">
               <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#4f46e5;" onclick="app.openAdminManageAccountModal('${v.id}')">⚙️ Manage Account</button>
                 <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">Inventory</button>
                 <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
                 <button class="admin-act-btn ${v.status === 'suspended' || v.status === 'rejected' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' || v.status === 'rejected' ? 'verified' : 'suspended'}')">
@@ -13168,7 +13294,9 @@ class ESellerStoreApp {
     const succBox = document.getElementById('wizardReferralSuccessBox');
     const inputEl = document.getElementById('wizardReferralCode');
 
-    if (trimmed === '00546') {
+    const isValid = (trimmed === '00546') || (typeof engine !== 'undefined' && engine.isValidReferralCode && engine.isValidReferralCode(trimmed));
+
+    if (isValid) {
       if (errBox) errBox.style.display = 'none';
       if (succBox) succBox.style.display = 'block';
       if (inputEl) { inputEl.style.borderColor = '#16a34a'; inputEl.style.background = '#f0fdf4'; }
@@ -13355,6 +13483,73 @@ class ESellerStoreApp {
     const nameEl = document.getElementById('vendorDashStoreName');
     const statusEl = document.getElementById('vendorDashStatus');
     const pendingAlertBox = document.getElementById('vendorPendingAlertBox');
+    const scoreBadge = document.getElementById('vendorHeaderScoreBadge');
+    const headerStatusBadge = document.getElementById('vendorHeaderStatusBadge');
+    const restrictionBanner = document.getElementById('vendorRestrictionBanner');
+
+    const storeScore = typeof vendor.storeScore === 'number' ? vendor.storeScore : 100;
+    const accountStatus = vendor.accountStatus || (vendor.status === 'verified' ? 'Active' : (vendor.status === 'suspended' ? 'Suspended' : (vendor.status === 'frozen' ? 'Frozen' : 'Pending')));
+
+    if (scoreBadge) {
+      let scoreBg = '#f0fdf4';
+      let scoreColor = '#15803d';
+      let scoreBorder = '#86efac';
+      let scoreIcon = '💚';
+
+      if (storeScore < 60) {
+        scoreBg = '#fef2f2';
+        scoreColor = '#b91c1c';
+        scoreBorder = '#fca5a5';
+        scoreIcon = '💔';
+      } else if (storeScore < 85) {
+        scoreBg = '#fffbeb';
+        scoreColor = '#b45309';
+        scoreBorder = '#fde68a';
+        scoreIcon = '💛';
+      }
+
+      scoreBadge.style.background = scoreBg;
+      scoreBadge.style.color = scoreColor;
+      scoreBadge.style.borderColor = scoreBorder;
+      scoreBadge.innerHTML = scoreIcon + ' Score: ' + storeScore + '/100';
+    }
+
+    if (headerStatusBadge) {
+      let stBg = '#dcfce7';
+      let stColor = '#166534';
+      let stBorder = '#86efac';
+      let stIcon = '●';
+
+      if (accountStatus === 'Suspended') {
+        stBg = '#fee2e2';
+        stColor = '#991b1b';
+        stBorder = '#fca5a5';
+        stIcon = '⛔';
+      } else if (accountStatus === 'Frozen') {
+        stBg = '#e0f2fe';
+        stColor = '#0369a1';
+        stBorder = '#7dd3fc';
+        stIcon = '❄️';
+      } else if (accountStatus === 'Pending') {
+        stBg = '#fef9c3';
+        stColor = '#854d0e';
+        stBorder = '#fde047';
+        stIcon = '⏳';
+      }
+
+      headerStatusBadge.style.background = stBg;
+      headerStatusBadge.style.color = stColor;
+      headerStatusBadge.style.borderColor = stBorder;
+      headerStatusBadge.innerHTML = stIcon + ' ' + accountStatus.toUpperCase();
+    }
+
+    if (restrictionBanner) {
+      if (accountStatus === 'Frozen' || accountStatus === 'Suspended') {
+        restrictionBanner.style.display = 'flex';
+      } else {
+        restrictionBanner.style.display = 'none';
+      }
+    }
     const addProdBtn = document.getElementById('vendorBtnAddProduct');
     const syncBtn = document.getElementById('vendorBtnSyncMasterCatalog');
     const uploadCsvLabel = document.getElementById('vendorBtnUploadCsv');
@@ -13437,6 +13632,135 @@ class ESellerStoreApp {
     if (statCanc) statCanc.textContent = cancelCount;
     if (statTot) statTot.textContent = totalOrdersCount;
     if (statWall) statWall.textContent = '$' + vendorBalance.toFixed(2);
+
+    // MODULE 3: Milestone Progression & Conditional Referral Logic
+    const completedOrdersCount = typeof vendor.completedOrders === 'number'
+      ? Math.max(vendor.completedOrders, completeCount)
+      : completeCount;
+
+    let tier = 'Bronze';
+    let progressPct = 0;
+    let progressLabel = '';
+    let nextTierText = '';
+
+    if (completedOrdersCount >= 30) {
+      tier = 'Platinum';
+      progressPct = 100;
+      progressLabel = 'Completed: ' + completedOrdersCount + ' Orders (Elite Platinum)';
+      nextTierText = '🎉 Elite Platinum Merchant status achieved! VIP Referral program unlocked.';
+    } else if (completedOrdersCount >= 16) {
+      tier = 'Gold';
+      const needed = 30 - completedOrdersCount;
+      progressPct = Math.min(100, Math.round(((completedOrdersCount - 15) / (30 - 15)) * 100));
+      progressLabel = 'Progress: ' + completedOrdersCount + ' / 30 Orders';
+      nextTierText = needed + ' more completed ' + (needed === 1 ? 'order' : 'orders') + ' needed to reach Platinum';
+    } else if (completedOrdersCount >= 6) {
+      tier = 'Silver';
+      const needed = 16 - completedOrdersCount;
+      progressPct = Math.min(100, Math.round(((completedOrdersCount - 5) / (16 - 5)) * 100));
+      progressLabel = 'Progress: ' + completedOrdersCount + ' / 16 Orders';
+      nextTierText = needed + ' more completed ' + (needed === 1 ? 'order' : 'orders') + ' needed to reach Gold';
+    } else {
+      tier = 'Bronze';
+      const needed = 6 - completedOrdersCount;
+      progressPct = Math.min(100, Math.round((completedOrdersCount / 6) * 100));
+      progressLabel = 'Progress: ' + completedOrdersCount + ' / 6 Orders';
+      nextTierText = needed + ' more completed ' + (needed === 1 ? 'order' : 'orders') + ' needed to reach Silver';
+    }
+
+    const currentTierBadge = document.getElementById('vendorMilestoneCurrentTierBadge');
+    const milestoneProgressLabel = document.getElementById('vendorMilestoneProgressLabel');
+    const milestoneProgressPct = document.getElementById('vendorMilestoneProgressPercent');
+    const milestoneProgressBar = document.getElementById('vendorMilestoneProgressBar');
+    const milestoneNextTarget = document.getElementById('vendorMilestoneNextTierTarget');
+
+    if (currentTierBadge) {
+      currentTierBadge.textContent = tier.toUpperCase();
+      if (tier === 'Platinum') {
+        currentTierBadge.style.background = '#e0f2fe';
+        currentTierBadge.style.color = '#0369a1';
+        currentTierBadge.style.borderColor = '#7dd3fc';
+      } else if (tier === 'Gold') {
+        currentTierBadge.style.background = '#fef3c7';
+        currentTierBadge.style.color = '#92400e';
+        currentTierBadge.style.borderColor = '#fde68a';
+      } else if (tier === 'Silver') {
+        currentTierBadge.style.background = '#f1f5f9';
+        currentTierBadge.style.color = '#334155';
+        currentTierBadge.style.borderColor = '#cbd5e1';
+      } else {
+        currentTierBadge.style.background = '#fdf4ff';
+        currentTierBadge.style.color = '#86198f';
+        currentTierBadge.style.borderColor = '#f5d0fe';
+      }
+    }
+
+    if (milestoneProgressLabel) milestoneProgressLabel.textContent = progressLabel;
+    if (milestoneProgressPct) milestoneProgressPct.textContent = progressPct + '%';
+    if (milestoneProgressBar) milestoneProgressBar.style.width = progressPct + '%';
+    if (milestoneNextTarget) milestoneNextTarget.textContent = nextTierText;
+
+    // Highlight active tier stepper card
+    ['tierCardBronze', 'tierCardSilver', 'tierCardGold', 'tierCardPlatinum'].forEach(id => {
+      const card = document.getElementById(id);
+      if (card) {
+        card.style.borderColor = '#e2e8f0';
+        card.style.boxShadow = 'none';
+        card.style.background = '#f8fafc';
+      }
+    });
+    const activeTierCard = document.getElementById('tierCard' + tier);
+    if (activeTierCard) {
+      activeTierCard.style.borderColor = '#4f46e5';
+      activeTierCard.style.background = '#eef2ff';
+      activeTierCard.style.boxShadow = '0 2px 6px rgba(79,70,229,0.15)';
+    }
+
+    // Referral System Locked / Unlocked Views
+    const referralLockedView = document.getElementById('vendorReferralLockedView');
+    const referralUnlockedView = document.getElementById('vendorReferralUnlockedView');
+    const referralStatusBadge = document.getElementById('vendorReferralStatusBadge');
+    const referralCountEl = document.getElementById('vendorReferralCount');
+    const referralEarningsEl = document.getElementById('vendorReferralEarnings');
+    const referralCodeDisplay = document.getElementById('vendorReferralCodeDisplay');
+    const referralLinkDisplay = document.getElementById('vendorReferralLinkDisplay');
+
+    const isPlatinum = (tier === 'Platinum');
+    if (isPlatinum) {
+      if (!vendor.referralCode) {
+        vendor.referralCode = (vendor.id === 'sanvicollection') ? 'VN782' : ('VN' + Math.floor(100 + Math.random() * 900));
+        vendor.referralCodeUnlocked = true;
+        const allVendors = engine.getVendors();
+        const cur = allVendors.find(v => v.id === vendor.id);
+        if (cur) {
+          cur.referralCode = vendor.referralCode;
+          cur.referralCodeUnlocked = true;
+          engine.saveVendors(allVendors);
+        }
+      }
+      if (referralLockedView) referralLockedView.style.display = 'none';
+      if (referralUnlockedView) referralUnlockedView.style.display = 'block';
+      if (referralStatusBadge) {
+        referralStatusBadge.textContent = '✨ Platinum Unlocked';
+        referralStatusBadge.style.background = '#dcfce7';
+        referralStatusBadge.style.color = '#166534';
+        referralStatusBadge.style.borderColor = '#86efac';
+      }
+      if (referralCodeDisplay) referralCodeDisplay.value = vendor.referralCode;
+      if (referralLinkDisplay) referralLinkDisplay.value = 'https://ssellerstorebay.com/?ref=' + vendor.referralCode;
+    } else {
+      if (referralLockedView) referralLockedView.style.display = 'block';
+      if (referralUnlockedView) referralUnlockedView.style.display = 'none';
+      if (referralStatusBadge) {
+        referralStatusBadge.textContent = '🔒 Locked until Platinum';
+        referralStatusBadge.style.background = '#fef3c7';
+        referralStatusBadge.style.color = '#92400e';
+        referralStatusBadge.style.borderColor = '#fde68a';
+      }
+    }
+
+    if (referralCountEl) referralCountEl.textContent = vendor.referredCount || 0;
+    if (referralEarningsEl) referralEarningsEl.textContent = '$' + parseFloat(vendor.referralEarnings || 0).toFixed(2);
 
     const breakdownPendEl = document.getElementById('vendorStatusCountPending');
     const breakdownProcEl = document.getElementById('vendorStatusCountProcessing');
@@ -13644,13 +13968,193 @@ class ESellerStoreApp {
   }
 
   updateVendorOrderStatus(orderId, newStatus) {
+    const vendor = engine.getVendorById(this.activeVendorId) || engine.getVendors()[0];
+    if (vendor && (vendor.accountStatus === 'Frozen' || vendor.accountStatus === 'Suspended')) {
+      alert('Your store is currently restricted. Order processing and wallet withdrawals are temporarily paused. Contact Support.');
+      this.renderVendorDashboard();
+      return;
+    }
+
     const orders = JSON.parse(localStorage.getItem('esellerstore_orders')) || [];
     const order = orders.find(o => o.id === orderId);
     if (order) {
       order.status = newStatus;
       localStorage.setItem('esellerstore_orders', JSON.stringify(orders));
+      if (newStatus === 'Completed' && vendor) {
+        vendor.completedOrders = (vendor.completedOrders || 0) + 1;
+        engine.updateVendorAccount(vendor.id, { completedOrders: vendor.completedOrders });
+      }
       this.renderVendorDashboard();
       this.showToast('Order #' + orderId + ' status: ' + newStatus.toUpperCase());
+    }
+  }
+
+  handleVendorRequestPayout() {
+    const vendor = engine.getVendorById(this.activeVendorId) || engine.getVendors()[0];
+    if (vendor && (vendor.accountStatus === 'Frozen' || vendor.accountStatus === 'Suspended')) {
+      alert('Your store is currently restricted. Order processing and wallet withdrawals are temporarily paused. Contact Support.');
+      return;
+    }
+    const balance = parseFloat(vendor ? vendor.balance : 0);
+    if (balance <= 0) {
+      alert('No available wallet balance to withdraw ($0.00).');
+      return;
+    }
+    this.showToast('Withdrawal request of $' + balance.toFixed(2) + ' submitted for 256-bit Escrow processing.');
+  }
+
+  openAdminManageAccountModal(vendorId) {
+    const vendor = engine.getVendorById(vendorId);
+    if (!vendor) {
+      alert('Vendor store not found.');
+      return;
+    }
+
+    const idInput = document.getElementById('adminManageVendorId');
+    const subTitle = document.getElementById('adminManageVendorSubtitle');
+    const statusSelect = document.getElementById('adminManageVendorStatus');
+    const scoreSlider = document.getElementById('adminManageVendorScoreSlider');
+    const scoreInput = document.getElementById('adminManageVendorScoreInput');
+    const scoreDisplay = document.getElementById('adminManageScoreDisplay');
+
+    if (idInput) idInput.value = vendor.id;
+    if (subTitle) subTitle.textContent = 'Store: ' + (vendor.name || vendor.storeName) + ' (' + vendor.id + ')';
+    if (statusSelect) statusSelect.value = vendor.accountStatus || (vendor.status === 'suspended' ? 'Suspended' : 'Active');
+    
+    const score = typeof vendor.storeScore === 'number' ? vendor.storeScore : 100;
+    if (scoreSlider) scoreSlider.value = score;
+    if (scoreInput) scoreInput.value = score;
+    if (scoreDisplay) scoreDisplay.textContent = score + ' / 100';
+
+    this.openModal('adminManageVendorModalOverlay');
+  }
+
+  handleAdminSaveVendorAccount(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const vendorId = document.getElementById('adminManageVendorId')?.value;
+    const accountStatus = document.getElementById('adminManageVendorStatus')?.value;
+    const storeScore = parseInt(document.getElementById('adminManageVendorScoreInput')?.value || '100', 10);
+
+    if (!vendorId) return;
+
+    engine.updateVendorAccount(vendorId, { accountStatus, storeScore });
+
+    this.closeModals();
+    this.renderAdminDashboard();
+    this.renderAdminVendorsTable();
+    if (this.currentPersona === 'vendor') {
+      this.renderVendorDashboard();
+    }
+    this.showToast('Store settings updated: Status set to ' + accountStatus + ', Health Score ' + storeScore + '/100.');
+  }
+
+  autofillCheckoutAddress() {
+    const mockAddresses = [
+      {
+        firstName: "Johnathan",
+        lastName: "Miller",
+        country: "United States",
+        streetAddress: "742 Evergreen Terrace",
+        city: "Austin",
+        state: "TX",
+        zipCode: "78701",
+        phone: "+1 (512) 555-0198",
+        email: "j.miller.demo@example.com"
+      },
+      {
+        firstName: "Sarah",
+        lastName: "Jenkins",
+        country: "United States",
+        streetAddress: "452 Baker Street, Apt 4B",
+        city: "Chicago",
+        state: "IL",
+        zipCode: "60601",
+        phone: "+1 (312) 555-0144",
+        email: "s.jenkins.demo@example.com"
+      },
+      {
+        firstName: "Liam",
+        lastName: "Davies",
+        country: "United Kingdom",
+        streetAddress: "10 Downing Mews",
+        city: "Manchester",
+        state: "Greater Manchester",
+        zipCode: "M1 1AE",
+        phone: "+44 7911 123456",
+        email: "liam.davies.demo@example.co.uk"
+      },
+      {
+        firstName: "Emma",
+        lastName: "Watson",
+        country: "United Kingdom",
+        streetAddress: "28 Queen's Gate Gardens",
+        city: "Bristol",
+        state: "Bristol",
+        zipCode: "BS1 4DJ",
+        phone: "+44 7700 900123",
+        email: "emma.watson.demo@example.co.uk"
+      }
+    ];
+
+    const pick = mockAddresses[Math.floor(Math.random() * mockAddresses.length)];
+    const form = document.querySelector('#checkoutModalOverlay form');
+    if (!form) return;
+
+    const setVal = (name, val) => {
+      const el = form.querySelector('[name="' + name + '"]');
+      if (el) {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    };
+
+    setVal('firstName', pick.firstName);
+    setVal('lastName', pick.lastName);
+    setVal('country', pick.country);
+    setVal('streetAddress', pick.streetAddress);
+    setVal('city', pick.city);
+    setVal('state', pick.state);
+    setVal('zipCode', pick.zipCode);
+    setVal('phone', pick.phone);
+    setVal('email', pick.email);
+
+    this.showToast('⚡ Autofilled demo shipping address: ' + pick.city + ', ' + pick.country);
+  }
+
+  copyReferralCode() {
+    const input = document.getElementById('vendorReferralCodeDisplay');
+    if (!input || !input.value) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(() => {
+        this.showToast('📋 Referral code copied to clipboard: ' + input.value);
+      }).catch(() => {
+        input.select();
+        document.execCommand('copy');
+        this.showToast('📋 Referral code copied: ' + input.value);
+      });
+    } else {
+      input.select();
+      document.execCommand('copy');
+      this.showToast('📋 Referral code copied: ' + input.value);
+    }
+  }
+
+  copyReferralLink() {
+    const input = document.getElementById('vendorReferralLinkDisplay');
+    if (!input || !input.value) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(() => {
+        this.showToast('🔗 Referral invitation link copied to clipboard!');
+      }).catch(() => {
+        input.select();
+        document.execCommand('copy');
+        this.showToast('🔗 Referral invitation link copied!');
+      });
+    } else {
+      input.select();
+      document.execCommand('copy');
+      this.showToast('🔗 Referral invitation link copied!');
     }
   }
 
@@ -14253,10 +14757,12 @@ class ESellerStoreApp {
     const msgEl = document.getElementById('accountReferralValidationMsg');
     if (!msgEl) return;
 
-    if (clean === '00546') {
-      msgEl.innerHTML = '<div class="referral-success-msg">[OK] Valid Vendor Referral Code verified: 00546</div>';
+    const isValid = (clean === '00546') || (typeof engine !== 'undefined' && engine.isValidReferralCode && engine.isValidReferralCode(clean));
+
+    if (isValid) {
+      msgEl.innerHTML = '<div class="referral-success-msg">[OK] Valid Vendor Referral Code verified: ' + clean + '</div>';
     } else if (clean.length === 5) {
-      msgEl.innerHTML = '<div class="referral-error-msg">[!] Invalid Referral Code. Must be exactly 00546.</div>';
+      msgEl.innerHTML = '<div class="referral-error-msg">[!] Invalid Referral Code. Please enter an active vendor code or 00546.</div>';
     } else if (clean.length > 0) {
       msgEl.innerHTML = '<div style="font-size:11px; color:#64748b; margin-top:4px;">Enter 5 digits (Referral code: 00546)</div>';
     } else {
@@ -14828,3 +15334,10 @@ window.accountRegSendOtp = function() { if (window.app) window.app.accountRegSen
 window.accountRegVerifyOtp = function() { if (window.app) window.app.accountRegVerifyOtp(); };
 window.accountRegHandleOtpInput = function(v) { if (window.app) window.app.accountRegHandleOtpInput(v); };
 window.accountRegHandleEmailInput = function(v) { if (window.app) window.app.accountRegHandleEmailInput(v); };
+
+window.autofillCheckoutAddress = function() { if (window.app) window.app.autofillCheckoutAddress(); };
+window.openAdminManageAccountModal = function(id) { if (window.app) window.app.openAdminManageAccountModal(id); };
+window.handleAdminSaveVendorAccount = function(e) { if (window.app) window.app.handleAdminSaveVendorAccount(e); };
+window.handleVendorRequestPayout = function() { if (window.app) window.app.handleVendorRequestPayout(); };
+window.copyReferralCode = function() { if (window.app) window.app.copyReferralCode(); };
+window.copyReferralLink = function() { if (window.app) window.app.copyReferralLink(); };

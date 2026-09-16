@@ -20,6 +20,51 @@ export function isMockVendor(v) {
   return false;
 }
 
+export function normalizeVendor(v) {
+  if (!v) return v;
+  // Account Status: 'Active' | 'Pending' | 'Frozen' | 'Suspended'
+  if (!v.accountStatus) {
+    if (v.status === 'suspended') v.accountStatus = 'Suspended';
+    else if (v.status === 'frozen') v.accountStatus = 'Frozen';
+    else if (v.status === 'pending') v.accountStatus = 'Pending';
+    else v.accountStatus = 'Active';
+  }
+  // Store Score: 0 - 100
+  if (typeof v.storeScore !== 'number') {
+    v.storeScore = (v.id === 'sanvicollection') ? 95 : 100;
+  }
+  // Completed Orders
+  if (typeof v.completedOrders !== 'number') {
+    v.completedOrders = (v.id === 'sanvicollection') ? 32 : 0;
+  }
+  // Milestone Tier: Bronze (1-5), Silver (6-15), Gold (16-30), Platinum (30+)
+  if (v.completedOrders >= 30) {
+    v.tier = 'Platinum';
+  } else if (v.completedOrders >= 16) {
+    v.tier = 'Gold';
+  } else if (v.completedOrders >= 6) {
+    v.tier = 'Silver';
+  } else {
+    v.tier = 'Bronze';
+  }
+  // Referral unlock (Platinum only)
+  v.referralCodeUnlocked = (v.tier === 'Platinum');
+  if (v.referralCodeUnlocked) {
+    if (!v.referralCode) {
+      v.referralCode = (v.id === 'sanvicollection') ? 'VN782' : ('VN' + Math.floor(100 + Math.random() * 900));
+    }
+  } else {
+    v.referralCode = v.referralCode || null;
+  }
+  if (typeof v.referredCount !== 'number') {
+    v.referredCount = (v.id === 'sanvicollection') ? 3 : 0;
+  }
+  if (typeof v.referralEarnings !== 'number') {
+    v.referralEarnings = (v.id === 'sanvicollection') ? 450 : (v.referredCount * 150);
+  }
+  return v;
+}
+
 export class DokanEngine {
   constructor() {
     this.storageKeyProducts = 'esellerstore_products';
@@ -122,7 +167,7 @@ export class DokanEngine {
   }
 
   init() {
-    const APP_VERSION = 'v6.7_purge_mock_stores';
+    const APP_VERSION = 'v6.8_vendor_milestones_health_badges';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
@@ -892,30 +937,93 @@ export class DokanEngine {
       const raw = localStorage.getItem(this.storageKeyVendors);
       let data = raw ? JSON.parse(raw) : null;
       if (!data || !Array.isArray(data) || data.length === 0) {
-        localStorage.setItem(this.storageKeyVendors, JSON.stringify(INITIAL_VENDORS));
-        return INITIAL_VENDORS;
+        const normalizedInit = INITIAL_VENDORS.map(v => normalizeVendor(v));
+        localStorage.setItem(this.storageKeyVendors, JSON.stringify(normalizedInit));
+        return normalizedInit;
       }
       const cleaned = data.filter(v => !isMockVendor(v));
       const hasSanvi = cleaned.some(v => (v.id === 'sanvicollection' || (v.email && v.email.toLowerCase() === 'sanvi@sanvicollection.com')));
       if (!hasSanvi) {
         cleaned.unshift(...INITIAL_VENDORS);
       }
-      if (cleaned.length !== data.length) {
-        localStorage.setItem(this.storageKeyVendors, JSON.stringify(cleaned));
-      }
-      return cleaned;
+      const normalized = cleaned.map(v => normalizeVendor(v));
+      localStorage.setItem(this.storageKeyVendors, JSON.stringify(normalized));
+      return normalized;
     } catch (e) {
-      return INITIAL_VENDORS;
+      return INITIAL_VENDORS.map(v => normalizeVendor(v));
     }
   }
 
   saveVendors(vendors) {
-    const cleaned = (vendors || []).filter(v => !isMockVendor(v));
+    const cleaned = (vendors || []).filter(v => !isMockVendor(v)).map(v => normalizeVendor(v));
     localStorage.setItem(this.storageKeyVendors, JSON.stringify(cleaned));
   }
 
   getVendorById(id) {
-    return this.getVendors().find(v => v.id === id);
+    const found = this.getVendors().find(v => v.id === id);
+    return found ? normalizeVendor(found) : null;
+  }
+
+  updateVendorAccount(vendorId, updates = {}) {
+    const vendors = this.getVendors();
+    const vendor = vendors.find(v => v.id === vendorId);
+    if (!vendor) return null;
+
+    if (updates.accountStatus) {
+      vendor.accountStatus = updates.accountStatus;
+      if (updates.accountStatus === 'Active') vendor.status = 'verified';
+      else if (updates.accountStatus === 'Suspended') vendor.status = 'suspended';
+      else if (updates.accountStatus === 'Frozen') vendor.status = 'frozen';
+      else if (updates.accountStatus === 'Pending') vendor.status = 'pending';
+    }
+
+    if (updates.storeScore !== undefined && updates.storeScore !== null) {
+      const parsedScore = parseInt(updates.storeScore, 10);
+      if (!isNaN(parsedScore)) {
+        vendor.storeScore = Math.max(0, Math.min(100, parsedScore));
+      }
+    }
+
+    if (updates.completedOrders !== undefined && updates.completedOrders !== null) {
+      const parsedOrders = parseInt(updates.completedOrders, 10);
+      if (!isNaN(parsedOrders)) {
+        vendor.completedOrders = Math.max(0, parsedOrders);
+        if (vendor.completedOrders >= 30) {
+          vendor.tier = 'Platinum';
+          vendor.referralCodeUnlocked = true;
+          if (!vendor.referralCode) {
+            vendor.referralCode = (vendor.id === 'sanvicollection') ? 'VN782' : ('VN' + Math.floor(100 + Math.random() * 900));
+          }
+        } else if (vendor.completedOrders >= 16) {
+          vendor.tier = 'Gold';
+          vendor.referralCodeUnlocked = false;
+        } else if (vendor.completedOrders >= 6) {
+          vendor.tier = 'Silver';
+          vendor.referralCodeUnlocked = false;
+        } else {
+          vendor.tier = 'Bronze';
+          vendor.referralCodeUnlocked = false;
+        }
+      }
+    }
+
+    normalizeVendor(vendor);
+    this.saveVendors(vendors);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('vendor_updated', { detail: vendor }));
+    }
+
+    try { this.syncToCloud(); } catch (e) {}
+    return vendor;
+  }
+
+  isValidReferralCode(code) {
+    if (!code) return false;
+    const clean = code.toString().trim().toUpperCase();
+    if (clean === '00546') return true;
+    const vendors = this.getVendors();
+    return vendors.some(v => v.referralCodeUnlocked && v.referralCode && v.referralCode.toString().trim().toUpperCase() === clean);
   }
 
   // --- VENDOR REGISTRATION & APPLICATION PIPELINE ---
@@ -1429,6 +1537,14 @@ export class DokanEngine {
     const products = this.getProducts();
     const vendors = this.getVendors();
     const metrics = JSON.parse(localStorage.getItem(this.storageKeyMetrics));
+
+    // Restriction check: halt checkout if store is Frozen or Suspended
+    for (const item of cartItems) {
+      const vendor = vendors.find(v => v.id === item.vendorId) || vendors[0];
+      if (vendor && (vendor.accountStatus === 'Frozen' || vendor.accountStatus === 'Suspended')) {
+        throw new Error(`The store "${vendor.storeName || vendor.name}" is currently restricted. Order processing and wallet withdrawals are temporarily paused. Contact Support.`);
+      }
+    }
 
     let orderTotal = 0;
     let totalAdminCommission = 0;
