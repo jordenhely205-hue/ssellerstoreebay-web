@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v6.3_mobile_drawer_overhaul';
+const APP_VERSION = 'v6.4_sanitized_vendor_form';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -9249,11 +9249,7 @@ class DokanEngine {
       throw new Error('Please enter your Full Address / City / Region.');
     }
 
-    // 2. Strict Referral Code Validation (00546)
-    const cleanReferral = (referralCode || '').toString().trim();
-    if (cleanReferral !== '00546') {
-      throw new Error('Invalid referral code. Please enter an authorized sponsor code to proceed.');
-    }
+    const cleanReferral = (referralCode || '').toString().trim() || 'N/A';
 
     const vendors = this.getVendors();
     const existingActive = vendors.find(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase() && v.status === 'verified');
@@ -9357,11 +9353,7 @@ class DokanEngine {
       throw new Error('Valid email address is required.');
     }
 
-    if (isVendor) {
-      if (data.referralCode !== '00546') {
-        throw new Error('Invalid referral code. Must be 00546.');
-      }
-    }
+
 
     const token = 'act_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
     const storeName = data.shopName || data.storeName || (data.firstName ? `${data.firstName} Store` : 'New Store');
@@ -13101,10 +13093,11 @@ class ESellerStoreApp {
   }
 
   wizardHandleShopNameInput(val) {
-    const slugEl = document.getElementById('wizardSlug');
-    if (slugEl) {
-      slugEl.value = this.generateShopSlug(val);
-    }
+    const slug = this.generateShopSlug(val);
+    ['wizardSlug', 'accountRegShopSlug', 'vendorRegStoreSlug'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = slug;
+    });
   }
 
   wizardHandleReferralInput(val) {
@@ -13153,18 +13146,7 @@ class ESellerStoreApp {
       return;
     }
 
-    if (referralCode !== '00546') {
-      const errBox = document.getElementById('wizardReferralErrorBox');
-      const refInput = document.getElementById('wizardReferralCode');
-      if (errBox) errBox.style.display = 'block';
-      if (refInput) {
-        refInput.style.borderColor = '#dc2626';
-        refInput.style.background = '#fef2f2';
-        refInput.focus();
-      }
-      alert('Œ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.');
-      return;
-    }
+
 
     try {
       const appRecord = engine.submitVendorApplication({
@@ -14334,10 +14316,7 @@ class ESellerStoreApp {
         alert('Please enter your Shop Name.');
         return;
       }
-      if (referralCode !== '00546') {
-        alert('[!] Invalid referral code! Please enter the required 5-digit vendor referral code (00546).');
-        return;
-      }
+
       if (!phoneNum) {
         alert('Please enter your Phone Number.');
         return;

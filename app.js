@@ -1,4 +1,4 @@
-const APP_VERSION = 'v6.3_mobile_drawer_overhaul';
+const APP_VERSION = 'v6.4_sanitized_vendor_form';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -1154,10 +1154,11 @@ class ESellerStoreApp {
   }
 
   wizardHandleShopNameInput(val) {
-    const slugEl = document.getElementById('wizardSlug');
-    if (slugEl) {
-      slugEl.value = this.generateShopSlug(val);
-    }
+    const slug = this.generateShopSlug(val);
+    ['wizardSlug', 'accountRegShopSlug', 'vendorRegStoreSlug'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = slug;
+    });
   }
 
   wizardHandleReferralInput(val) {
@@ -1207,19 +1208,7 @@ class ESellerStoreApp {
       return;
     }
 
-    // 2. Strict Referral Code Check (00546)
-    if (referralCode !== '00546') {
-      const errBox = document.getElementById('wizardReferralErrorBox');
-      const refInput = document.getElementById('wizardReferralCode');
-      if (errBox) errBox.style.display = 'block';
-      if (refInput) {
-        refInput.style.borderColor = '#dc2626';
-        refInput.style.background = '#fef2f2';
-        refInput.focus();
-      }
-      alert('Œ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.');
-      return;
-    }
+
 
     try {
       const appRecord = engine.submitVendorApplication({

@@ -79,13 +79,7 @@ module.exports = async (req, res) => {
         if (!slug) {
           slug = shopName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         }
-        // Strict Referral Code Validation (00546)
-        if (referralCode !== '00546') {
-          return res.status(400).json({
-            success: false,
-            error: 'Invalid referral code. Please enter the valid 5-digit vendor referral code (00546).'
-          });
-        }
+
         if (!phone) {
           return res.status(400).json({ success: false, error: 'Phone number is required.' });
         }

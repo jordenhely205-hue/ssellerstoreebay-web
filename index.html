@@ -35,9 +35,9 @@
   <meta name="twitter:image" content="https://www.ssellerstorebay.com/og-preview.png">
 
   <!-- Favicon & Touch Icons -->
-  <link rel="icon" type="image/png" href="favicon.png?v=6.3">
-  <link rel="shortcut icon" type="image/png" href="favicon.png?v=6.3">
-  <link rel="apple-touch-icon" href="og-preview.png?v=6.3">
+  <link rel="icon" type="image/png" href="favicon.png?v=6.4">
+  <link rel="shortcut icon" type="image/png" href="favicon.png?v=6.4">
+  <link rel="apple-touch-icon" href="og-preview.png?v=6.4">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +45,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=6.3">
+  <link rel="stylesheet" href="styles.css?v=6.4">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -167,7 +167,7 @@
 
         <!-- Center: Centered Brand Logo -->
         <a href="#" class="dokan-logo-wrap mobile-centered-logo" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-          <img src="logo.png?v=6.3" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+          <img src="logo.png?v=6.4" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
         </a>
 
         <!-- Right: Become A Vendor CTA -->
@@ -178,7 +178,7 @@
 
       <!-- Desktop Brand Logo (Left, hidden on mobile) -->
       <a href="#" class="dokan-logo-wrap desktop-only-flex" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-        <img src="logo.png?v=6.3" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
+        <img src="logo.png?v=6.4" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
       </a>
 
       <!-- Desktop Contact & Cart Widgets (Right, hidden on mobile) -->
@@ -819,7 +819,7 @@
             </div>
             <div class="faq-item" style="border-bottom:1px solid #e2e8f0; padding:16px 0;">
               <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">3. What are the requirements to become a verified vendor?</h4>
-              <p style="font-size:13.5px; color:#475569; line-height:1.6; margin:0;">Vendors must provide valid business details, email OTP verification, an authorized referral sponsor code (00546), and store address. Super Admin reviews and activates applications within 24 hours.</p>
+              <p style="font-size:13.5px; color:#475569; line-height:1.6; margin:0;">Vendors must provide valid business details, email OTP verification, and store address. Super Admin reviews and activates applications within 24 hours.</p>
             </div>
             <div class="faq-item" style="border-bottom:1px solid #e2e8f0; padding:16px 0;">
               <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">4. What is the return and refund policy?</h4>
@@ -1045,13 +1045,7 @@
                   <small id="accountSlugAvailableBadge" style="display:block; margin-top:4px; font-size:11.5px; color:#15803d; font-weight:600;">&#10003; Store slug generated automatically</small>
                 </div>
 
-                <!-- Referral Code (Strict 00546) -->
-                <div class="dokan-form-group">
-                  <label for="accountRegReferralCode">Referral Code <span class="required">*</span></label>
-                  <input type="text" id="accountRegReferralCode" class="dokan-form-input" placeholder="Enter 5-digit referral cod" maxlength="5" oninput="app.handleAccountReferralInput(this.value)" autocomplete="off">
-                  <small class="form-help-text">Enter the 5-digit referral code you received from an existing vendor.</small>
-                  <div id="accountReferralValidationMsg"></div>
-                </div>
+
 
                 <!-- Country Selector -->
                 <div class="dokan-form-group">
@@ -2854,23 +2848,11 @@
           </div>
 
           <div class="vertical-form-group">
-            <label for="wizardMobile">Mobile Number / WhatsApp *</label>
-            <input type="tel" id="wizardMobile" name="mobile" placeholder="+1 (555) 000-0000 / +92 300 1234567" required>
+            <label for="wizardMobile">Phone / Mobile Number *</label>
+            <input type="tel" id="wizardMobile" name="mobile" placeholder="+1 (555) 000-0000" required>
           </div>
 
-          <!-- 3. Mandatory Referral Code Validation (00546) -->
-          <div class="vertical-form-group">
-            <label for="wizardReferralCode" style="color:#b91c1c;">Referral Code * <span style="font-weight:normal; color:#dc2626;">(Required - Sponsor Code)</span></label>
-            <input type="text" id="wizardReferralCode" name="referralCode" placeholder="Enter sponsor code (e.g. 00546)" oninput="app.wizardHandleReferralInput(this.value)" required>
-            <div id="wizardReferralErrorBox" class="referral-error-msg" style="display:none;">
-              Œ Invalid referral code. Please enter an authorized sponsor code (00546) to proceed.
-            </div>
-            <div id="wizardReferralSuccessBox" class="referral-success-msg" style="display:none;">
-              <svg width="14" height="14" viewBox="0 0 20 20" fill="#15803d" style="vertical-align:middle; margin-right:4px;"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-              Authorized sponsor code verified (00546).
-            </div>
-            <small class="form-help-text">Mandatory authorized sponsor code required for onboarding.</small>
-          </div>
+
 
           <!-- 4. Mandatory Address & Location -->
           <div class="vertical-form-group">
@@ -2880,7 +2862,7 @@
 
           <div class="vertical-form-group">
             <label for="wizardCity">City &amp; Country *</label>
-            <input type="text" id="wizardCity" name="city" placeholder="e.g. New York, United States / Karachi, PK" required>
+            <input type="text" id="wizardCity" name="city" placeholder="e.g. New York, United States or London, UK" required>
           </div>
 
           <!-- 5. Optional Payout & Banking -->
@@ -2890,7 +2872,7 @@
             </h5>
             <div class="vertical-form-group">
               <label for="wizardBankName">Bank / Payout Provider Name</label>
-              <input type="text" id="wizardBankName" name="bankName" placeholder="e.g. Chase / Wise / Payoneer / HBL">
+              <input type="text" id="wizardBankName" name="bankName" placeholder="e.g. Chase / Wise / Payoneer / Barclays">
             </div>
             <div class="vertical-form-group">
               <label for="wizardAccountTitle">Account Title</label>
@@ -2983,7 +2965,7 @@
       <!-- Drawer Header (Logo & Close Button) -->
       <div class="mobile-drawer-header">
         <a href="#" onclick="app.switchInfoPage('home'); app.closeMobileDrawer(); return false;" title="ESS by eBay">
-          <img src="logo.png?v=6.3" alt="ESS by eBay | E-Seller Store Marketplace" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+          <img src="logo.png?v=6.4" alt="ESS by eBay | E-Seller Store Marketplace" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
         </a>
         <button class="mobile-drawer-close" onclick="app.closeMobileDrawer()" aria-label="Close Menu">&times;</button>
       </div>
@@ -3077,7 +3059,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=6.3"></script>
+  <script src="app-bundle.js?v=6.4"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">

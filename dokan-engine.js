@@ -863,11 +863,7 @@ class DokanEngine {
       throw new Error('Please enter your Full Address / City / Region.');
     }
 
-    // 2. Strict Referral Code Validation (00546)
-    const cleanReferral = (referralCode || '').toString().trim();
-    if (cleanReferral !== '00546') {
-      throw new Error('Invalid referral code. Please enter an authorized sponsor code to proceed.');
-    }
+    const cleanReferral = (referralCode || '').toString().trim() || 'N/A';
 
     const vendors = this.getVendors();
     const existingActive = vendors.find(v => v.email && v.email.toLowerCase() === email.trim().toLowerCase() && v.status === 'verified');
@@ -973,11 +969,7 @@ class DokanEngine {
       throw new Error('Valid email address is required.');
     }
 
-    if (isVendor) {
-      if (data.referralCode !== '00546') {
-        throw new Error('Invalid referral code. Must be 00546.');
-      }
-    }
+
 
     const token = 'act_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
     const storeName = data.shopName || data.storeName || (data.firstName ? `${data.firstName} Store` : 'New Store');
