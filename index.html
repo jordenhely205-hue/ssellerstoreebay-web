@@ -35,9 +35,9 @@
   <meta name="twitter:image" content="https://www.ssellerstorebay.com/og-preview.png">
 
   <!-- Favicon & Touch Icons -->
-  <link rel="icon" type="image/png" href="favicon.png?v=6.2">
-  <link rel="shortcut icon" type="image/png" href="favicon.png?v=6.2">
-  <link rel="apple-touch-icon" href="og-preview.png?v=6.2">
+  <link rel="icon" type="image/png" href="favicon.png?v=6.3">
+  <link rel="shortcut icon" type="image/png" href="favicon.png?v=6.3">
+  <link rel="apple-touch-icon" href="og-preview.png?v=6.3">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +45,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=6.2">
+  <link rel="stylesheet" href="styles.css?v=6.3">
 
   <!-- Instant Fallback Layout & Critical CSS -->
   <style>
@@ -167,7 +167,7 @@
 
         <!-- Center: Centered Brand Logo -->
         <a href="#" class="dokan-logo-wrap mobile-centered-logo" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-          <img src="logo.png?v=6.2" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+          <img src="logo.png?v=6.3" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
         </a>
 
         <!-- Right: Become A Vendor CTA -->
@@ -178,7 +178,7 @@
 
       <!-- Desktop Brand Logo (Left, hidden on mobile) -->
       <a href="#" class="dokan-logo-wrap desktop-only-flex" onclick="app.switchInfoPage('home'); return false;" title="ESS by eBay">
-        <img src="logo.png?v=6.2" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
+        <img src="logo.png?v=6.3" alt="ESS by eBay | E-Seller Store Marketplace" class="brand-header-logo-img" style="height:52px; max-height:54px; width:auto; object-fit:contain; display:block;">
       </a>
 
       <!-- Desktop Contact & Cart Widgets (Right, hidden on mobile) -->
@@ -2979,48 +2979,62 @@
   <!-- OFF-CANVAS MOBILE DRAWER -->
   <div class="mobile-drawer-overlay" id="mobileNavDrawerOverlay" onclick="app.closeMobileDrawer()">
     <div class="mobile-drawer" onclick="event.stopPropagation()">
+      
+      <!-- Drawer Header (Logo & Close Button) -->
       <div class="mobile-drawer-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="36" height="36" rx="9" fill="#0F172A"/>
-            <path d="M7.5 9.5H10.5L13 22H24.5L27 12.5H11.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="14.5" cy="25.5" r="1.6" fill="#38BDF8"/>
-            <circle cx="23" cy="25.5" r="1.6" fill="#38BDF8"/>
-            <path d="M15.5 15H21C21.8 15 22.2 15.4 22.2 16.2C22.2 17 21.6 17.5 20.8 17.5H16.2C15.4 17.5 14.8 18 14.8 18.8C14.8 19.6 15.2 20 16 20H21.5" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span style="font-size:20px; font-weight:800; font-family:'Outfit', sans-serif;"><span style="color:#DC2626;">E Seller </span><span style="color:#F59E0B;">Store</span></span>
-        </div>
-        <button class="mobile-drawer-close" onclick="app.closeMobileDrawer()">&times;</button>
+        <a href="#" onclick="app.switchInfoPage('home'); app.closeMobileDrawer(); return false;" title="ESS by eBay">
+          <img src="logo.png?v=6.3" alt="ESS by eBay | E-Seller Store Marketplace" style="height:36px; max-height:38px; width:auto; object-fit:contain; display:block;">
+        </a>
+        <button class="mobile-drawer-close" onclick="app.closeMobileDrawer()" aria-label="Close Menu">&times;</button>
       </div>
-      <div class="mobile-drawer-body">
-        <div class="mobile-drawer-section">
-          <h5>Quick Portals</h5>
-          <a href="#" onclick="app.setPersona('customer'); app.closeMobileDrawer(); return false;" class="drawer-link">[CART]️ Customer Storefront</a>
-          <a href="#" onclick="app.openOnboardingSelection(); app.closeMobileDrawer(); return false;" class="drawer-link">[STORE] Apply Now (Seller / Vendor)</a>
-          <a href="#" onclick="app.openModal('sellerLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">&#128273; Seller Portal Login</a>
-          <a href="#" onclick="app.openModal('adminLoginModalOverlay'); app.closeMobileDrawer(); return false;" class="drawer-link">⚙️ Super Admin Portal</a>
-          <a href="#" onclick="if(window.Tawk_API && window.Tawk_API.maximize){window.Tawk_API.maximize();} app.closeMobileDrawer(); return false;" class="drawer-link">💬 Help &amp; Support</a>
-        </div>
-        <div class="mobile-drawer-section">
-          <h5>Top Categories</h5>
-          <a href="#" onclick="app.filterByBrand('Apple'); app.closeMobileDrawer(); return false;" class="drawer-link">📱 Phone Accessories (Apple)</a>
-          <a href="#" onclick="app.filterByBrand('Dell'); app.closeMobileDrawer(); return false;" class="drawer-link">💻 Computers &amp; Tech (Dell, HP)</a>
-          <a href="#" onclick="app.filterByBrand('Rolex'); app.closeMobileDrawer(); return false;" class="drawer-link">⌚ Jewelry &amp; Watches (Rolex)</a>
-          <a href="#" onclick="app.filterByBrand('Nike'); app.closeMobileDrawer(); return false;" class="drawer-link">[SNEAKER] Sneakers &amp; Footwear (Nike)</a>
-          <a href="#" onclick="app.filterByBrand('Sony'); app.closeMobileDrawer(); return false;" class="drawer-link">🎧 Audio &amp; Gadgets (Sony, Bose)</a>
-        </div>
-        <div class="mobile-drawer-section">
-          <h5>Regional Settings</h5>
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <select style="flex:1; padding:8px 6px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff;">
-              <option>USD ($)</option><option>EUR (€)</option><option>GBP (£)</option>
-            </select>
-            <select style="flex:1; padding:8px 6px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff;">
-              <option>English</option><option>Español</option><option>Français</option>
-            </select>
+
+      <!-- Top Search Bar Inside Drawer -->
+      <div class="mobile-drawer-search-wrap">
+        <form onsubmit="app.handleDrawerSearch(event)">
+          <div class="drawer-search-input-box">
+            <input type="text" id="drawerSearchInput" class="drawer-search-input" placeholder="Search for products" autocomplete="off">
+            <button type="submit" class="drawer-search-btn" title="Search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
           </div>
-        </div>
+        </form>
       </div>
+
+      <!-- Clean Navigation Links List -->
+      <div class="mobile-drawer-nav-list">
+        <a href="#" class="drawer-nav-item active" id="drawerLinkHome" onclick="app.switchInfoPage('home'); app.closeMobileDrawer(); return false;">
+          <span>Home</span>
+        </a>
+        <a href="#" class="drawer-nav-item" id="drawerLinkAbout" onclick="app.switchInfoPage('about'); app.closeMobileDrawer(); return false;">
+          <span>About Us</span>
+        </a>
+        <a href="#" class="drawer-nav-item" id="drawerLinkTrack" onclick="app.switchInfoPage('faqs'); app.closeMobileDrawer(); return false;">
+          <span>Track Your Order</span>
+        </a>
+        <a href="#" class="drawer-nav-item" id="drawerLinkFaqs" onclick="app.switchInfoPage('faqs'); app.closeMobileDrawer(); return false;">
+          <span>FAQs</span>
+        </a>
+        <a href="#" class="drawer-nav-item" id="drawerLinkPartners" onclick="app.switchInfoPage('partners'); app.closeMobileDrawer(); return false;">
+          <span>Our Partners</span>
+        </a>
+        <a href="#" class="drawer-nav-item" id="drawerLinkWork" onclick="app.switchInfoPage('work-with-us'); app.closeMobileDrawer(); return false;">
+          <span>Work With Us</span>
+        </a>
+        <a href="#" class="drawer-nav-item" id="drawerLinkContact" onclick="app.switchInfoPage('contact'); app.closeMobileDrawer(); return false;">
+          <span>Contact Us</span>
+        </a>
+        <a href="#" class="drawer-nav-item drawer-nav-auth" onclick="app.openDokanAuthModal('login'); app.closeMobileDrawer(); return false;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drawer-auth-icon">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Login / Register</span>
+        </a>
+      </div>
+
     </div>
   </div>
 
@@ -3063,7 +3077,7 @@
   </footer>
 
   <!-- Application Standalone Bundle with Cache-Busting -->
-  <script src="app-bundle.js?v=6.2"></script>
+  <script src="app-bundle.js?v=6.3"></script>
 
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">

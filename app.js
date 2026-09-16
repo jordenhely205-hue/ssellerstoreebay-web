@@ -1,4 +1,4 @@
-const APP_VERSION = 'v6.2_separate_logo_og_preview';
+const APP_VERSION = 'v6.3_mobile_drawer_overhaul';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -9,6 +9,34 @@ import { engine } from './dokan-engine.js';
 import { INITIAL_BRANDS, INITIAL_CATEGORIES } from './data.js';
 
 class ESellerStoreApp {
+  handleDrawerSearch(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const input = document.getElementById('drawerSearchInput');
+    if (!input) return;
+    const query = input.value.trim().toLowerCase();
+    if (!query) return;
+
+    this.closeMobileDrawer();
+    this.switchInfoPage('home');
+
+    try {
+      const products = engine.getProducts().filter(p => p.published !== false);
+      const filtered = products.filter(p => 
+        (p.name && p.name.toLowerCase().includes(query)) ||
+        (p.brand && p.brand.toLowerCase().includes(query)) ||
+        (p.category && p.category.toLowerCase().includes(query)) ||
+        (p.description && p.description.toLowerCase().includes(query))
+      );
+
+      this.renderProductGrid('curatedProductGrid', filtered.length > 0 ? filtered : products);
+      const gridTitle = document.querySelector('#curatedCatalogSection h2');
+      if (gridTitle) gridTitle.textContent = `Search Results for "${input.value.trim()}" (${filtered.length} found)`;
+      window.scrollTo({ top: 700, behavior: 'smooth' });
+    } catch (err) {
+      console.error('handleDrawerSearch error:', err);
+    }
+  }
+
   openMobileDrawer() {
     const drawer = document.getElementById('mobileNavDrawerOverlay');
     if (drawer) {
@@ -139,6 +167,20 @@ class ESellerStoreApp {
         'contact': 'navLinkContact'
       };
       const activeNavId = coralMap[pageKey] || 'navLinkHome';
+      const drawerMap = {
+        'home': 'drawerLinkHome',
+        'about': 'drawerLinkAbout',
+        'faqs': 'drawerLinkFaqs',
+        'partners': 'drawerLinkPartners',
+        'work-with-us': 'drawerLinkWork',
+        'careers': 'drawerLinkWork',
+        'contact': 'drawerLinkContact'
+      };
+      const activeDrawerId = drawerMap[pageKey] || 'drawerLinkHome';
+      document.querySelectorAll('.drawer-nav-item').forEach(item => {
+        item.classList.toggle('active', item.id === activeDrawerId);
+      });
+
       document.querySelectorAll('.coral-nav-link').forEach(link => {
         if (!link.classList.contains('coral-nav-cta')) {
           link.classList.toggle('active', link.id === activeNavId);
