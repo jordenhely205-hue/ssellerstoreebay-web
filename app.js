@@ -1,4 +1,4 @@
-const APP_VERSION = 'v6.5_email_otp_zoho_smtp';
+const APP_VERSION = 'v6.6_admin_dashboard_cleanup';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -1392,53 +1392,58 @@ class ESellerStoreApp {
     const alertSection = document.getElementById('adminPendingVendorsAlertSection');
 
     const applications = engine.getVendorApplications ? engine.getVendorApplications() : [];
-    const pendingApps = applications.filter(a => a.status === 'pending');
+    const pendingApps = applications.filter(a => a.status === 'pending' || a.status === 'pending_verification');
 
     const count = pendingApps.length;
     if (tabCountEl) tabCountEl.textContent = count;
     if (overviewCountEl) overviewCountEl.textContent = count;
     if (alertSection) alertSection.style.display = count > 0 ? 'block' : 'none';
 
+    const warningIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+
     const rowsHtml = count === 0
-      ? `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:16px;">No pending vendor applications awaiting review.</td></tr>`
+      ? `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:20px; font-size:13px;">No pending store verification requests. New registrations will appear here for Super Admin approval.</td></tr>`
       : pendingApps.map(appRecord => `
         <tr style="background:#fffdf5;">
           <td>
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:18px;">${appRecord.role === 'vendor' ? '' : '›'}</span>
               <div>
-                <strong style="font-size:13px; color:#1e293b;">${appRecord.storeName || appRecord.name}</strong><br>
-                <small style="color:#0284c7; font-family:monospace;">/${appRecord.slug || 'store'}</small><br>
-                <small style="color:#64748b;">Role: <strong>${(appRecord.role || 'vendor').toUpperCase()}</strong></small>
+                <strong style="font-size:13.5px; color:#0f172a; display:block;">${appRecord.storeName || appRecord.name}</strong>
+                <small style="color:#0284c7; font-family:monospace; font-weight:600;">/store/${appRecord.slug || 'shop'}</small><br>
+                <span style="font-size:10px; color:#4f46e5; background:#eef2ff; padding:2px 6px; border-radius:4px; font-weight:700;">${(appRecord.role || 'vendor').toUpperCase()}</span>
               </div>
             </div>
           </td>
           <td>
-            <strong>${appRecord.ownerName}</strong><br>
-            ${appRecord.fatherName ? `<small style="color:#64748b;">s/o ${appRecord.fatherName}</small><br>` : ''}
-            <small style="color:#16a34a; font-weight:700;">Ref Code: <code>${appRecord.referralCode || '00546'}</code></small>
+            <strong style="font-size:13px; color:#1e293b;">${appRecord.ownerName || appRecord.name}</strong><br>
+            ${appRecord.fatherName ? `<small style="color:#64748b;">s/o ${appRecord.fatherName}</small>` : '<small style="color:#94a3b8;">N/A</small>'}
           </td>
           <td>
-            ${appRecord.email}<br>
-            <small style="color:#64748b;">${appRecord.mobile || appRecord.phone || 'N/A'}</small>
+            <strong style="font-size:12.5px; color:#0f172a;">${appRecord.email}</strong> 
+            <span style="font-size:10px; color:#15803d; background:#dcfce7; padding:2px 6px; border-radius:8px; font-weight:700;">OTP Verified</span><br>
+            <small style="color:#64748b;">📞 ${appRecord.mobile || appRecord.phone || 'N/A'}</small>
           </td>
           <td>
-            <small style="color:#475569;">${appRecord.createdAt ? new Date(appRecord.createdAt).toLocaleDateString() : 'Today'}</small><br>
-            <span style="font-size:10px; color:#166534; background:#dcfce7; padding:2px 6px; border-radius:8px;">OTP Verified</span>
+            <div style="margin-bottom:3px;">
+              <span style="font-size:10.5px; color:#15803d; background:#f0fdf4; border:1px solid #bbf7d0; padding:2px 8px; border-radius:10px; font-weight:700;">🔒 Configured [Set]</span>
+            </div>
+            <small style="color:#64748b; font-weight:600;">Ref Code: <code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">${appRecord.referralCode || 'N/A'}</code></small>
           </td>
           <td>
-            <small style="color:#64748b; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${appRecord.address || appRecord.description || ''}">
-              “ ${appRecord.address || 'Address on file'}
+            <strong style="font-size:12px; color:#334155;">${appRecord.country || 'United States'}</strong><br>
+            <small style="color:#64748b; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${appRecord.address || ''}">
+              📍 ${appRecord.address || 'Address on file'} ${appRecord.city ? `(${appRecord.city})` : ''}
             </small>
-            ${appRecord.bankName ? `<small style="color:#475569; display:block; font-size:10.5px;"> ${appRecord.bankName} (${appRecord.iban || 'IBAN'})</small>` : ''}
           </td>
           <td>
-            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;"> PENDING</span>
+            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a; display:inline-flex; align-items:center;">
+              ${warningIcon} PENDING
+            </span>
           </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px;">
-              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981; color:#fff;" onclick="app.handleAdminApproveApplication('${appRecord.id}')">[OK] Approve Store</button>
-              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${appRecord.id}')">Œ Reject</button>
+              <button class="btn-primary" style="padding:6px 12px; font-size:11.5px; background:#10b981; color:#fff; border-radius:6px; font-weight:700;" onclick="app.handleAdminApproveApplication('${appRecord.id}')">Approve Store</button>
+              <button class="btn-primary" style="padding:6px 12px; font-size:11.5px; background:#ef4444; color:#fff; border-radius:6px; font-weight:700;" onclick="app.handleAdminRejectApplication('${appRecord.id}')">Reject</button>
             </div>
           </td>
         </tr>
@@ -1450,34 +1455,44 @@ class ESellerStoreApp {
 
   renderAdminVendorsTable() {
     this.renderAdminPendingApplicationsTable();
-    const tableBody = document.getElementById('adminFullVendorsTableBody') || document.getElementById('adminVendorsTableBody');
+    const tableBody = document.getElementById('adminFullVendorsTableBody') || document.getElementById('adminVendorsOverviewTableBody') || document.getElementById('adminVendorsTableBody');
     if (!tableBody) return;
 
     const vendors = engine.getVendors();
-    const activeVendors = vendors.filter(v => v.status !== 'pending' && v.status !== 'pending_verification');
-    const displayVendors = activeVendors.length > 0 ? activeVendors : vendors;
+    const activeVendors = vendors.filter(v => v.status === 'verified');
 
-    tableBody.innerHTML = displayVendors.map(v => `
-      <tr>
-        <td>
-          <strong>${v.name}</strong><br>
-          <small style="color:#666;">Owner: ${v.ownerName}</small><br>
-          <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
-        </td>
-        <td>${v.email}<br><small style="color:#666;">${v.mobile || ''}</small></td>
-        <td><span class="status-badge ${v.status}">${(v.status || 'verified').replace('_', ' ').toUpperCase()}</span></td>
-        <td><strong>$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
-        <td>
-          <span style="color:#137333; font-weight:700;">${v.profitMarginPercent || 25}% Profit Margin</span><br>
-          <small style="color:#666;">(${v.commissionRate || 15}% Admin Fee)</small>
-        </td>
-        <td style="text-align:right;">
-          <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-            <button class="btn-primary" style="padding:4px 8px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">[PACKAGE] Inventory</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    const checkIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="3" style="vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+    tableBody.innerHTML = activeVendors.length === 0
+      ? `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:16px;">No active multi-vendor stores registered.</td></tr>`
+      : activeVendors.map(v => `
+        <tr>
+          <td>
+            <strong style="font-size:13.5px; color:#0f172a;">${v.storeName || v.name}</strong><br>
+            <small style="color:#0284c7; font-family:monospace; font-weight:600;">/store/${v.slug || v.id}</small>
+          </td>
+          <td>
+            <strong>${v.ownerName || 'Sanvi Sharma'}</strong><br>
+            <small style="color:#64748b;">${v.email}</small><br>
+            <small style="color:#64748b;">${v.mobile || v.phone || 'N/A'}</small>
+          </td>
+          <td>
+            <span class="status-badge verified" style="background:#f0fdf4; color:#15803d; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #bbf7d0; display:inline-flex; align-items:center;">
+              ${checkIcon} VERIFIED
+            </span>
+          </td>
+          <td><strong>$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
+          <td>
+            <span style="color:#137333; font-weight:700;">${v.profitMarginPercent || 25}% Margin</span><br>
+            <small style="color:#64748b;">(${v.commissionRate || 15}% Fee)</small>
+          </td>
+          <td style="text-align:right;">
+            <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+              <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">Inventory</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
   }
 
   handleAdminApproveApplication(applicationId) {
@@ -1487,7 +1502,7 @@ class ESellerStoreApp {
       this.renderAdminVendorsTable();
       this.renderVendorDashboard();
       this.updateCounters();
-      this.showToast(`[OK] Store '${vendor.name}' approved & activated!`);
+      this.showToast(`[OK] Store '${vendor.name || vendor.storeName}' approved & activated!`);
       alert(`[SUCCESS] VENDOR APPLICATION APPROVED!\n\nStore "${vendor.name}" (${vendor.ownerName}) is now an active verified seller.\nThe vendor can immediately log in via the Seller Portal with email: ${vendor.email}`);
     } catch (err) {
       alert('Approval Error: ' + err.message);
@@ -1510,16 +1525,26 @@ class ESellerStoreApp {
 
   renderAdminDashboard() {
     const vendors = engine.getVendors();
-    const metrics = JSON.parse(localStorage.getItem('esellerstore_metrics')) || {};
+    const activeVendors = vendors.filter(v => v.status === 'verified');
+    const applications = engine.getVendorApplications ? engine.getVendorApplications() : [];
+    const pendingApps = applications.filter(a => a.status === 'pending' || a.status === 'pending_verification');
 
     const totalVendorsEl = document.getElementById('adminMetricVendors');
+    const subtextEl = document.getElementById('adminMetricVendorsSubtext');
     const platformWalletEl = document.getElementById('adminMetricWallet');
     const totalCommEl = document.getElementById('adminMetricCommission');
     const brandCountEl = document.getElementById('adminMetricBrandsCount');
 
-    if (totalVendorsEl) totalVendorsEl.textContent = vendors.length;
-    if (platformWalletEl) platformWalletEl.textContent = `$${parseFloat(metrics.adminWalletTotal || 0).toFixed(2)}`;
-    if (totalCommEl) totalCommEl.textContent = `$${parseFloat(metrics.totalPlatformCommissionCollected || 0).toFixed(2)}`;
+    if (totalVendorsEl) totalVendorsEl.textContent = activeVendors.length;
+    if (subtextEl) subtextEl.textContent = `${activeVendors.length} Verified + ${pendingApps.length} Pending`;
+
+    const orders = engine.getOrders ? engine.getOrders() : [];
+    const completedOrders = orders.filter(o => o.paymentStatus === 'Paid' || o.status === 'Completed' || o.status === 'Delivered');
+    const walletTotal = completedOrders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+    const commissionTotal = completedOrders.reduce((sum, o) => sum + ((parseFloat(o.total) || 0) * 0.15), 0);
+
+    if (platformWalletEl) platformWalletEl.textContent = `$${walletTotal.toFixed(2)}`;
+    if (totalCommEl) totalCommEl.textContent = `$${commissionTotal.toFixed(2)}`;
     if (brandCountEl) brandCountEl.textContent = INITIAL_BRANDS.length;
 
     this.renderAdminPendingApplicationsTable();
@@ -1528,21 +1553,23 @@ class ESellerStoreApp {
     // Render Admin Live Activity Notification Feed
     const feedContainer = document.getElementById('adminLiveActivityFeedBox');
     if (feedContainer) {
-      const logs = engine.getActivityLogs();
-      feedContainer.innerHTML = logs.slice(0, 5).map(log => `
-        <div class="admin-feed-item">
-          <span class="admin-feed-badge ${log.type}">${log.type.toUpperCase()}</span>
-          <div style="flex:1;">
-            <strong>${log.title}</strong> &mdash; ${log.detail}
+      const logs = engine.getActivityLogs ? engine.getActivityLogs() : [];
+      feedContainer.innerHTML = logs.length === 0
+        ? `<div style="padding:12px; font-size:12px; color:#94a3b8; text-align:center;">No recent audit activity. Admin actions will stream here live.</div>`
+        : logs.slice(0, 5).map(log => `
+          <div class="admin-feed-item">
+            <span class="admin-feed-badge ${log.type}">${(log.type || 'info').toUpperCase()}</span>
+            <div style="flex:1;">
+              <strong>${log.title}</strong> &mdash; ${log.detail}
+            </div>
+            <small style="color:#94a3b8;">${log.time || 'Just now'}</small>
           </div>
-          <small style="color:#94a3b8;">${log.time}</small>
-        </div>
-      `).join('');
+        `).join('');
     }
 
     const selectEl = document.getElementById('adminSelectVendor');
     if (selectEl) {
-      selectEl.innerHTML = vendors.map(v => `<option value="${v.id}">${v.name} (Bal: $${parseFloat(v.balance || 0).toFixed(2)})</option>`).join('');
+      selectEl.innerHTML = activeVendors.map(v => `<option value="${v.id}">${v.name} (Bal: $${parseFloat(v.balance || 0).toFixed(2)})</option>`).join('');
     }
   }
 

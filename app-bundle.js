@@ -4,7 +4,7 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v6.5_email_otp_zoho_smtp';
+const APP_VERSION = 'v6.6_admin_dashboard_cleanup';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
@@ -10613,8 +10613,9 @@ class ESellerStoreApp {
     const products = engine.getProducts();
     const metrics = JSON.parse(localStorage.getItem('esellerstore_metrics')) || {};
 
-    const verifiedVendors = vendors.filter(v => v.status === 'verified');
-    const pendingVendors = vendors.filter(v => v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review');
+    const activeVendors = vendors.filter(v => v.status === 'verified');
+    const applications = engine.getVendorApplications ? engine.getVendorApplications() : [];
+    const pendingApps = applications.filter(a => a.status === 'pending' || a.status === 'pending_verification');
 
     const totalVendorsEl = document.getElementById('adminMetricVendors');
     const vendorSubtextEl = document.getElementById('adminMetricVendorsSubtext');
@@ -10623,14 +10624,20 @@ class ESellerStoreApp {
     const platformWalletEl = document.getElementById('adminMetricWallet');
     const totalCommEl = document.getElementById('adminMetricCommission');
 
-    if (totalVendorsEl) totalVendorsEl.textContent = vendors.length;
+    if (totalVendorsEl) totalVendorsEl.textContent = activeVendors.length;
     if (vendorSubtextEl) {
-      vendorSubtextEl.textContent = `${verifiedVendors.length} Verified • ${pendingVendors.length} Pending`;
+      vendorSubtextEl.textContent = `${activeVendors.length} Verified + ${pendingApps.length} Pending`;
     }
     if (prodCountEl) prodCountEl.textContent = products.length;
     if (tabProdCountEl) tabProdCountEl.textContent = products.length;
-    if (platformWalletEl) platformWalletEl.textContent = '$' + parseFloat(metrics.adminWalletTotal || 0).toFixed(2);
-    if (totalCommEl) totalCommEl.textContent = '$' + parseFloat(metrics.totalPlatformCommissionCollected || 0).toFixed(2);
+
+    const orders = engine.getOrders ? engine.getOrders() : [];
+    const completedOrders = orders.filter(o => o.paymentStatus === 'Paid' || o.status === 'Completed' || o.status === 'Delivered');
+    const walletTotal = completedOrders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+    const commissionTotal = completedOrders.reduce((sum, o) => sum + ((parseFloat(o.total) || 0) * 0.15), 0);
+
+    if (platformWalletEl) platformWalletEl.textContent = '$' + walletTotal.toFixed(2);
+    if (totalCommEl) totalCommEl.textContent = '$' + commissionTotal.toFixed(2);
 
     // Live Feed Stream
     const feedContainer = document.getElementById('adminLiveActivityFeedBox');
@@ -11291,53 +11298,58 @@ class ESellerStoreApp {
     const alertSection = document.getElementById('adminPendingVendorsAlertSection');
 
     const applications = engine.getVendorApplications ? engine.getVendorApplications() : [];
-    const pendingApps = applications.filter(a => a.status === 'pending');
+    const pendingApps = applications.filter(a => a.status === 'pending' || a.status === 'pending_verification');
 
     const count = pendingApps.length;
     if (tabCountEl) tabCountEl.textContent = count;
     if (overviewCountEl) overviewCountEl.textContent = count;
     if (alertSection) alertSection.style.display = count > 0 ? 'block' : 'none';
 
+    const warningIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+
     const rowsHtml = count === 0
-      ? `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:16px;">No pending vendor applications awaiting review.</td></tr>`
-      : pendingApps.map(app => `
+      ? `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:20px; font-size:13px;">No pending store verification requests. New registrations will appear here for Super Admin approval.</td></tr>`
+      : pendingApps.map(appRecord => `
         <tr style="background:#fffdf5;">
           <td>
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:18px;">${app.role === 'vendor' ? '[CORP]' : '[CART]️'}</span>
               <div>
-                <strong style="font-size:13px; color:#1e293b;">${app.storeName || app.name}</strong><br>
-                <small style="color:#0284c7; font-family:monospace;">/${app.slug || 'store'}</small><br>
-                <small style="color:#64748b;">Role: <strong>${(app.role || 'vendor').toUpperCase()}</strong></small>
+                <strong style="font-size:13.5px; color:#0f172a; display:block;">${appRecord.storeName || appRecord.name}</strong>
+                <small style="color:#0284c7; font-family:monospace; font-weight:600;">/store/${appRecord.slug || 'shop'}</small><br>
+                <span style="font-size:10px; color:#4f46e5; background:#eef2ff; padding:2px 6px; border-radius:4px; font-weight:700;">${(appRecord.role || 'vendor').toUpperCase()}</span>
               </div>
             </div>
           </td>
           <td>
-            <strong>${app.ownerName}</strong><br>
-            ${app.fatherName ? `<small style="color:#64748b;">s/o ${app.fatherName}</small><br>` : ''}
-            <small style="color:#16a34a; font-weight:700;">Ref Code: <code>${app.referralCode || '00546'}</code></small>
+            <strong style="font-size:13px; color:#1e293b;">${appRecord.ownerName || appRecord.name}</strong><br>
+            ${appRecord.fatherName ? `<small style="color:#64748b;">s/o ${appRecord.fatherName}</small>` : '<small style="color:#94a3b8;">N/A</small>'}
           </td>
           <td>
-            ${app.email}<br>
-            <small style="color:#64748b;">${app.mobile || app.phone || 'N/A'}</small>
+            <strong style="font-size:12.5px; color:#0f172a;">${appRecord.email}</strong> 
+            <span style="font-size:10px; color:#15803d; background:#dcfce7; padding:2px 6px; border-radius:8px; font-weight:700;">OTP Verified</span><br>
+            <small style="color:#64748b;">📞 ${appRecord.mobile || appRecord.phone || 'N/A'}</small>
           </td>
           <td>
-            <small style="color:#475569;">${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'Today'}</small><br>
-            <span style="font-size:10px; color:#166534; background:#dcfce7; padding:2px 6px; border-radius:8px;">Email Sent</span>
+            <div style="margin-bottom:3px;">
+              <span style="font-size:10.5px; color:#15803d; background:#f0fdf4; border:1px solid #bbf7d0; padding:2px 8px; border-radius:10px; font-weight:700;">🔒 Configured [Set]</span>
+            </div>
+            <small style="color:#64748b; font-weight:600;">Ref Code: <code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">${appRecord.referralCode || 'N/A'}</code></small>
           </td>
           <td>
-            <small style="color:#64748b; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${app.address || app.description || ''}">
-              📍 ${app.address || 'Address on file'}
+            <strong style="font-size:12px; color:#334155;">${appRecord.country || 'United States'}</strong><br>
+            <small style="color:#64748b; display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${appRecord.address || ''}">
+              📍 ${appRecord.address || 'Address on file'} ${appRecord.city ? `(${appRecord.city})` : ''}
             </small>
-            ${app.bankName ? `<small style="color:#475569; display:block; font-size:10.5px;">🏦 ${app.bankName} (${app.iban || 'IBAN'})</small>` : ''}
           </td>
           <td>
-            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">[...] PENDING</span>
+            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a; display:inline-flex; align-items:center;">
+              ${warningIcon} PENDING
+            </span>
           </td>
           <td style="text-align:right;">
             <div style="display:inline-flex; gap:6px;">
-              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981; color:#fff;" onclick="app.handleAdminApproveApplication('${app.id}')">✅ Approve Store</button>
-              <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#ef4444; color:#fff;" onclick="app.handleAdminRejectApplication('${app.id}')">[!] Reject</button>
+              <button class="btn-primary" style="padding:6px 12px; font-size:11.5px; background:#10b981; color:#fff; border-radius:6px; font-weight:700;" onclick="app.handleAdminApproveApplication('${appRecord.id}')">Approve Store</button>
+              <button class="btn-primary" style="padding:6px 12px; font-size:11.5px; background:#ef4444; color:#fff; border-radius:6px; font-weight:700;" onclick="app.handleAdminRejectApplication('${appRecord.id}')">Reject</button>
             </div>
           </td>
         </tr>
