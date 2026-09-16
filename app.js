@@ -1,4 +1,4 @@
-const APP_VERSION = 'v6.6_admin_dashboard_cleanup';
+const APP_VERSION = 'v6.7_purge_mock_stores';
 /**
  * E Seller Store - Main Application Controller
  * Handles 3-Step Wizard Onboarding with Real Email OTP Verification & Store Password Creation,
@@ -1455,44 +1455,87 @@ class ESellerStoreApp {
 
   renderAdminVendorsTable() {
     this.renderAdminPendingApplicationsTable();
-    const tableBody = document.getElementById('adminFullVendorsTableBody') || document.getElementById('adminVendorsOverviewTableBody') || document.getElementById('adminVendorsTableBody');
-    if (!tableBody) return;
+    const fullTableBody = document.getElementById('adminFullVendorsTableBody');
+    const overviewBody = document.getElementById('adminVendorsOverviewTableBody');
 
     const vendors = engine.getVendors();
     const activeVendors = vendors.filter(v => v.status === 'verified');
 
     const checkIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="3" style="vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 
-    tableBody.innerHTML = activeVendors.length === 0
-      ? `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:16px;">No active multi-vendor stores registered.</td></tr>`
-      : activeVendors.map(v => `
-        <tr>
-          <td>
-            <strong style="font-size:13.5px; color:#0f172a;">${v.storeName || v.name}</strong><br>
-            <small style="color:#0284c7; font-family:monospace; font-weight:600;">/store/${v.slug || v.id}</small>
-          </td>
-          <td>
-            <strong>${v.ownerName || 'Sanvi Sharma'}</strong><br>
-            <small style="color:#64748b;">${v.email}</small><br>
-            <small style="color:#64748b;">${v.mobile || v.phone || 'N/A'}</small>
-          </td>
-          <td>
-            <span class="status-badge verified" style="background:#f0fdf4; color:#15803d; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #bbf7d0; display:inline-flex; align-items:center;">
-              ${checkIcon} VERIFIED
-            </span>
-          </td>
-          <td><strong>$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
-          <td>
-            <span style="color:#137333; font-weight:700;">${v.profitMarginPercent || 25}% Margin</span><br>
-            <small style="color:#64748b;">(${v.commissionRate || 15}% Fee)</small>
-          </td>
-          <td style="text-align:right;">
-            <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-              <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">Inventory</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+    if (fullTableBody) {
+      fullTableBody.innerHTML = activeVendors.length === 0
+        ? `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:20px;">No active multi-vendor stores registered.</td></tr>`
+        : activeVendors.map(v => `
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <img src="${v.storeLogo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}" width="38" height="38" style="border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;">
+                <div>
+                  <strong style="font-size:13.5px; color:#0f172a;">${v.storeName || v.name}</strong><br>
+                  <small style="color:#0284c7; font-family:monospace; font-weight:600;">/store/${v.slug || v.id}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <strong>${v.ownerName || 'Sanvi Sharma'}</strong><br>
+              <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
+            </td>
+            <td>
+              <strong style="font-size:12.5px; color:#0f172a;">${v.email}</strong><br>
+              <small style="color:#64748b;">${v.mobile || v.phone || 'N/A'}</small>
+            </td>
+            <td>
+              <span class="status-badge verified" style="background:#f0fdf4; color:#15803d; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #bbf7d0; display:inline-flex; align-items:center;">
+                ${checkIcon} VERIFIED
+              </span>
+            </td>
+            <td>
+              <strong style="color:#137333;">${v.commissionRate || 15}% Fee</strong><br>
+              <small style="color:#64748b;">${v.profitMarginPercent || 25}% Margin</small>
+            </td>
+            <td><strong style="font-size:14px; color:var(--nav-red);">$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
+            <td style="text-align:right;">
+              <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">Inventory</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+    }
+
+    if (overviewBody) {
+      overviewBody.innerHTML = activeVendors.length === 0
+        ? `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:16px;">No active multi-vendor stores registered.</td></tr>`
+        : activeVendors.map(v => `
+          <tr>
+            <td>
+              <strong style="font-size:13.5px; color:#0f172a;">${v.storeName || v.name}</strong><br>
+              <small style="color:#0284c7; font-family:monospace; font-weight:600;">/store/${v.slug || v.id}</small>
+            </td>
+            <td>
+              <strong>${v.ownerName || 'Sanvi Sharma'}</strong><br>
+              <small style="color:#64748b;">${v.email}</small><br>
+              <small style="color:#64748b;">${v.mobile || v.phone || 'N/A'}</small>
+            </td>
+            <td>
+              <span class="status-badge verified" style="background:#f0fdf4; color:#15803d; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #bbf7d0; display:inline-flex; align-items:center;">
+                ${checkIcon} VERIFIED
+              </span>
+            </td>
+            <td><strong>$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
+            <td>
+              <span style="color:#137333; font-weight:700;">${v.profitMarginPercent || 25}% Margin</span><br>
+              <small style="color:#64748b;">(${v.commissionRate || 15}% Fee)</small>
+            </td>
+            <td style="text-align:right;">
+              <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">Inventory</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+    }
   }
 
   handleAdminApproveApplication(applicationId) {
@@ -1569,7 +1612,9 @@ class ESellerStoreApp {
 
     const selectEl = document.getElementById('adminSelectVendor');
     if (selectEl) {
-      selectEl.innerHTML = activeVendors.map(v => `<option value="${v.id}">${v.name} (Bal: $${parseFloat(v.balance || 0).toFixed(2)})</option>`).join('');
+      selectEl.innerHTML = activeVendors.length === 0
+        ? `<option value="">No active vendors</option>`
+        : activeVendors.map(v => `<option value="${v.id}">${v.name || v.storeName} (Bal: $${parseFloat(v.balance || 0).toFixed(2)})</option>`).join('');
     }
   }
 

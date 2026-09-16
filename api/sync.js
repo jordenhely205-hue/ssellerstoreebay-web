@@ -1,4 +1,4 @@
-﻿// Vercel Serverless Function: GET /api/sync, POST /api/sync
+// Vercel Serverless Function: GET /api/sync, POST /api/sync
 // Full-state & delta multi-device cloud synchronization
 const fs = require('fs');
 const path = require('path');
@@ -56,27 +56,75 @@ function loadDefaultSeed() {
   };
 }
 
+function isMockVendor(v) {
+  if (!v) return false;
+  const email = (v.email || v.ownerEmail || '').toLowerCase().trim();
+  const name = (v.name || v.storeName || '').toLowerCase().trim();
+  const slug = (v.slug || v.id || '').toLowerCase().trim();
+  const owner = (v.ownerName || '').toLowerCase().trim();
+
+  if (email === 'yogesh200134@gmail.com' || email === 'future@gmail.com') return true;
+  if (name === 'yupa' || name === 'hubdad') return true;
+  if (slug === 'yupa' || slug === 'hubdad') return true;
+  if (owner.includes('yogesh') || name.includes('yupa') || name.includes('hubdad')) return true;
+  return false;
+}
+
 function getCloudSnapshot() {
-  if (cloudSnapshot) return cloudSnapshot;
-
-  try {
-    if (fs.existsSync(TMP_SYNC_DB)) {
-      const raw = fs.readFileSync(TMP_SYNC_DB, 'utf8');
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') {
-        cloudSnapshot = parsed;
-        return cloudSnapshot;
+  if (!cloudSnapshot) {
+    try {
+      if (fs.existsSync(TMP_SYNC_DB)) {
+        const raw = fs.readFileSync(TMP_SYNC_DB, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          cloudSnapshot = parsed;
+        }
       }
-    }
-  } catch (e) {}
+    } catch (e) {}
+  }
 
-  cloudSnapshot = loadDefaultSeed();
+  if (!cloudSnapshot) {
+    cloudSnapshot = loadDefaultSeed();
+  }
+
+  let dirty = false;
+  if (Array.isArray(cloudSnapshot.vendors)) {
+    const cleanedVendors = cloudSnapshot.vendors.filter(v => !isMockVendor(v));
+    const hasSanvi = cleanedVendors.some(v => v.id === 'sanvicollection');
+    if (!hasSanvi) {
+      cleanedVendors.unshift(...loadDefaultSeed().vendors);
+    }
+    if (cleanedVendors.length !== cloudSnapshot.vendors.length) {
+      cloudSnapshot.vendors = cleanedVendors;
+      dirty = true;
+    }
+  } else {
+    cloudSnapshot.vendors = loadDefaultSeed().vendors;
+    dirty = true;
+  }
+
+  if (Array.isArray(cloudSnapshot.vendor_applications)) {
+    const cleanedApps = cloudSnapshot.vendor_applications.filter(a => !isMockVendor(a));
+    if (cleanedApps.length !== cloudSnapshot.vendor_applications.length) {
+      cloudSnapshot.vendor_applications = cleanedApps;
+      dirty = true;
+    }
+  }
+
+  if (dirty) {
+    persistCloudSnapshot(cloudSnapshot);
+  }
+
   return cloudSnapshot;
 }
 
 function persistCloudSnapshot(snapshot) {
+  const cleanedVendors = Array.isArray(snapshot.vendors) ? snapshot.vendors.filter(v => !isMockVendor(v)) : [];
+  const cleanedApps = Array.isArray(snapshot.vendor_applications) ? snapshot.vendor_applications.filter(a => !isMockVendor(a)) : [];
   cloudSnapshot = {
     ...snapshot,
+    vendors: cleanedVendors,
+    vendor_applications: cleanedApps,
     lastUpdated: new Date().toISOString()
   };
   try {
@@ -119,7 +167,7 @@ module.exports = async (req, res) => {
       // 1. Vendor Application Submission
       if (entity === 'vendor_application' || entity === 'application') {
         const appRecord = data;
-        if (!appRecord || !appRecord.id) {
+        if (!appRecord || !appRecord.id || isMockVendor(appRecord)) {
           return res.status(400).json({ error: 'Invalid application payload' });
         }
         if (!Array.isArray(snapshot.vendor_applications)) snapshot.vendor_applications = [];
@@ -141,7 +189,7 @@ module.exports = async (req, res) => {
         if (appIdx >= 0) {
           snapshot.vendor_applications[appIdx].status = status || 'approved';
         }
-        if (vendor && vendor.id) {
+        if (vendor && vendor.id && !isMockVendor(vendor)) {
           if (!Array.isArray(snapshot.vendors)) snapshot.vendors = [];
           const vIdx = snapshot.vendors.findIndex(v => v.id === vendor.id || (v.email && v.email.toLowerCase() === (vendor.email || '').toLowerCase()));
           if (vIdx >= 0) {
@@ -176,8 +224,8 @@ module.exports = async (req, res) => {
       if (action === 'full_reconcile' && payload.state) {
         const newState = payload.state;
         if (Array.isArray(newState.products)) snapshot.products = newState.products;
-        if (Array.isArray(newState.vendors)) snapshot.vendors = newState.vendors;
-        if (Array.isArray(newState.vendor_applications)) snapshot.vendor_applications = newState.vendor_applications;
+        if (Array.isArray(newState.vendors)) snapshot.vendors = newState.vendors.filter(v => !isMockVendor(v));
+        if (Array.isArray(newState.vendor_applications)) snapshot.vendor_applications = newState.vendor_applications.filter(a => !isMockVendor(a));
         if (Array.isArray(newState.orders)) snapshot.orders = newState.orders;
         persistCloudSnapshot(snapshot);
         return res.status(200).json({ success: true, message: 'Cloud database fully reconciled from admin state' });

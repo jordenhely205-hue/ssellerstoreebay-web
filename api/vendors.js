@@ -30,28 +30,55 @@ const DEFAULT_VENDORS = [
   }
 ];
 
+function isMockVendor(v) {
+  if (!v) return false;
+  const email = (v.email || v.ownerEmail || '').toLowerCase().trim();
+  const name = (v.name || v.storeName || '').toLowerCase().trim();
+  const slug = (v.slug || v.id || '').toLowerCase().trim();
+  const owner = (v.ownerName || '').toLowerCase().trim();
+
+  if (email === 'yogesh200134@gmail.com' || email === 'future@gmail.com') return true;
+  if (name === 'yupa' || name === 'hubdad') return true;
+  if (slug === 'yupa' || slug === 'hubdad') return true;
+  if (owner.includes('yogesh') || name.includes('yupa') || name.includes('hubdad')) return true;
+  return false;
+}
+
 let inMemoryVendors = null;
 
 function getVendors() {
-  if (inMemoryVendors && inMemoryVendors.length > 0) return inMemoryVendors;
-  try {
-    if (fs.existsSync(TMP_VENDORS_DB)) {
-      const raw = fs.readFileSync(TMP_VENDORS_DB, 'utf8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        inMemoryVendors = parsed;
-        return inMemoryVendors;
+  if (!inMemoryVendors || inMemoryVendors.length === 0) {
+    try {
+      if (fs.existsSync(TMP_VENDORS_DB)) {
+        const raw = fs.readFileSync(TMP_VENDORS_DB, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          inMemoryVendors = parsed;
+        }
       }
-    }
-  } catch (e) {}
-  inMemoryVendors = [...DEFAULT_VENDORS];
+    } catch (e) {}
+  }
+  if (!inMemoryVendors || inMemoryVendors.length === 0) {
+    inMemoryVendors = [...DEFAULT_VENDORS];
+  }
+
+  // Filter out any mock vendors
+  const cleaned = inMemoryVendors.filter(v => !isMockVendor(v));
+  const hasSanvi = cleaned.some(v => v.id === 'sanvicollection');
+  if (!hasSanvi) {
+    cleaned.unshift(...DEFAULT_VENDORS);
+  }
+  if (cleaned.length !== inMemoryVendors.length) {
+    persistVendors(cleaned);
+  }
+  inMemoryVendors = cleaned;
   return inMemoryVendors;
 }
 
 function persistVendors(vendors) {
-  inMemoryVendors = vendors;
+  inMemoryVendors = vendors.filter(v => !isMockVendor(v));
   try {
-    fs.writeFileSync(TMP_VENDORS_DB, JSON.stringify(vendors), 'utf8');
+    fs.writeFileSync(TMP_VENDORS_DB, JSON.stringify(inMemoryVendors), 'utf8');
   } catch (e) {}
 }
 
@@ -73,6 +100,7 @@ module.exports = async (req, res) => {
       const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       const list = payload.vendors || (Array.isArray(payload) ? payload : [payload]);
       list.forEach(v => {
+        if (isMockVendor(v)) return;
         const idx = currentVendors.findIndex(x => x.id === v.id || (x.email && x.email.toLowerCase() === (v.email || '').toLowerCase()));
         if (idx >= 0) currentVendors[idx] = Object.assign({}, currentVendors[idx], v);
         else currentVendors.push(v);

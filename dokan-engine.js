@@ -6,11 +6,27 @@
 
 import { INITIAL_PRODUCTS, INITIAL_VENDORS, INITIAL_ORDERS, INITIAL_BRANDS, INITIAL_ADS, PLATFORM_METRICS } from './data.js';
 
-class DokanEngine {
+export function isMockVendor(v) {
+  if (!v) return false;
+  const email = (v.email || v.ownerEmail || '').toLowerCase().trim();
+  const name = (v.name || v.storeName || '').toLowerCase().trim();
+  const slug = (v.slug || v.id || '').toLowerCase().trim();
+  const owner = (v.ownerName || '').toLowerCase().trim();
+
+  if (email === 'yogesh200134@gmail.com' || email === 'future@gmail.com') return true;
+  if (name === 'yupa' || name === 'hubdad') return true;
+  if (slug === 'yupa' || slug === 'hubdad') return true;
+  if (owner.includes('yogesh') || name.includes('yupa') || name.includes('hubdad')) return true;
+  return false;
+}
+
+export class DokanEngine {
   constructor() {
     this.storageKeyProducts = 'esellerstore_products';
     this.storageKeyMasterCatalog = 'esellerstore_master_catalog';
     this.storageKeyVendors = 'esellerstore_vendors';
+    this.storageKeyBrands = 'esellerstore_brands';
+    this.storageKeyStorefrontConfig = 'esellerstore_storefront_config';
     this.storageKeyMetrics = 'esellerstore_metrics';
     this.storageKeyCart = 'esellerstore_cart';
     this.storageKeyWishlist = 'esellerstore_wishlist';
@@ -30,13 +46,90 @@ class DokanEngine {
     this.startRealTimeCloudPolling();
   }
 
+  flushMockStoresMigration() {
+    try {
+      if (typeof localStorage === 'undefined') return;
+
+      const vendorKeys = [
+        'esellerstore_vendors',
+        'stores',
+        'vendors',
+        'dokan_vendors',
+        'all_stores',
+        'seller_stores'
+      ];
+
+      vendorKeys.forEach(key => {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const cleaned = list.filter(v => !isMockVendor(v));
+              if (key === 'esellerstore_vendors') {
+                const hasSanvi = cleaned.some(v => (v.id === 'sanvicollection' || (v.email && v.email.toLowerCase() === 'sanvi@sanvicollection.com')));
+                if (!hasSanvi) {
+                  cleaned.unshift(...INITIAL_VENDORS);
+                }
+              }
+              localStorage.setItem(key, JSON.stringify(cleaned));
+            }
+          }
+        } catch (e) {}
+      });
+
+      const appKeys = [
+        'esellerstore_vendor_applications',
+        'vendor_applications',
+        'applications'
+      ];
+
+      appKeys.forEach(key => {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const cleaned = list.filter(a => !isMockVendor(a));
+              localStorage.setItem(key, JSON.stringify(cleaned));
+            }
+          }
+        } catch (e) {}
+      });
+
+      if (typeof indexedDB !== 'undefined') {
+        try {
+          const req = indexedDB.open('ESellerStore_v3', 1);
+          req.onsuccess = (evt) => {
+            try {
+              const db = evt.target.result;
+              if (db.objectStoreNames && db.objectStoreNames.contains('vendors')) {
+                const tx = db.transaction('vendors', 'readwrite');
+                const store = tx.objectStore('vendors');
+                const getAllReq = store.getAll();
+                getAllReq.onsuccess = () => {
+                  const records = getAllReq.result || [];
+                  records.forEach(r => {
+                    if (isMockVendor(r) && r.id) store.delete(r.id);
+                  });
+                };
+              }
+            } catch (e) {}
+          };
+        } catch (e) {}
+      }
+    } catch (err) {}
+  }
+
   init() {
-    const APP_VERSION = 'v5.4_coral_navbar_dokan_pages';
+    const APP_VERSION = 'v6.7_purge_mock_stores';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
       }
     } catch (e) {}
+
+    this.flushMockStoresMigration();
 
     try {
       if (!localStorage.getItem(this.storageKeyAdminAuth)) {
@@ -98,7 +191,8 @@ class DokanEngine {
     if (!localStorage.getItem(this.storageKeyVendorApplications)) {
       localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify([]));
     }
-  }
+  } catch (e) {}
+}
 
   // --- ADVERTISEMENTS MANAGEMENT MODULE ---
   getAds() {
@@ -471,7 +565,7 @@ class DokanEngine {
         localApps.forEach(a => { if (a && a.id) appMap.set(a.id, a); });
 
         data.vendor_applications.forEach(cloudApp => {
-          if (!cloudApp || !cloudApp.id) return;
+          if (!cloudApp || !cloudApp.id || isMockVendor(cloudApp)) return;
           const local = appMap.get(cloudApp.id);
           if (!local || local.status !== cloudApp.status) {
             appMap.set(cloudApp.id, { ...(local || {}), ...cloudApp });
@@ -479,7 +573,7 @@ class DokanEngine {
           }
         });
 
-        const mergedApps = Array.from(appMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        const mergedApps = Array.from(appMap.values()).filter(a => !isMockVendor(a)).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify(mergedApps));
         if (changed && typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('vendor_applications_updated'));
@@ -490,10 +584,10 @@ class DokanEngine {
       if (Array.isArray(data.vendors) && data.vendors.length > 0) {
         const localVendors = this.getVendors();
         const vendorMap = new Map();
-        localVendors.forEach(v => { if (v && v.id) vendorMap.set(v.id, v); });
+        localVendors.forEach(v => { if (v && v.id && !isMockVendor(v)) vendorMap.set(v.id, v); });
 
         data.vendors.forEach(cloudVendor => {
-          if (!cloudVendor || !cloudVendor.id) return;
+          if (!cloudVendor || !cloudVendor.id || isMockVendor(cloudVendor)) return;
           const local = vendorMap.get(cloudVendor.id);
           if (!local || local.status !== cloudVendor.status || local.balance !== cloudVendor.balance) {
             vendorMap.set(cloudVendor.id, { ...(local || {}), ...cloudVendor });
@@ -501,7 +595,7 @@ class DokanEngine {
           }
         });
 
-        const mergedVendors = Array.from(vendorMap.values());
+        const mergedVendors = Array.from(vendorMap.values()).filter(v => !isMockVendor(v));
         localStorage.setItem(this.storageKeyVendors, JSON.stringify(mergedVendors));
         if (changed && typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('vendors_updated'));
@@ -794,11 +888,30 @@ class DokanEngine {
   }
 
   getVendors() {
-    return JSON.parse(localStorage.getItem(this.storageKeyVendors)) || INITIAL_VENDORS;
+    try {
+      const raw = localStorage.getItem(this.storageKeyVendors);
+      let data = raw ? JSON.parse(raw) : null;
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        localStorage.setItem(this.storageKeyVendors, JSON.stringify(INITIAL_VENDORS));
+        return INITIAL_VENDORS;
+      }
+      const cleaned = data.filter(v => !isMockVendor(v));
+      const hasSanvi = cleaned.some(v => (v.id === 'sanvicollection' || (v.email && v.email.toLowerCase() === 'sanvi@sanvicollection.com')));
+      if (!hasSanvi) {
+        cleaned.unshift(...INITIAL_VENDORS);
+      }
+      if (cleaned.length !== data.length) {
+        localStorage.setItem(this.storageKeyVendors, JSON.stringify(cleaned));
+      }
+      return cleaned;
+    } catch (e) {
+      return INITIAL_VENDORS;
+    }
   }
 
   saveVendors(vendors) {
-    localStorage.setItem(this.storageKeyVendors, JSON.stringify(vendors));
+    const cleaned = (vendors || []).filter(v => !isMockVendor(v));
+    localStorage.setItem(this.storageKeyVendors, JSON.stringify(cleaned));
   }
 
   getVendorById(id) {
@@ -809,7 +922,12 @@ class DokanEngine {
   getVendorApplications() {
     try {
       const data = JSON.parse(localStorage.getItem(this.storageKeyVendorApplications));
-      return (data && Array.isArray(data)) ? data : [];
+      if (!data || !Array.isArray(data)) return [];
+      const cleaned = data.filter(a => !isMockVendor(a));
+      if (cleaned.length !== data.length) {
+        localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify(cleaned));
+      }
+      return cleaned;
     } catch (e) {
       return [];
     }

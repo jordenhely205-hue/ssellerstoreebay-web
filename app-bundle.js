@@ -4,12 +4,26 @@
  */
 
 // --- PERSISTENCE & VERSION INITIALIZATION ---
-const APP_VERSION = 'v6.6_admin_dashboard_cleanup';
+const APP_VERSION = 'v6.7_purge_mock_stores';
 try {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('app_version', APP_VERSION);
   }
 } catch (e) {}
+
+function isMockVendor(v) {
+  if (!v) return false;
+  const email = (v.email || v.ownerEmail || '').toLowerCase().trim();
+  const name = (v.name || v.storeName || '').toLowerCase().trim();
+  const slug = (v.slug || v.id || '').toLowerCase().trim();
+  const owner = (v.ownerName || '').toLowerCase().trim();
+
+  if (email === 'yogesh200134@gmail.com' || email === 'future@gmail.com') return true;
+  if (name === 'yupa' || name === 'hubdad') return true;
+  if (slug === 'yupa' || slug === 'hubdad') return true;
+  if (owner.includes('yogesh') || name.includes('yupa') || name.includes('hubdad')) return true;
+  return false;
+}
 
 const MASTER_CATALOG_REPOSITORY = [
   {
@@ -8157,12 +8171,91 @@ class DokanEngine {
     this.startRealTimeCloudPolling();
   }
 
+  flushMockStoresMigration() {
+    try {
+      if (typeof localStorage === 'undefined') return;
+
+      const vendorKeys = [
+        'esellerstore_vendors',
+        'stores',
+        'vendors',
+        'dokan_vendors',
+        'all_stores',
+        'seller_stores'
+      ];
+
+      vendorKeys.forEach(key => {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const cleaned = list.filter(v => !isMockVendor(v));
+              if (key === 'esellerstore_vendors') {
+                const hasSanvi = cleaned.some(v => (v.id === 'sanvicollection' || (v.email && v.email.toLowerCase() === 'sanvi@sanvicollection.com')));
+                if (!hasSanvi) {
+                  cleaned.unshift(...INITIAL_VENDORS);
+                }
+              }
+              localStorage.setItem(key, JSON.stringify(cleaned));
+            }
+          }
+        } catch (e) {}
+      });
+
+      const appKeys = [
+        'esellerstore_vendor_applications',
+        'vendor_applications',
+        'applications'
+      ];
+
+      appKeys.forEach(key => {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const cleaned = list.filter(a => !isMockVendor(a));
+              localStorage.setItem(key, JSON.stringify(cleaned));
+            }
+          }
+        } catch (e) {}
+      });
+
+      if (typeof indexedDB !== 'undefined') {
+        try {
+          const req = indexedDB.open('ESellerStore_v3', 1);
+          req.onsuccess = (evt) => {
+            try {
+              const db = evt.target.result;
+              if (db.objectStoreNames && db.objectStoreNames.contains('vendors')) {
+                const tx = db.transaction('vendors', 'readwrite');
+                const store = tx.objectStore('vendors');
+                const getAllReq = store.getAll();
+                getAllReq.onsuccess = () => {
+                  const records = getAllReq.result || [];
+                  records.forEach(r => {
+                    if (isMockVendor(r) && r.id) store.delete(r.id);
+                  });
+                };
+              }
+            } catch (e) {}
+          };
+        } catch (e) {}
+      }
+    } catch (err) {}
+  }
+
   init() {
-    const APP_VERSION = 'v5.4_coral_navbar_dokan_pages';
+    const APP_VERSION = 'v6.7_purge_mock_stores';
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('app_version', APP_VERSION);
       }
+    } catch (e) {}
+
+    try {
+      this.flushMockStoresMigration();
     } catch (e) {}
 
     try {
@@ -8528,7 +8621,7 @@ class DokanEngine {
         localApps.forEach(a => { if (a && a.id) appMap.set(a.id, a); });
 
         data.vendor_applications.forEach(cloudApp => {
-          if (!cloudApp || !cloudApp.id) return;
+          if (!cloudApp || !cloudApp.id || isMockVendor(cloudApp)) return;
           const local = appMap.get(cloudApp.id);
           if (!local || local.status !== cloudApp.status) {
             appMap.set(cloudApp.id, { ...(local || {}), ...cloudApp });
@@ -8536,7 +8629,7 @@ class DokanEngine {
           }
         });
 
-        const mergedApps = Array.from(appMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        const mergedApps = Array.from(appMap.values()).filter(a => !isMockVendor(a)).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify(mergedApps));
         if (changed && typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('vendor_applications_updated'));
@@ -8547,10 +8640,10 @@ class DokanEngine {
       if (Array.isArray(data.vendors) && data.vendors.length > 0) {
         const localVendors = this.getVendors();
         const vendorMap = new Map();
-        localVendors.forEach(v => { if (v && v.id) vendorMap.set(v.id, v); });
+        localVendors.forEach(v => { if (v && v.id && !isMockVendor(v)) vendorMap.set(v.id, v); });
 
         data.vendors.forEach(cloudVendor => {
-          if (!cloudVendor || !cloudVendor.id) return;
+          if (!cloudVendor || !cloudVendor.id || isMockVendor(cloudVendor)) return;
           const local = vendorMap.get(cloudVendor.id);
           if (!local || local.status !== cloudVendor.status || local.balance !== cloudVendor.balance) {
             vendorMap.set(cloudVendor.id, { ...(local || {}), ...cloudVendor });
@@ -8558,7 +8651,7 @@ class DokanEngine {
           }
         });
 
-        const mergedVendors = Array.from(vendorMap.values());
+        const mergedVendors = Array.from(vendorMap.values()).filter(v => !isMockVendor(v));
         localStorage.setItem(this.storageKeyVendors, JSON.stringify(mergedVendors));
         if (changed && typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('vendors_updated'));
@@ -9128,30 +9221,40 @@ class DokanEngine {
   /* --- MULTI-VENDOR MANAGEMENT & MANDATORY VERIFICATION GATE --- */
   getVendors() {
     try {
-      const data = JSON.parse(localStorage.getItem(this.storageKeyVendors));
+      const raw = localStorage.getItem(this.storageKeyVendors);
+      let data = raw ? JSON.parse(raw) : null;
       if (!data || !Array.isArray(data) || data.length === 0) {
         localStorage.setItem(this.storageKeyVendors, JSON.stringify(INITIAL_VENDORS));
         return INITIAL_VENDORS;
       }
-      return data;
+      const cleaned = data.filter(v => !isMockVendor(v));
+      const hasSanvi = cleaned.some(v => (v.id === 'sanvicollection' || (v.email && v.email.toLowerCase() === 'sanvi@sanvicollection.com')));
+      if (!hasSanvi) {
+        cleaned.unshift(...INITIAL_VENDORS);
+      }
+      if (cleaned.length !== data.length) {
+        localStorage.setItem(this.storageKeyVendors, JSON.stringify(cleaned));
+      }
+      return cleaned;
     } catch (e) {
       return INITIAL_VENDORS;
     }
   }
 
   saveVendors(vendors) {
+    const cleaned = (vendors || []).filter(v => !isMockVendor(v));
     try {
-      localStorage.setItem(this.storageKeyVendors, JSON.stringify(vendors));
+      localStorage.setItem(this.storageKeyVendors, JSON.stringify(cleaned));
     } catch (e) {}
 
     // Multi-tier storage persistence (IndexedDB + Cloud DB Sync)
     try {
       if (typeof idbStorage !== 'undefined' && idbStorage.putBatch) {
-        idbStorage.putBatch('vendors', vendors);
+        idbStorage.putBatch('vendors', cleaned);
       }
     } catch (e) {}
 
-    this.syncVendorsToCloudBackend(vendors);
+    this.syncVendorsToCloudBackend(cleaned);
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('vendors_updated'));
@@ -9159,9 +9262,10 @@ class DokanEngine {
   }
 
   syncVendorsToCloudBackend(vendors) {
+    const cleaned = (vendors || this.getVendors()).filter(v => !isMockVendor(v));
     const payload = {
       action: 'batch_upsert_vendors',
-      vendors: vendors || this.getVendors(),
+      vendors: cleaned,
       timestamp: new Date().toISOString(),
       source: 'vendor_store_sync'
     };
@@ -9195,7 +9299,12 @@ class DokanEngine {
   getVendorApplications() {
     try {
       const data = JSON.parse(localStorage.getItem(this.storageKeyVendorApplications));
-      return (data && Array.isArray(data)) ? data : [];
+      if (!data || !Array.isArray(data)) return [];
+      const cleaned = data.filter(a => !isMockVendor(a));
+      if (cleaned.length !== data.length) {
+        localStorage.setItem(this.storageKeyVendorApplications, JSON.stringify(cleaned));
+      }
+      return cleaned;
     } catch (e) {
       return [];
     }
@@ -10654,101 +10763,15 @@ class ESellerStoreApp {
       `).join('');
     }
 
-    // Render Pending Store Requests in Overview Tab
-    const pendingAlertSec = document.getElementById('adminPendingVendorsAlertSection');
-    const pendingCountEl = document.getElementById('adminPendingVendorsCount');
-    const pendingTbody = document.getElementById('adminPendingVendorsOverviewTableBody');
+    // Render Pending Applications Section
+    this.renderAdminPendingApplicationsTable();
 
-    if (pendingCountEl) pendingCountEl.textContent = pendingVendors.length;
-    if (pendingAlertSec) {
-      pendingAlertSec.style.display = pendingVendors.length > 0 ? 'block' : 'none';
-    }
-
-    if (pendingTbody) {
-      pendingTbody.innerHTML = pendingVendors.map(v => `
-        <tr style="background:#fffbeb;">
-          <td>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <img src="${v.storeLogo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}" width="36" height="36" style="border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;">
-              <div>
-                <strong style="font-size:13px; color:#1e293b;">${v.name}</strong><br>
-                <small style="color:#64748b;">Joined: ${v.joinedDate || new Date().toISOString().split('T')[0]}</small>
-              </div>
-            </div>
-          </td>
-          <td>
-            <strong style="font-size:13px; color:#0f172a;">${v.ownerName}</strong>
-          </td>
-          <td>
-            <span style="font-size:12px; font-weight:700; color:var(--nav-red);">${v.cnic || 'N/A'}</span>
-          </td>
-          <td>
-            <span style="font-size:12px;">${v.email}</span><br>
-            <small style="color:#64748b;">${v.mobile || v.phone || ''}</small>
-          </td>
-          <td>
-            <span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">[...] PENDING VERIFICATION</span>
-          </td>
-          <td style="text-align:right;">
-            <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-              <button class="btn-primary" style="padding:6px 14px; font-size:12px; background:#10b981; font-weight:700;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve</button>
-              <button class="btn-primary" style="padding:6px 14px; font-size:12px; background:#ef4444; font-weight:700;" onclick="app.handleAdminRejectVendor('${v.id}')">[!] Reject</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    // Overview All Vendors Table
-    const overviewVendorsBody = document.getElementById('adminVendorsOverviewTableBody');
-    if (overviewVendorsBody) {
-      // Sort so pending vendors appear at the top
-      const sortedOverviewVendors = [...vendors].sort((a, b) => {
-        const aPending = (a.status === 'pending_verification' || a.status === 'pending' || a.status === 'under_review') ? 1 : 0;
-        const bPending = (b.status === 'pending_verification' || b.status === 'pending' || b.status === 'under_review') ? 1 : 0;
-        return bPending - aPending;
-      });
-
-      overviewVendorsBody.innerHTML = sortedOverviewVendors.map(v => {
-        const isPending = v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review';
-        return `
-          <tr style="${isPending ? 'background:#fffdf5;' : ''}">
-            <td>
-              <strong>${v.name}</strong><br>
-              <small style="color:#666;">Owner: ${v.ownerName}</small><br>
-              <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
-            </td>
-            <td>${v.email}<br><small style="color:#666;">${v.mobile || v.phone || ''}</small></td>
-            <td>
-              ${isPending
-                ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:3px 8px; border-radius:10px; border:1px solid #fde68a;">[...] PENDING</span>`
-                : `<span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span>`
-              }
-            </td>
-            <td><strong>$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
-            <td><span style="font-weight:700; color:#137333;">${v.commissionRate || 15}% Fee</span></td>
-            <td>
-              <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit</button>
-                ${isPending ? `
-                  <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveVendor('${v.id}')">✅ Approve</button>
-                  <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectVendor('${v.id}')">[!] Reject</button>
-                ` : `
-                  <button class="admin-act-btn ${v.status === 'suspended' || v.status === 'rejected' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' || v.status === 'rejected' ? 'verified' : 'suspended'}')">
-                    ${v.status === 'suspended' || v.status === 'rejected' ? 'Unsuspend' : 'Suspend'}
-                  </button>
-                `}
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // Populate Select Vendor dropdown
+    // Populate Select Vendor dropdown (Wallet Adjustment)
     const selectEl = document.getElementById('adminSelectVendor');
     if (selectEl) {
-      selectEl.innerHTML = vendors.map(v => '<option value="' + v.id + '">' + v.name + (v.status !== 'verified' ? ' (Pending)' : '') + ' (Balance: $' + parseFloat(v.balance || 0).toFixed(2) + ')</option>').join('');
+      selectEl.innerHTML = activeVendors.length === 0
+        ? '<option value="">No active vendors</option>'
+        : activeVendors.map(v => '<option value="' + v.id + '">' + (v.storeName || v.name) + ' (Balance: $' + parseFloat(v.balance || 0).toFixed(2) + ')</option>').join('');
     }
 
     this.renderAdminProductsTable();
@@ -11418,74 +11441,98 @@ class ESellerStoreApp {
   renderAdminVendorsTable() {
     this.renderAdminPendingApplicationsTable();
 
-    const tbody = document.getElementById('adminFullVendorsTableBody');
-    if (!tbody) return;
+    const fullTableBody = document.getElementById('adminFullVendorsTableBody');
+    const overviewBody = document.getElementById('adminVendorsOverviewTableBody');
 
     const vendors = engine.getVendors();
-    const activeVendors = vendors.filter(v => v.status !== 'pending' && v.status !== 'pending_verification');
-    const displayVendors = activeVendors.length > 0 ? activeVendors : vendors;
+    const activeVendors = vendors.filter(v => v.status === 'verified' && !isMockVendor(v));
 
-    tbody.innerHTML = displayVendors.map(v => {
-      const isPending = v.status === 'pending_verification' || v.status === 'pending' || v.status === 'under_review';
-      const statusBadgeHtml = isPending
-        ? `<span class="status-badge pending_verification" style="background:#fef3c7; color:#b45309; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #fde68a;">[...] PENDING VERIFICATION</span>`
-        : `<span class="status-badge ${v.status}">${v.status.replace('_', ' ').toUpperCase()}</span>`;
+    const checkIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="3" style="vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 
-      return `
-        <tr style="${isPending ? 'background:#fffdf5;' : ''}">
-          <td>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <img src="${v.storeLogo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}" width="38" height="38" style="border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;">
-              <div>
-                <strong style="font-size:13px; color:#1e293b;">${v.name}</strong><br>
-                <small style="color:#64748b;">Joined: ${v.joinedDate || '2026-07-01'}</small>
+    if (fullTableBody) {
+      fullTableBody.innerHTML = activeVendors.length === 0
+        ? `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:20px;">No active multi-vendor stores registered.</td></tr>`
+        : activeVendors.map(v => `
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <img src="${v.storeLogo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}" width="38" height="38" style="border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;">
+                <div>
+                  <strong style="font-size:13.5px; color:#0f172a;">${v.storeName || v.name}</strong><br>
+                  <small style="color:#0284c7; font-family:monospace; font-weight:600;">/store/${v.slug || v.id}</small>
+                </div>
               </div>
-            </div>
-          </td>
-          <td>
-            <strong>${v.ownerName}</strong><br>
-            <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
-          </td>
-          <td>
-            ${v.email}<br>
-            <small style="color:#64748b;">${v.mobile || 'N/A'}</small>
-          </td>
-          <td>
-            ${statusBadgeHtml}
-          </td>
-          <td>
-            <strong style="color:#137333;">${v.commissionRate || 15}% Admin Fee</strong><br>
-            <small style="color:#64748b;">${v.profitMarginPercent || 25}% Vendor Margin</small>
-          </td>
-          <td>
-            <strong style="font-size:14px; color:var(--nav-red);">$${parseFloat(v.balance || 0).toFixed(2)}</strong>
-          </td>
-          <td style="text-align:right;">
-            <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-              <button class="admin-act-btn primary" style="background:#0284c7; color:#fff;" onclick="app.openAdminMasterCatalogImporter('${v.id}')">[LIVE] List Master Catalog</button>
-              <button class="admin-act-btn primary" style="background:#10b981; color:#fff;" onclick="app.openAdminAddProductModal('${v.id}')">➕ Add Product</button>
-              <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
-              <button class="admin-act-btn primary" onclick="app.handleAdminVendorInventoryView('${v.id}')">[PACKAGE] Inventory</button>
-              ${isPending ? `
-                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminApproveApplication('${v.id}')">✅ Approve Store</button>
-                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#ef4444;" onclick="app.handleAdminRejectApplication('${v.id}')">[!] Reject / Delete</button>
-              ` : `
+            </td>
+            <td>
+              <strong>${v.ownerName || 'Sanvi Sharma'}</strong><br>
+              <small style="color:var(--nav-red); font-weight:700;">CNIC: ${v.cnic || 'N/A'}</small>
+            </td>
+            <td>
+              <strong style="font-size:12.5px; color:#0f172a;">${v.email}</strong><br>
+              <small style="color:#64748b;">${v.mobile || v.phone || 'N/A'}</small>
+            </td>
+            <td>
+              <span class="status-badge verified" style="background:#f0fdf4; color:#15803d; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #bbf7d0; display:inline-flex; align-items:center;">
+                ${checkIcon} VERIFIED
+              </span>
+            </td>
+            <td>
+              <strong style="color:#137333;">${v.commissionRate || 15}% Fee</strong><br>
+              <small style="color:#64748b;">${v.profitMarginPercent || 25}% Margin</small>
+            </td>
+            <td><strong style="font-size:14px; color:var(--nav-red);">$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
+            <td style="text-align:right;">
+              <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="btn-primary" style="padding:5px 12px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">Inventory</button>
+                <button class="admin-act-btn edit" onclick="app.openAdminEditVendorModal('${v.id}')">✏️ Edit Profile</button>
                 <button class="admin-act-btn ${v.status === 'suspended' || v.status === 'rejected' ? 'toggle-on' : 'delete'}" onclick="app.adminApproveVendor('${v.id}', '${v.status === 'suspended' || v.status === 'rejected' ? 'verified' : 'suspended'}')">
                   ${v.status === 'suspended' || v.status === 'rejected' ? 'Unsuspend' : '🚫 Suspend'}
                 </button>
-              `}
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
+              </div>
+            </td>
+          </tr>
+        `).join('');
+    }
+
+    if (overviewBody) {
+      overviewBody.innerHTML = activeVendors.length === 0
+        ? `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:16px;">No active multi-vendor stores registered.</td></tr>`
+        : activeVendors.map(v => `
+          <tr>
+            <td>
+              <strong style="font-size:13.5px; color:#0f172a;">${v.storeName || v.name}</strong><br>
+              <small style="color:#0284c7; font-family:monospace; font-weight:600;">/store/${v.slug || v.id}</small>
+            </td>
+            <td>
+              <strong>${v.ownerName || 'Sanvi Sharma'}</strong><br>
+              <small style="color:#64748b;">${v.email}</small><br>
+              <small style="color:#64748b;">${v.mobile || v.phone || 'N/A'}</small>
+            </td>
+            <td>
+              <span class="status-badge verified" style="background:#f0fdf4; color:#15803d; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid #bbf7d0; display:inline-flex; align-items:center;">
+                ${checkIcon} VERIFIED
+              </span>
+            </td>
+            <td><strong>$${parseFloat(v.balance || 0).toFixed(2)}</strong></td>
+            <td>
+              <span style="color:#137333; font-weight:700;">${v.profitMarginPercent || 25}% Margin</span><br>
+              <small style="color:#64748b;">(${v.commissionRate || 15}% Fee)</small>
+            </td>
+            <td style="text-align:right;">
+              <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:#10b981;" onclick="app.handleAdminVendorInventoryView('${v.id}')">Inventory</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+    }
   }
 
   renderAdminCsvTargetVendorSelect() {
     const select = document.getElementById('adminCsvTargetVendorSelect');
     if (!select) return;
-    const vendors = engine.getVendors();
-    select.innerHTML = vendors.map(v => `<option value="${v.id}">${v.name} (${v.ownerName})` + (v.status === 'verified' ? ' ✅' : ' [...]') + `</option>`).join('');
+    const vendors = engine.getVendors().filter(v => !isMockVendor(v));
+    select.innerHTML = vendors.map(v => `<option value="${v.id}">${v.name || v.storeName} (${v.ownerName || 'Verified'})` + (v.status === 'verified' ? ' ✅' : ' ⏳ Pending') + `</option>`).join('');
   }
 
   openAdminMasterCatalogImporter(vendorId) {
@@ -12602,27 +12649,27 @@ class ESellerStoreApp {
     const matchedApp = applications.find(a => a.email && a.email.toLowerCase() === email);
 
     if (matchedApp && matchedApp.status === 'pending') {
-      alert('[...] APPLICATION PENDING APPROVAL:\n\nYour seller registration for "' + (matchedApp.storeName || matchedApp.name) + '" is currently awaiting Super Admin review and approval.\nPlease check back shortly once verified.');
-      this.showToast('[...] Seller account pending approval');
+      alert('⏳ APPLICATION PENDING APPROVAL:\n\nYour seller registration for "' + (matchedApp.storeName || matchedApp.name) + '" is currently awaiting Super Admin review and approval.\nPlease check back shortly once verified.');
+      this.showToast('⏳ Seller account pending approval');
       return;
     }
 
     if (matchedApp && matchedApp.status === 'rejected') {
-      alert('[!] APPLICATION DECLINED:\n\nYour seller application was declined. Please contact marketplace administration for further information.');
-      this.showToast('[!] Seller application declined');
+      alert('❌ APPLICATION DECLINED:\n\nYour seller application was declined. Please contact marketplace administration for further information.');
+      this.showToast('❌ Seller application declined');
       return;
     }
 
     if (!matchedVendor) {
       if (passEl) passEl.value = '';
-      alert('[!] Authentication Failed: No registered seller account found for "' + email + '".');
-      this.showToast('[!] Seller account not found');
+      alert('❌ Authentication Failed: No registered seller account found for "' + email + '".');
+      this.showToast('❌ Seller account not found');
       return;
     }
 
     if (matchedVendor.status === 'pending_verification' || matchedVendor.status === 'pending') {
-      alert('[...] APPLICATION PENDING APPROVAL:\n\nYour store account is awaiting Super Admin verification.\nYou will gain full access immediately upon approval.');
-      this.showToast('[...] Account pending verification');
+      alert('⏳ APPLICATION PENDING APPROVAL:\n\nYour store account is awaiting Super Admin verification.\nYou will gain full access immediately upon approval.');
+      this.showToast('⏳ Account pending verification');
       return;
     }
 
@@ -14267,12 +14314,12 @@ class ESellerStoreApp {
       const app = apps.find(a => a.email && a.email.toLowerCase() === login);
       if (app) {
         if (app.verificationStatus === 'activation_sent' && !app.password) {
-          if (confirm(`[...] ACCOUNT ACTIVATION REQUIRED\n\nYour account has been registered but password is not yet set.\n\nWould you like to open the Set Password activation dialog now?`)) {
+          if (confirm(`🔐 ACCOUNT ACTIVATION REQUIRED\n\nYour account has been registered but password is not yet set.\n\nWould you like to open the Set Password activation dialog now?`)) {
             this.openSetPasswordModal(app.activationToken || ('act_' + Date.now()), app.email);
           }
           return;
         }
-        alert(`[...] ACCOUNT PENDING REVIEW\n\nYour store "${app.storeName}" application is currently under Super Admin review.`);
+        alert(`⏳ ACCOUNT PENDING REVIEW\n\nYour store "${app.storeName}" application is currently under Super Admin review.`);
         return;
       }
 
@@ -14286,7 +14333,7 @@ class ESellerStoreApp {
     }
 
     if (vendor.status === 'pending' || vendor.status === 'pending_verification') {
-      alert(`[...] ACCOUNT PENDING REVIEW\n\nYour store "${vendor.name}" application is currently awaiting Super Admin review.\nYou will receive full access once approved.`);
+      alert(`⏳ ACCOUNT PENDING REVIEW\n\nYour store "${vendor.name}" application is currently awaiting Super Admin review.\nYou will receive full access once approved.`);
       return;
     }
 
@@ -14532,7 +14579,7 @@ class ESellerStoreApp {
     const submitBtn = document.getElementById('btnAccountRegisterSubmit');
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '[...] Generating Activation Link...';
+      submitBtn.innerHTML = '⏳ Generating Activation Link...';
     }
 
     try {
@@ -14606,7 +14653,7 @@ class ESellerStoreApp {
     const btn = document.getElementById('btnSetPasswordSubmit');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '[...] Activating Account...';
+      btn.innerHTML = '⏳ Activating Account...';
     }
 
     try {
